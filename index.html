@@ -9,23 +9,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#FFF6F0; --card:#fff; --ink:#3A1A0A; --muted:#A05A2C; --line:#FFE0CC;
-    --green:#FF6A00; --green-d:#D63C0C; --green-dd:#8A2A0A; --green-br:#FF9D2E; --green-l:#FFE6D6; --green-l2:#FFF6F0;
-    --teal:#E5322B; --tealbg:#FFEDE6; --blue:#1565C0; --bluebg:#E8F1FB;
-    --amber:#C2740C; --amberbg:#FCEFD9; --orange:#E5532B; --orangebg:#FFE6D6; --red:#D6213C; --redbg:#FDE7EA;
+    --bg:#FFF4F0; --card:#fff; --ink:#3A1620; --muted:#9A5563; --line:#FFD9CF;
+    --green:#FF5A3C; --green-d:#D6213C; --green-dd:#8A1A3A; --green-br:#FF7A5C; --green-l:#FFE0D6; --green-l2:#FFF0EA;
+    --teal:#E5326B; --tealbg:#FFDED6; --blue:#3B4BC0; --bluebg:#E3EAFB;
+    --amber:#C2740C; --amberbg:#FCEFD9; --orange:#E5532B; --orangebg:#FFE0D6; --red:#D6213C; --redbg:#FDE7EA;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Sarabun',sans-serif;font-size:17px;line-height:1.55;-webkit-text-size-adjust:100%;padding-bottom:88px}
-  header{background:linear-gradient(135deg,#FF9D2E 0%,#FF6A00 50%,#E5322B 100%);color:#fff;padding:15px 18px;display:flex;align-items:center;gap:13px;box-shadow:0 3px 14px rgba(214,60,12,.28)}
+  body{margin:0;background:linear-gradient(160deg,#FFF4F0 0%,#FFE9F0 100%);background-attachment:fixed;color:var(--ink);font-family:'Sarabun',sans-serif;font-size:17px;line-height:1.55;-webkit-text-size-adjust:100%;padding-bottom:88px}
+  header{background:linear-gradient(135deg,#FF9D5C 0%,#FF5A3C 52%,#E5326B 100%);color:#fff;padding:15px 18px;display:flex;align-items:center;gap:13px;box-shadow:0 3px 14px rgba(214,40,90,.28)}
   .logo{width:64px;height:64px;display:flex;align-items:center;justify-content:center;flex:none}
   .logo img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3))}
   header h1{margin:0;font-size:22px;font-weight:700;letter-spacing:.2px}
   header p{margin:3px 0 0;font-size:13.5px;opacity:.9}
   .chips{display:flex;gap:8px;overflow-x:auto;padding:14px 16px 6px;-webkit-overflow-scrolling:touch}
   .chip{flex:none;font-family:inherit;font-size:15.5px;font-weight:500;padding:9px 16px;border:1px solid var(--line);background:#fff;color:var(--green-d);border-radius:999px;cursor:pointer;white-space:nowrap;transition:all .15s}
-  .chip.on{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 3px 10px rgba(255,106,0,.35)}
+  .chip.on{background:linear-gradient(135deg,#E5326B,#FF5A3C);border-color:#E5326B;color:#fff;box-shadow:0 3px 11px rgba(229,50,107,.35)}
   .farmdd{display:none;position:relative;width:100%}
-  .farmdd-btn{display:flex;align-items:center;gap:8px;width:100%;font-family:inherit;font-size:15px;font-weight:700;color:var(--green-dd);padding:11px 14px;border:1.5px solid var(--green-br);border-radius:12px;background:#fff;cursor:pointer;text-align:left}
+  .farmdd-btn{display:flex;align-items:center;gap:8px;width:100%;font-family:inherit;font-size:15px;font-weight:700;color:var(--green-dd);padding:11px 14px;border:1.5px solid var(--green-br);border-left-width:5px;border-radius:12px;background:linear-gradient(90deg,#FFF0EA,#FFE0D6);cursor:pointer;text-align:left}
   .farmdd-btn .cv{margin-left:auto;flex:none;width:18px;height:18px;color:var(--green-d);transition:transform .2s}
   .farmdd.open .farmdd-btn{border-color:var(--green);box-shadow:0 0 0 3px rgba(14,116,144,.13)}
   .farmdd.open .farmdd-btn .cv{transform:rotate(180deg)}
@@ -60,13 +60,13 @@
   .btn{font-family:inherit;font-size:15.5px;font-weight:500;padding:11px 18px;border:1px solid var(--line);background:#fff;color:var(--green-d);border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s}
   .btn svg{width:17px;height:17px}
   .btn:hover{border-color:var(--green-br)}
-  .btn.primary{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 3px 10px rgba(255,106,0,.32)}
+  .btn.primary{background:linear-gradient(135deg,#FF6A4A,#E5326B);color:#fff;border-color:transparent;box-shadow:0 3px 11px rgba(229,50,107,.32)}
   .btn.warn{border-color:#f3c6cf;color:var(--red);background:#fff}
   .farmname{font-family:inherit;font-size:16px;font-weight:700;color:var(--green-dd);border:1px solid var(--line);border-radius:12px;padding:10px 14px;flex:1;min-width:160px;background:#fff}
   .grid{display:grid;grid-template-columns:1fr;gap:16px}
   @media(min-width:820px){.grid{grid-template-columns:repeat(3,1fr)}}
   .card{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 1px 2px rgba(214,60,12,.05),0 8px 22px rgba(214,60,12,.10)}
-  .chead{display:flex;align-items:center;gap:10px;padding:14px 15px;background:linear-gradient(90deg,#E5532B,#FF7A1A);border-bottom:1px solid rgba(0,0,0,.08)}
+  .chead{display:flex;align-items:center;gap:10px;padding:14px 15px;background:linear-gradient(90deg,#FF5A3C,#FF8A4D);border-bottom:1px solid rgba(0,0,0,.08)}
   .chead .badge{font-size:15px;font-weight:700;color:var(--green-d);background:#fff;border-radius:10px;min-width:29px;height:29px;display:flex;align-items:center;justify-content:center;flex:none}
   .chead .nm{flex:1;font-size:18.5px;font-weight:700;color:#fff;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .chead input.nm{border:none;background:transparent;font-family:inherit;color:#fff;border-bottom:1px dashed rgba(255,255,255,.75)}
@@ -89,7 +89,7 @@
   .daterow .todaybtn{font-family:inherit;font-size:14px;font-weight:700;padding:9px 17px;border:1px solid var(--green);background:var(--green-l);color:var(--green-d);border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
   .daterow .todaybtn:hover{background:var(--green);color:#fff}
   .o-date{font-size:12.5px;color:var(--green-d);font-weight:500;margin:-2px 0 12px}
-  .agewrap{display:flex;align-items:center;gap:12px;background:var(--green-l);border-radius:14px;padding:11px 14px;margin-bottom:14px}
+  .agewrap{display:flex;align-items:center;gap:12px;background:linear-gradient(90deg,#FFF0EA,#FFE0D6);border-radius:14px;padding:11px 14px;margin-bottom:14px}
   .agewrap span.t{font-size:13.5px;color:var(--green-d);font-weight:500;white-space:nowrap}
   .agewrap input[type=range]{flex:1;accent-color:var(--green);height:6px}
   .agebig{font-size:15px;font-weight:500;color:var(--muted);flex:1;text-align:center;white-space:nowrap}
@@ -99,6 +99,7 @@
   .agebtn:active{transform:scale(.9)}
   .agebtn:disabled{opacity:.4;cursor:not-allowed;background:#fff;color:var(--green-d);border-color:var(--line)}
   .agebtn.sm{width:44px;height:44px;border-radius:50%;font-size:24px}
+  .agebtn[data-agestep="1"]{background:linear-gradient(135deg,#FF6A4A,#E5326B);color:#fff;border-color:transparent;box-shadow:0 4px 10px rgba(229,50,107,.38)}
   .miniin.cfan{flex-direction:column;align-items:stretch;gap:9px}
   .cflab{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .cflab>span{font-size:13px;color:var(--muted);flex:1;min-width:120px}
@@ -115,11 +116,11 @@
   .tile .tl svg{width:16px;height:16px;flex:none}
   .tile .tv{font-size:27px;font-weight:700;line-height:1.05;margin:4px 0 2px}
   .tile .ts{font-size:12.5px;color:var(--muted);line-height:1.45}
-  .t-temp{background:var(--tealbg);border-color:#cdeef3;color:var(--teal)}
-  .t-pump{background:var(--bluebg);border-color:#d4e0fb;color:var(--blue)}
-  .t-pad{background:var(--green-l);border-color:#c9e9f0;color:var(--green-d)}
-  .t-feed{background:var(--orangebg);border-color:#fbd9c2;color:var(--orange)}
-  .t-light{background:#fdf4e3;border-color:#f6e3bd;color:#b45309}
+  .t-temp{background:linear-gradient(160deg,#FFDED6,#FFCBC0);border-color:#FFCBC0;color:#E5326B}
+  .t-pump{background:linear-gradient(160deg,#E3EAFB,#D4DBF5);border-color:#D4DBF5;color:#3B4BC0}
+  .t-pad{background:linear-gradient(160deg,#E6F3EC,#D4EBDC);border-color:#D4EBDC;color:#1E8A5A}
+  .t-feed{background:linear-gradient(160deg,#FFE0D6,#FFCFC0);border-color:#FFCFC0;color:#E5532B}
+  .t-light{background:linear-gradient(160deg,#FFF1D6,#FFE6B8);border-color:#FFE6B8;color:#B45309}
   .t-fan{background:#fff;border-color:var(--line)}
   .fanrow{display:flex;align-items:flex-end;gap:12px;margin-bottom:11px}
   .fanrow .fc{text-align:center}
@@ -243,6 +244,8 @@
   .modal-note{font-size:12.5px;color:var(--muted);background:var(--green-l2);border-radius:10px;padding:9px 11px;margin-bottom:12px;line-height:1.55}
   .copyall-row{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--green-d);padding:9px 4px;border-bottom:1px solid var(--line);margin-bottom:6px;cursor:pointer;user-select:none}
   .copy-list{display:flex;flex-direction:column;gap:2px;margin-bottom:15px}
+  .copy-farm{font-size:12.5px;font-weight:700;color:var(--green-d);margin:11px 0 2px;padding:9px 4px 0;border-top:1px dashed var(--line)}
+  .copy-farm:first-child{border-top:none;padding-top:0;margin-top:2px}
   .copy-row{display:flex;align-items:center;gap:11px;font-size:15px;color:var(--ink);padding:10px 6px;border-radius:9px;cursor:pointer;user-select:none}
   .copy-row:hover{background:var(--green-l2)}
   .copy-row input,.copyall-row input{width:19px;height:19px;flex:none;accent-color:var(--green)}
@@ -297,6 +300,7 @@ function todayAge(pd){if(!pd)return null;const t=new Date();t.setHours(0,0,0,0);
 function dateForAge(pd,age){const p=new Date(pd+'T00:00:00');p.setDate(p.getDate()+(age-1));return p;}
 const CFM_TO_M3S=0.00047195, MINRATE=1, GAP=4;
 const I={
+ chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6" rx="1"/><rect x="12" y="6" width="3" height="11" rx="1"/><rect x="17" y="13" width="3" height="4" rx="1"/></svg>',
  temp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.5V5a2 2 0 0 0-4 0v9.5a3.5 3.5 0 1 0 4 0z"/><path d="M12 9v6"/></svg>',
  water:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5s5.5 5.8 5.5 9.5a5.5 5.5 0 0 1-11 0C6.5 9.3 12 3.5 12 3.5z"/></svg>',
  fan:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618z"/><circle cx="12" cy="12" r="1.2"/></svg>',
@@ -313,7 +317,7 @@ const I={
  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M8 3v3M16 3v3"/></svg>',
  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>'
 };
-const TABS=[{id:'vent',icon:'fan',label:'ระบายอากาศ',desc:'อุณหภูมิ · พัดลม · ผ้าม่าน · อาหาร'},{id:'feed',icon:'feed',label:'อาหาร',desc:'รับเข้า / กิน / คงเหลือ รายวัน'},{id:'mgmt',icon:'mgmt',label:'จัดการ',desc:'ปรับระดับไลน์อาหาร & ไลน์น้ำ ตามอายุ'},{id:'guide',icon:'guide',label:'คู่มือ',desc:'หลักการ & สูตรคำนวณ (ถ่ายทอดสัตวบาล)'},{id:'set',icon:'set',label:'ตั้งค่า',desc:'ขนาดเล้า · พัดลม · แรงลม 9 จุด'}];
+const TABS=[{id:'vent',icon:'fan',label:'ระบายอากาศ',desc:'อุณหภูมิ · พัดลม · ผ้าม่าน · อาหาร'},{id:'feed',icon:'feed',label:'อาหาร',desc:'รับเข้า / กิน / คงเหลือ รายวัน'},{id:'mgmt',icon:'mgmt',label:'จัดการ',desc:'ปรับระดับไลน์อาหาร & ไลน์น้ำ ตามอายุ'},{id:'guide',icon:'guide',label:'คู่มือ',desc:'หลักการ & สูตรคำนวณ (ถ่ายทอดสัตวบาล)'},{id:'set',icon:'set',label:'ตั้งค่า',desc:'ขนาดเล้า · พัดลม · แรงลม 9 จุด'},{id:'analytics',icon:'chart',label:'วิเคราะห์',desc:'แดชบอร์ดวิเคราะห์ (อัปโหลดไฟล์ Excel)'},{id:'mortality',icon:'alert',label:'ไก่ตาย',desc:'แดชบอร์ดไก่ตายรายวัน'}];
 let tab='vent', cf=0;
 const EDIT_PIN='5671'; let canEdit=false;
 
@@ -447,7 +451,7 @@ function setCard(h,i){
     <div class="row">${fI('หน้า','padFront',h.padFront,0.5)}${fI('ซ้าย','padLeft',h.padLeft,0.5)}${fI('ขวา','padRight',h.padRight,0.5)}${fI('พื้นที่/ก้อน','padBlock',h.padBlock,0.01)}</div>
     <div class="sublab">แรงลมที่วัดได้ 9 จุด (ft/min) — ใช้หาประสิทธิภาพพัดลม</div>
     <div class="pts">${h.pts.map((v,j)=>`<input type="number" data-pt="${j}" value="${v}" aria-label="จุด ${j+1}">`).join('')}</div>
-    ${houses().length>1?`<button class="btn copyhouse" type="button" data-copy="${i}" style="width:100%;margin-top:14px;justify-content:center">📋 ก๊อปค่าไปเล้าอื่น…</button>`:''}</div></div>`;
+    ${(houses().length>1||farms.length>1)?`<button class="btn copyhouse" type="button" data-copy="${i}" style="width:100%;margin-top:14px;justify-content:center">📋 ก๊อปค่าไปเล้าอื่น…</button>`:''}</div></div>`;
 }
 function guideCard(){
   const G=[
@@ -603,17 +607,17 @@ let copySrc=-1;
 const COPY_KEYS=['W','L','H','fan','fans','padFront','padLeft','padRight','padBlock','padH'];
 function openCopyModal(i){
   copySrc=i;const src=houses()[i];if(!src)return;
-  document.getElementById('copyFrom').innerHTML='จาก <b>'+esc(src.name)+'</b> → เลือกเล้าปลายทาง:';
-  document.getElementById('copyList').innerHTML=houses().map((h,j)=>j===i?'':`<label class="copy-row"><input type="checkbox" class="copytgt" data-j="${j}" checked><span>${esc(h.name)} · ${h.W}×${h.L} ม. · พัดลม ${h.fans}</span></label>`).join('');
-  const ca=document.getElementById('copyAll');if(ca)ca.checked=true;
+  document.getElementById('copyFrom').innerHTML='จาก <b>'+esc(src.name)+'</b> ('+esc(farms[cf].name)+') → เลือกเล้าปลายทาง:';
+  document.getElementById('copyList').innerHTML=farms.map((fm,f)=>{const rows=fm.houses.map((h,j)=>(f===cf&&j===i)?'':`<label class="copy-row"><input type="checkbox" class="copytgt" data-f="${f}" data-j="${j}" ${f===cf?'checked':''}><span>${esc(h.name)} · ${h.W}×${h.L} ม. · พัดลม ${h.fans}</span></label>`).join('');return rows.trim()?`<div class="copy-farm">${esc(fm.name)}${f===cf?' · ฟาร์มนี้':''}</div>`+rows:'';}).join('');
+  const ca=document.getElementById('copyAll');if(ca){const all=[...document.querySelectorAll('.copytgt')];ca.checked=all.length>0&&all.every(c=>c.checked);}
   document.getElementById('copymodal').classList.add('show');
 }
 function closeCopyModal(){document.getElementById('copymodal').classList.remove('show');copySrc=-1;}
 function doCopyHouse(){
   if(copySrc<0)return;const src=houses()[copySrc];if(!src){closeCopyModal();return;}
-  const tgts=[...document.querySelectorAll('.copytgt:checked')].map(c=>+c.dataset.j);
+  const tgts=[...document.querySelectorAll('.copytgt:checked')].map(c=>({f:+c.dataset.f,j:+c.dataset.j}));
   if(!tgts.length){closeCopyModal();return;}
-  tgts.forEach(j=>{const o=houses()[j];if(!o||o===src)return;COPY_KEYS.forEach(k=>o[k]=src[k]);o.pts=src.pts.slice();});
+  tgts.forEach(({f,j})=>{const o=farms[f]&&farms[f].houses&&farms[f].houses[j];if(!o||o===src)return;COPY_KEYS.forEach(k=>o[k]=src[k]);o.pts=src.pts.slice();});
   save();closeCopyModal();render();
 }
 function renderChips(){
@@ -629,6 +633,11 @@ function render(){
   if(cf>=farms.length)cf=0;
   try{localStorage.setItem('ppf_ui',JSON.stringify({tab:tab,cf:cf}));}catch(e){}
   const t=TABS.find(x=>x.id===tab);
+  const IFRAME_TABS={analytics:{src:'analytics.html',title:'แดชบอร์ดวิเคราะห์'},mortality:{src:'mortality.html',title:'แดชบอร์ดไก่ตายรายวัน'}};
+  const ift=IFRAME_TABS[tab],isFrame=!!ift;
+  ['chips','lockbar'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=isFrame?'none':'';});
+  const _tt=document.querySelector('.tabtitle');if(_tt)_tt.style.display=isFrame?'none':'';
+  if(isFrame){const _tb=document.getElementById('toolbar');if(_tb)_tb.innerHTML='';const _g=document.getElementById('grid');_g.style.gridTemplateColumns='1fr';const cur=_g.querySelector('iframe#appFrame');if(!cur||cur.getAttribute('data-src')!==ift.src)_g.innerHTML='<iframe id="appFrame" data-src="'+ift.src+'" src="'+ift.src+'" title="'+ift.title+'" style="width:100%;height:calc(100vh - 140px);min-height:480px;border:none;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(214,40,90,.10)"></iframe>';return;}
   document.getElementById('tabIc').innerHTML=I[t.icon];
   document.getElementById('tabName').textContent=t.label;
   document.getElementById('tabDesc').textContent=t.id==='guide'?t.desc:t.desc+' — '+farms[cf].name;

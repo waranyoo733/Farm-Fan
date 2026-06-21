@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>แดชบอร์ดไก่ตายรายวัน · PPF</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{--ink:#1A1A1A;--mute:#7A736C;--line:#ECE7E1;--line2:#E7E2DC;--red:#D6213C;--amber:#E8915D;--green:#5B9E6F;--bg:#F4F1EC;--card:#fff}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Sarabun',sans-serif;font-size:15px;line-height:1.5;padding:14px}
+  .wrap{max-width:1000px;margin:0 auto}
+  .card{background:var(--card);border:1px solid var(--line2);border-radius:16px;overflow:hidden;margin-bottom:14px}
+  .hd{padding:16px 20px;border-bottom:2px solid var(--ink);display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:10px}
+  .hd h1{font-size:20px;font-weight:700;margin:0}
+  .hd .sub{font-size:12.5px;color:var(--mute);margin-top:2px}
+  .drop{border:2px dashed #C9C2BA;border-radius:12px;padding:18px;text-align:center;color:var(--mute);font-size:13.5px;cursor:pointer;transition:all .15s;background:#FBF9F6}
+  .drop.over{border-color:var(--red);background:#FDF1F2;color:var(--red)}
+  .drop b{color:var(--ink)}
+  .body{padding:18px 20px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:22px}
+  .kpi{}.kpi+.kpi{border-left:1px solid var(--line);padding-left:18px}
+  .kpi .l{font-size:12px;color:var(--mute)}
+  .kpi .v{font-size:26px;font-weight:700;line-height:1.2}
+  .kpi .s{font-size:11px;color:var(--mute)}
+  .sec{font-size:13px;font-weight:700;margin:0 0 12px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:720px){.kpis{grid-template-columns:1fr 1fr}.kpi+.kpi:nth-child(odd){border-left:none;padding-left:0}.row2{grid-template-columns:1fr}}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{color:var(--mute);font-size:11.5px;text-align:right;border-bottom:1px solid var(--ink);padding:7px 4px;font-weight:500}
+  th:first-child{text-align:left}
+  td{text-align:right;border-bottom:1px solid var(--line);padding:8px 4px}
+  td:first-child{text-align:left}
+  tr.tot td{border-top:2px solid var(--ink);border-bottom:none;font-weight:700}
+  .pill{font-weight:700}
+  .red{color:var(--red)}.amber{color:var(--amber)}.green{color:var(--green)}
+  .watch{margin-top:14px;font-size:12.5px;color:var(--mute);background:#FBF6EF;border-left:3px solid var(--red);border-radius:0 8px 8px 0;padding:10px 13px}
+  .watch b{color:var(--red)}
+  .chartbox{position:relative;height:230px}
+  select{font-family:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--line2);border-radius:8px;background:#fff}
+  .empty{text-align:center;padding:40px 20px;color:var(--mute)}
+  .files{font-size:11.5px;color:var(--mute);margin-top:8px}
+  .files span{display:inline-block;background:#F0EBE4;border-radius:6px;padding:2px 8px;margin:2px 3px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="hd">
+      <div><h1>รายงานไก่ตายรายวัน</h1><div class="sub" id="sub">PPF · ลากไฟล์ "ใบหน้าเล้า" .xlsx มาวางเพื่อเริ่ม</div></div>
+    </div>
+    <div class="body" style="padding-bottom:12px">
+      <label class="drop" id="drop">
+        <input type="file" id="file" accept=".xlsx,.xls,.json" multiple style="display:none">
+        <b>ลากไฟล์มาวางที่นี่</b> หรือคลิกเพื่อเลือก · ใบหน้าเล้า .xlsx (ทีละหลายไฟล์ได้) หรือไฟล์สำรอง .json
+      </label>
+      <div class="files" id="files"></div>
+    </div>
+  </div>
+
+  <div id="dash" style="display:none">
+    <div class="card"><div class="body">
+      <div class="kpis">
+        <div class="kpi"><div class="l">ลงไก่ทั้งหมด</div><div class="v" id="k-birds">–</div><div class="s" id="k-farms"></div></div>
+        <div class="kpi"><div class="l">ตายสะสม (ตาย+คัด)</div><div class="v red" id="k-loss">–</div><div class="s" id="k-cull"></div></div>
+        <div class="kpi"><div class="l">% ตายสะสม</div><div class="v" id="k-pct">–</div><div class="s">เฉลี่ยทุกฟาร์ม</div></div>
+        <div class="kpi"><div class="l">ตายวันนี้</div><div class="v" id="k-today">–</div><div class="s" id="k-todaypct"></div></div>
+      </div>
+      <div class="row2">
+        <div>
+          <div class="sec">กราฟแท่ง · % ตายสะสม ตามฟาร์ม</div>
+          <div class="chartbox"><canvas id="chFarm"></canvas></div>
+        </div>
+        <div>
+          <div class="sec" style="display:flex;justify-content:space-between;align-items:center">ไก่ตายรายวัน <select id="selFarm"></select></div>
+          <div class="chartbox"><canvas id="chTrend"></canvas></div>
+        </div>
+      </div>
+    </div></div>
+
+    <div class="card"><div class="body">
+      <div class="sec">Pivot Table · สรุปตามฟาร์ม</div>
+      <table id="pivot"></table>
+      <div class="watch" id="watch"></div>
+    </div></div>
+
+    <div class="card"><div class="body">
+      <div class="sec" style="display:flex;justify-content:space-between;align-items:center"><span>รายเล้า · <b id="houseTitle"></b></span><select id="selFarm2"></select></div>
+      <div style="overflow-x:auto"><table id="houses" style="min-width:820px"></table></div>
+      <div id="wkwt" style="margin-top:10px;font-size:12px;color:var(--mute)"></div>
+      <div style="margin-top:6px;font-size:11.5px;color:var(--mute)">เช้า/เย็น ต/ค = ไก่ตาย/ไก่คัด · นน.จริง + %อาหารกิน + เพศ = ดึงจากชีตสรุปในไฟล์ · FCR จริง = อาหารสะสม(คละเพศ) ÷ นน.จริง · FCR มฐ. = ÷ นน.มาตรฐาน</div>
+    </div></div>
+  </div>
+</div>
+
+<script>
+const LS='ppf_mortality_v1';
+let DATA=null, chF=null, chT=null;
+// ===== สูตรมาตรฐานคละเพศ (port จากแอปหลัก index.html — validate แล้ว) =====
+const D=a=>Math.max(0,Math.min(42,Math.round(a)));
+const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2093,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278];
+const FEED=[0,14,18,21,24,27,31,34,38,42,47,51,56,61,66,71,76,82,87,93,98,104,109,115,120,125,130,135,140,145,150,154,159,163,167,171,175,178,182,185,188,192,194];
+function cumFeed(age){let s=0;for(let d=1;d<=D(age);d++)s+=FEED[d];return s;} // อาหารสะสม g/ตัว (คละเพศ)
+
+function farmInfo(fn){
+  if(/ชัยนาท/.test(fn))return'ฟาร์ม ชัยนาท';
+  if(/รุ่งเรือง|หนึ่ง/.test(fn))return'ฟาร์ม หนึ่งรุ่งเรือง';
+  if(/ยิ่งรวย/.test(fn))return'ฟาร์ม ยิ่งรวย';
+  if(/ขวัญใจ/.test(fn))return'ฟาร์ม ขวัญใจ';
+  return fn.replace(/\.xlsx?$/i,'').replace(/ใบหน้าเล้า|ฟาร์ม/g,'').trim()||'ฟาร์ม';
+}
+function num(c){return c&&c.v!=null&&!isNaN(+c.v)?+c.v:0;}
+function parseWB(wb,fileName){
+  const name=farmInfo(fileName), houses=[];
+  wb.SheetNames.forEach(sn=>{
+    if(!/^H\s*\d+$/.test(sn))return;
+    const ws=wb.Sheets[sn]; if(!ws||!ws['!ref'])return;
+    const birds=Math.round(num(ws['W4'])); if(birds<=1000)return;
+    const dead=new Array(42).fill(0), cull=new Array(42).fill(0);
+    const rng=XLSX.utils.decode_range(ws['!ref']); let last=0;
+    for(let r=rng.s.r;r<=rng.e.r;r++){
+      const rr=r+1, bc=ws['B'+rr]; if(!bc)continue;
+      const day=+bc.v; if(!(Number.isInteger(day)&&day>=1&&day<=42))continue;
+      const loss=Math.round(num(ws['W'+rr]));
+      dead[day-1]=loss; cull[day-1]=0; if(loss>0)last=Math.max(last,day);
+    }
+    houses.push({name:'เล้า '+sn.replace(/[^0-9]/g,''),birds,dead,cull,age:last});
+  });
+  return houses.length?{name,houses}:null;
+}
+// ===== ดึงค่าจริงจากชีตสรุป "ประมาณการไก่คงเหลือจับ" (1 แถว/เล้า, B=เลขเล้า) =====
+function parseSummary(wb){
+  const sn=wb.SheetNames.find(s=>/ประมาณการ|คงเหลือจับ/.test(s)); if(!sn)return {};
+  const ws=wb.Sheets[sn]; if(!ws||!ws['!ref'])return {};
+  const rng=XLSX.utils.decode_range(ws['!ref']);
+  const get=(col,r)=>{const c=ws[col+r];return c&&c.v!=null?c.v:null;};
+  const out={};
+  for(let r=rng.s.r;r<=rng.e.r;r++){
+    const rr=r+1, bv=get('B',rr);
+    if(!(Number.isInteger(bv)&&bv>=1&&bv<=60))continue;
+    const birds=Math.round(+get('G',rr)||0); if(birds<=1000)continue;
+    out[bv]={house:bv,birds,sex:String(get('D',rr)||''),mDeath:Math.round(+get('J',rr)||0),mCull:Math.round(+get('K',rr)||0),eDeath:Math.round(+get('L',rr)||0),eCull:Math.round(+get('M',rr)||0),today:Math.round(+get('I',rr)||0),cumDead:Math.round(+get('N',rr)||0),alive:Math.round(+get('R',rr)||0),feedDeliv:+get('S',rr)||0,feedEaten:+get('T',rr)||0,feedPerDay:Math.round(+get('W',rr)||0),water:+get('X',rr)||0,wtKg:+get('Y',rr)||0};
+  }
+  return out;
+}
+function aliveBefore(h,day){let c=0;for(let d=0;d<day-1;d++)c+=h.dead[d]+h.cull[d];return h.birds-c;}
+function houseStats(h){
+  const loss=h.dead.reduce((a,b)=>a+b,0), cull=h.cull.reduce((a,b)=>a+b,0);
+  const today=(h.dead[h.age-1]||0)+(h.cull[h.age-1]||0);
+  const aliveT=aliveBefore(h,h.age);
+  const alive=h.birds-(loss+cull);
+  const cs=cumFeed(h.age), stdWt=BW[D(h.age)], fcr=stdWt>0?cs/stdWt:0;
+  return {loss,cull,today,dayPct:h.birds>0?today/h.birds*100:0,cumPct:h.birds>0?(loss+cull)/h.birds*100:0,alive,cumStd:cs,stdWt,fcr};
+}
+function n(x){return Math.round(x).toLocaleString('en-US');}
+
+function mergeFarms(newFarms){
+  const map={}; (DATA||[]).forEach(f=>map[f.name]=f);
+  newFarms.forEach(f=>{if(f)map[f.name]=f;});
+  DATA=Object.values(map);
+  try{localStorage.setItem(LS,JSON.stringify(DATA));}catch(e){}
+}
+function render(){
+  if(!DATA||!DATA.length){document.getElementById('dash').style.display='none';return;}
+  document.getElementById('dash').style.display='';
+  let TB=0,TL=0,TC=0,TT=0,TTbefore=0;
+  const farmRows=DATA.map(f=>{
+    let b=0,l=0,c=0,t=0,alivePrev=0;
+    f.houses.forEach(h=>{const s=houseStats(h);b+=h.birds;l+=s.loss;c+=s.cull;t+=s.today;alivePrev+=aliveBefore(h,h.age);});
+    TB+=b;TL+=l;TC+=c;TT+=t;TTbefore+=alivePrev;
+    return {name:f.name,houses:f.houses.length,birds:b,loss:l+c,cull:c,today:t,cumPct:b>0?(l+c)/b*100:0};
+  });
+  farmRows.sort((a,b)=>b.cumPct-a.cumPct);
+  document.getElementById('k-birds').textContent=n(TB);
+  document.getElementById('k-farms').textContent=DATA.length+' ฟาร์ม · '+DATA.reduce((a,f)=>a+f.houses.length,0)+' เล้า';
+  document.getElementById('k-loss').textContent=n(TL+TC);
+  document.getElementById('k-cull').textContent='จากคอลัมน์ "สูญเสียรวม"';
+  document.getElementById('k-pct').textContent=(TB>0?((TL+TC)/TB*100):0).toFixed(2)+'%';
+  document.getElementById('k-today').textContent=n(TT);
+  document.getElementById('k-todaypct').textContent='≈ '+(TTbefore>0?(TT/TTbefore*100):0).toFixed(2)+'% ของคงเหลือ';
+  document.getElementById('sub').textContent='PPF · '+DATA.length+' ฟาร์ม · '+DATA.reduce((a,f)=>a+f.houses.length,0)+' เล้า';
+
+  // pivot
+  let ph='<tr><th>ฟาร์ม</th><th>เล้า</th><th>ลงไก่</th><th>ตายวันนี้</th><th>ตายสะสม</th><th>%สะสม</th></tr>';
+  farmRows.forEach(r=>{const cls=r.cumPct>=2?'red':r.cumPct>=1?'amber':'green';ph+=`<tr class="frow" data-fn="${r.name}" style="cursor:pointer"><td>${r.name.replace('ฟาร์ม ','')} <span style="color:var(--mute)">›</span></td><td>${r.houses}</td><td>${n(r.birds)}</td><td>${n(r.today)}</td><td>${n(r.loss)}</td><td class="pill ${cls}">${r.cumPct.toFixed(2)}%</td></tr>`;});
+  ph+=`<tr class="tot"><td>รวมทั้งหมด</td><td>${DATA.reduce((a,f)=>a+f.houses.length,0)}</td><td>${n(TB)}</td><td>${n(TT)}</td><td>${n(TL+TC)}</td><td>${(TB>0?((TL+TC)/TB*100):0).toFixed(2)}%</td></tr>`;
+  document.getElementById('pivot').innerHTML=ph;
+
+  // watch-list top houses
+  let all=[];DATA.forEach(f=>f.houses.forEach(h=>{const s=houseStats(h);all.push({f:f.name,n:h.name,pct:s.cumPct});}));
+  all.sort((a,b)=>b.pct-a.pct);
+  document.getElementById('watch').innerHTML='<b>เฝ้าระวัง:</b> '+all.slice(0,4).map(x=>`${x.f.replace('ฟาร์ม ','')} ${x.n} (${x.pct.toFixed(2)}%)`).join(' · ')+' — สูงกว่าค่าเฉลี่ย';
+
+  // farm selectors
+  const opts=DATA.map((f,i)=>`<option value="${i}">${f.name}</option>`).join('');
+  const sf=document.getElementById('selFarm'), sf2=document.getElementById('selFarm2');
+  const keep=sf.value||0, keep2=sf2.value||0;
+  sf.innerHTML=opts; sf2.innerHTML=opts; sf.value=Math.min(keep,DATA.length-1); sf2.value=Math.min(keep2,DATA.length-1);
+
+  drawFarmChart(farmRows);
+  drawTrend(+sf.value);
+  drawHouses(+sf2.value);
+}
+function drawFarmChart(rows){
+  const ctx=document.getElementById('chFarm');
+  if(chF)chF.destroy();
+  chF=new Chart(ctx,{type:'bar',data:{labels:rows.map(r=>r.name.replace('ฟาร์ม ','')),datasets:[{data:rows.map(r=>+r.cumPct.toFixed(2)),backgroundColor:rows.map(r=>r.cumPct>=2?'#D6213C':r.cumPct>=1?'#E8915D':'#5B9E6F'),borderRadius:4}]},options:{indexAxis:'y',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x+'%'}}},scales:{x:{ticks:{callback:v=>v+'%'},grid:{color:'#F0EBE4'}},y:{grid:{display:false}}},maintainAspectRatio:false}});
+}
+function drawTrend(fi){
+  const f=DATA[fi]; if(!f)return;
+  const maxAge=Math.max(...f.houses.map(h=>h.age),1);
+  const tr=[];for(let d=0;d<maxAge;d++){let s=0;f.houses.forEach(h=>s+=(h.dead[d]||0)+(h.cull[d]||0));tr.push(s);}
+  const ctx=document.getElementById('chTrend');
+  if(chT)chT.destroy();
+  chT=new Chart(ctx,{type:'bar',data:{labels:tr.map((_,i)=>i+1),datasets:[{label:'ตาย+คัด',data:tr,backgroundColor:tr.map((_,i)=>i<7?'#D6213C':'#E8915D'),borderRadius:2}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>'วันที่ '+c[0].label}}},scales:{x:{title:{display:true,text:'อายุ (วัน)'},grid:{display:false}},y:{grid:{color:'#F0EBE4'}}},maintainAspectRatio:false}});
+}
+function drawHouses(fi){
+  const f=DATA[fi]; if(!f)return;
+  const ht=document.getElementById('houseTitle');if(ht)ht.textContent=f.name;
+  let h='<tr><th>เล้า</th><th>เพศ</th><th>ลงไก่</th><th>อายุ</th><th>คงเหลือ</th><th>เช้า ต/ค</th><th>เย็น ต/ค</th><th>ตายวันนี้</th><th>%วันนี้</th><th>ตายสะสม</th><th>%สะสม</th><th>นน.จริง(ก.)</th><th>FCR จริง</th><th>FCR มฐ.</th><th>%อาหารกิน</th></tr>';
+  f.houses.forEach(ho=>{const s=houseStats(ho),d=ho.detail;const cls=s.cumPct>=2?'red':s.cumPct>=1?'amber':'green';
+    const wtG=d&&d.wtKg?Math.round(d.wtKg*1000):0, fcrA=wtG>0?s.cumStd/wtG:0;
+    const sex=d?(/ผู้/.test(d.sex)?'ผู้':/เมีย/.test(d.sex)?'เมีย':/คละ/.test(d.sex)?'คละ':'–'):'–';
+    h+=`<tr><td>${ho.name}</td><td>${sex}</td><td>${n(ho.birds)}</td><td>${ho.age}</td><td>${n(s.alive)}</td><td>${d?d.mDeath+'/'+d.mCull:'–'}</td><td>${d?d.eDeath+'/'+d.eCull:'–'}</td><td>${n(s.today)}</td><td>${s.dayPct.toFixed(2)}%</td><td>${n(s.loss+s.cull)}</td><td class="pill ${cls}">${s.cumPct.toFixed(2)}%</td><td>${wtG?n(wtG):'–'}</td><td>${fcrA?fcrA.toFixed(3):'–'}</td><td>${s.fcr?s.fcr.toFixed(3):'–'}</td><td>${d&&d.feedEaten?d.feedEaten.toFixed(2)+'%':'–'}</td></tr>`;});
+  document.getElementById('houses').innerHTML=h;
+  const wk=[1,2,3,4,5,6].map(w=>'ส.'+w+'='+n(BW[D(w*7)])+'ก.').join(' · ');
+  const wkEl=document.getElementById('wkwt');if(wkEl)wkEl.textContent='นน.มาตรฐานคละเพศรายสัปดาห์: '+wk;
+}
+
+// ---- file handling ----
+function handleFiles(list){
+  const files=[...list]; if(!files.length)return;
+  const names=[]; let pending=files.length; const collected=[];
+  files.forEach(file=>{
+    names.push(file.name);
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try{
+        if(/\.json$/i.test(file.name)){
+          const arr=JSON.parse(new TextDecoder('utf-8').decode(e.target.result));
+          (Array.isArray(arr)?arr:[]).forEach(f=>{
+            const houses=(f.houses||[]).map(h=>({name:h.name,birds:+h.birds||0,dead:(h.dead||[]).map(x=>+x||0),cull:new Array(42).fill(0),age:+h.age||0}));
+            collected.push({name:f.name,houses});
+          });
+        }else{
+          const wb=XLSX.read(e.target.result,{type:'array'});
+          const f=parseWB(wb,file.name);
+          if(f){const sum=parseSummary(wb);f.houses.forEach(h=>{const num=+h.name.replace(/[^0-9]/g,'');const d=sum[num];if(d&&Math.abs(d.birds-h.birds)<2){const loss=h.dead.reduce((a,b)=>a+b,0)+h.cull.reduce((a,b)=>a+b,0);const okDead=Math.abs(d.cumDead-loss)<=Math.max(5,loss*0.03),okAlive=Math.abs(d.alive-(h.birds-loss))<=Math.max(5,(h.birds-loss)*0.02);if(okDead&&okAlive)h.detail=d;}});collected.push(f);}
+        }
+      }catch(err){console.error('parse error',file.name,err);}
+      if(--pending===0){mergeFarms(collected);render();}
+    };
+    reader.readAsArrayBuffer(file);
+  });
+  document.getElementById('files').innerHTML=names.map(x=>`<span>${x}</span>`).join('');
+}
+const drop=document.getElementById('drop'), fileInput=document.getElementById('file');
+fileInput.addEventListener('change',e=>handleFiles(e.target.files));
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
+drop.addEventListener('drop',e=>{handleFiles(e.dataTransfer.files);});
+document.getElementById('selFarm').addEventListener('change',e=>drawTrend(+e.target.value));
+document.getElementById('selFarm2').addEventListener('change',e=>drawHouses(+e.target.value));
+document.getElementById('pivot').addEventListener('click',e=>{const tr=e.target.closest('tr.frow');if(!tr)return;const idx=DATA.findIndex(f=>f.name===tr.dataset.fn);if(idx>=0){const sel=document.getElementById('selFarm2');sel.value=idx;drawHouses(idx);document.getElementById('houses').scrollIntoView({behavior:'smooth',block:'center'});}});
+
+// restore last data
+try{const saved=JSON.parse(localStorage.getItem(LS));if(saved&&saved.length){DATA=saved;render();}}catch(e){}
+// expose for testing
+window.__parseWB=parseWB; window.__getData=()=>DATA;
+</script>
+</body>
+</html>
