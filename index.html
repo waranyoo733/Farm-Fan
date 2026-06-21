@@ -91,8 +91,12 @@
   .agewrap{display:flex;align-items:center;gap:12px;background:var(--green-l);border-radius:14px;padding:11px 14px;margin-bottom:14px}
   .agewrap span.t{font-size:13.5px;color:var(--green-d);font-weight:500;white-space:nowrap}
   .agewrap input[type=range]{flex:1;accent-color:var(--green);height:6px}
-  .agebig{font-size:16px;font-weight:500;color:var(--muted);min-width:80px;text-align:right}
-  .agebig b{font-size:24px;font-weight:700;color:var(--green-dd)}
+  .agebig{font-size:15px;font-weight:500;color:var(--muted);flex:1;text-align:center;white-space:nowrap}
+  .agebig b{font-size:26px;font-weight:700;color:var(--green-dd)}
+  .agebtn{flex:none;width:48px;height:48px;border-radius:13px;border:1.5px solid var(--green-br);background:#fff;color:var(--green-d);font-size:28px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none;transition:all .12s;touch-action:manipulation}
+  .agebtn:hover{background:var(--green);color:#fff;border-color:var(--green)}
+  .agebtn:active{transform:scale(.9)}
+  .agebtn:disabled{opacity:.4;cursor:not-allowed;background:#fff;color:var(--green-d);border-color:var(--line)}
   .tiles{display:grid;grid-template-columns:1fr 1fr;gap:11px}
   .tile{border-radius:14px;padding:12px 13px;border:1px solid transparent}
   .tile.wide{grid-column:1/3}
@@ -355,7 +359,7 @@ function ventCard(h,i){
     :`<div class="advice ok">${I.check}<div>ลมที่พัดลมสูงสุด ${r.velMax.toFixed(2)} m/s ยังไม่เกินที่ไก่ทน (${r.comfort.toFixed(1)}) — ระบายด้วยพัดลมพอ</div></div>`;
   return `<div class="card" data-i="${i}"><div class="chead"><span class="badge">${i+1}</span><div class="nm">${esc(h.name)}</div></div><div class="body">
     ${dateRow(h)}
-    <div class="agewrap"><span class="t">อายุไก่</span><input type="range" class="age" min="0" max="42" step="1" value="${h.age}"><span class="agebig"><b class="ageval">${h.age}</b> วัน</span></div>
+    <div class="agewrap"><span class="t">อายุไก่</span><button class="agebtn" data-agestep="-1" type="button" aria-label="ลดอายุ 1 วัน">−</button><span class="agebig"><b class="ageval">${h.age}</b> วัน</span><button class="agebtn" data-agestep="1" type="button" aria-label="เพิ่มอายุ 1 วัน">+</button></div>
     <div class="o-date"></div>
     <div class="tiles">
       ${tile('t-temp','temp','อุณหภูมิเป้าหมาย',`<span class="o-tt">–</span>°C`,'ตั้งหน้าตู้คอนโทรล')}
@@ -387,7 +391,7 @@ function feedCard(h,i){
   let rows='';for(let d=1;d<=42;d++)rows+=`<tr><td>${d}</td><td class="fe" data-fe="${d}"></td><td><input type="number" data-dead="${d}" value="${h.dead[d-1]||0}" inputmode="numeric"></td><td><input type="number" data-recv="${d}" value="${h.recv[d-1]||0}" inputmode="numeric"></td><td class="fb" data-fb="${d}"></td></tr>`;
   return `<div class="card" data-i="${i}"><div class="chead"><span class="badge">${i+1}</span><div class="nm">${esc(h.name)}</div></div><div class="body">
     ${dateRow(h)}
-    <div class="agewrap"><span class="t">อายุไก่</span><input type="range" class="age" min="0" max="42" step="1" value="${h.age}"><span class="agebig"><b class="ageval">${h.age}</b> วัน</span></div>
+    <div class="agewrap"><span class="t">อายุไก่</span><button class="agebtn" data-agestep="-1" type="button" aria-label="ลดอายุ 1 วัน">−</button><span class="agebig"><b class="ageval">${h.age}</b> วัน</span><button class="agebtn" data-agestep="1" type="button" aria-label="เพิ่มอายุ 1 วัน">+</button></div>
     <div class="o-date"></div>
     <div class="fcrbox"><div class="fcrtop">
         <div><div class="fl">FCR เป้าหมาย (วันนี้)</div><div class="fv o-fcrT">–</div><div class="fnote o-fcrTn"></div></div>
@@ -544,7 +548,7 @@ function applyLock(){
   const lock=!canEdit;
   document.body.classList.toggle('locked',lock);
   document.querySelectorAll('#grid input,#grid select,#toolbar input').forEach(x=>{x.disabled=lock;});
-  document.querySelectorAll('#grid .todaybtn,#grid .xbtn,#addHouse,#addFarm,#delFarm').forEach(b=>{if(b)b.disabled=lock;});
+  document.querySelectorAll('#grid .todaybtn,#grid .xbtn,#grid .agebtn,#addHouse,#addFarm,#delFarm').forEach(b=>{if(b)b.disabled=lock;});
   updateLockBtn();
 }
 function tryUnlock(){
@@ -618,6 +622,8 @@ document.querySelector('.wrap').addEventListener('input',e=>{
 document.querySelector('.wrap').addEventListener('click',e=>{
   const ed=e.target.closest('.editic');
   if(ed){const inp=ed.parentElement.querySelector('input.nm,input.farmname');if(inp){inp.focus();inp.select();}return;}
+  const as=e.target.closest('[data-agestep]');
+  if(as){if(!canEdit)return;const el=as.closest('.card');if(!el)return;const h=houses()[+el.dataset.i];h.age=Math.max(0,Math.min(42,h.age+(+as.dataset.agestep)));save();if(tab==='vent')refreshVent(el);else if(tab==='feed')recompFeed(el);return;}
   const tbn=e.target.closest('.todaybtn');
   if(tbn){const el=tbn.closest('.card');const h=houses()[+el.dataset.i];const ta=todayAge(h.placeDate);if(ta!==null){h.age=Math.max(1,Math.min(42,ta));save();render();}return;}
   const d=e.target.dataset.del;if(d===undefined)return;
