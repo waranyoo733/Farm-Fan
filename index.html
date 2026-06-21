@@ -268,6 +268,8 @@
   <div class="grid" id="grid"></div>
 </div>
 <nav class="tabbar" id="tabbar"></nav>
+<input type="file" id="faceFile" accept=".xlsx,.xls" multiple style="display:none">
+
 <div id="printarea"></div>
 <div id="copymodal" class="modal">
   <div class="modal-box">
@@ -324,6 +326,57 @@ const EDIT_PIN='5671'; let canEdit=false;
 function zeros(){return new Array(42).fill(0);}
 const PAD={padH:1.8,padFront:28,padLeft:20,padRight:20,padBlock:0.54};
 function house(name,o){return Object.assign({name:name,placeDate:'',W:24,L:120,H:2,fan:52,fans:18,birds:30000,age:21,pts:[1124,1263,1398,1307,871,1289,1539,1364,1150],initStock:0,recv:zeros(),dead:zeros(),wtActual:0,padH:1.8,padFront:28,padLeft:20,padRight:20,padBlock:0.54,padFans:14,padFansAuto:true},o||{});}
+/* ===== นำเข้าจากไฟล์ "ใบหน้าเล้า" .xlsx: ดึงชื่อฟาร์ม+จำนวนเล้า+ไก่ลง+อายุ (ไม่แตะแรงลม/ขนาดเล้า) ===== */
+function faceFarmName(fn){
+  if(/ชัยนาท/.test(fn))return'ฟาร์ม ชัยนาท';
+  if(/รุ่งเรือง|หนึ่ง/.test(fn))return'ฟาร์ม หนึ่งรุ่งเรือง';
+  if(/ยิ่งรวย/.test(fn))return'ฟาร์ม ยิ่งรวย';
+  if(/ขวัญใจ/.test(fn))return'ฟาร์ม ขวัญใจ';
+  return 'ฟาร์ม '+(fn.replace(/\.xlsx?$/i,'').replace(/ใบหน้าเล้า|ฟาร์ม|รุ่นที่|รุ่น/g,'').replace(/[0-9.()_\-]+/g,' ').replace(/\s+/g,' ').trim()||'นำเข้า');
+}
+function parseFace(wb){
+  const out=[];
+  wb.SheetNames.forEach(function(sn){
+    if(!/^H\s*\d+$/.test(sn))return;
+    const ws=wb.Sheets[sn];if(!ws||!ws['!ref'])return;
+    const bc=ws['W4'];const birds=bc&&bc.v!=null?Math.round(+bc.v):0;if(!(birds>1000))return;
+    const dead=zeros();const rng=XLSX.utils.decode_range(ws['!ref']);let last=0;
+    for(let r=rng.s.r;r<=rng.e.r;r++){const rr=r+1,b=ws['B'+rr];if(!b)continue;const day=+b.v;if(!(Number.isInteger(day)&&day>=1&&day<=42))continue;const w=ws['W'+rr];const loss=w&&w.v!=null?Math.round(+w.v):0;dead[day-1]=loss;if(loss>0)last=Math.max(last,day);}
+    out.push({num:+sn.replace(/[^0-9]/g,''),birds:birds,dead:dead,age:Math.max(1,last)});
+  });
+  return out.sort(function(a,b){return a.num-b.num;});
+}
+function ensureXLSX(cb){if(window.XLSX)return cb();const s=document.createElement('script');s.src='https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';s.onload=cb;s.onerror=function(){alert('โหลดตัวอ่าน Excel ไม่ได้ (เช็คเน็ต)');};document.head.appendChild(s);}
+function importFaceSheets(fileList){
+  if(!canEdit){alert('ปลดล็อกก่อน (แตะแถบล็อก ใส่รหัส) จึงนำเข้าได้');return;}
+  const files=[].slice.call(fileList);if(!files.length)return;
+  let pending=files.length;const log=[];let lastCf=cf;
+  files.forEach(function(file){
+    const fr=new FileReader();
+    fr.onload=function(e){
+      try{
+        const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+        const hs=parseFace(wb);
+        if(!hs.length){log.push('⚠️ '+file.name+' — ไม่พบชีต H1..');}
+        else{
+          const fname=faceFarmName(file.name);
+          let fm=null;for(let i=0;i<farms.length;i++){if(farms[i].name===fname){fm=farms[i];break;}}
+          if(!fm){fm={name:fname,houses:[]};farms.push(fm);}
+          hs.forEach(function(h){
+            let ex=null;for(let j=0;j<fm.houses.length;j++){if((+String(fm.houses[j].name).replace(/[^0-9]/g,''))===h.num){ex=fm.houses[j];break;}}
+            if(ex){ex.birds=h.birds;ex.dead=h.dead;ex.age=h.age;ex.placeDate='';}
+            else fm.houses.push(house('เล้า '+h.num,{birds:h.birds,dead:h.dead,age:h.age}));
+          });
+          fm.houses.sort(function(a,b){return (+String(a.name).replace(/[^0-9]/g,''))-(+String(b.name).replace(/[^0-9]/g,''));});
+          lastCf=farms.indexOf(fm);
+          log.push('✅ '+fname+' — '+hs.length+' เล้า · อายุ '+hs.map(function(h){return h.age;}).join('/')+' วัน');
+        }
+      }catch(err){log.push('❌ '+file.name+' — '+err.message);}
+      if(--pending===0){cf=Math.max(0,lastCf);save();renderChips();render();alert('นำเข้าเสร็จ:\n\n'+log.join('\n')+'\n\nℹ️ แรงลม 9 จุด + ขนาดเล้า/พัดลม ใช้ค่าเดิม/ค่าเริ่มต้น — แก้เองได้ในแท็บตั้งค่า');}
+    };
+    fr.readAsArrayBuffer(file);
+  });
+}
 function cumDead(h,upto){let s=0;for(let d=1;d<=upto;d++)s+=(+h.dead[d-1]||0);return s;}
 function aliveAt(h,age){return Math.max(0,h.birds-cumDead(h,Math.max(0,age-1)));}
 const DEFAULTS=[
@@ -642,7 +695,7 @@ function render(){
   document.getElementById('tabName').textContent=t.label;
   document.getElementById('tabDesc').textContent=t.id==='guide'?t.desc:t.desc+' — '+farms[cf].name;
   const tb=document.getElementById('toolbar');
-  tb.innerHTML = tab==='set'?`<div class="setbar1"><span class="editic" title="แตะเพื่อแก้ไขชื่อฟาร์ม">${I.edit}</span><input class="farmname" value="${esc(farms[cf].name)}" aria-label="ชื่อฟาร์ม"></div><div class="setbar2"><button class="btn primary" id="addHouse">+ เพิ่มโรงเรือน</button><button class="btn" id="addFarm">+ เพิ่มฟาร์ม</button>`+(farms.length>1?`<button class="btn warn" id="delFarm">ลบฟาร์มนี้</button>`:'')+`</div>`:'';
+  tb.innerHTML = tab==='set'?`<div class="setbar1"><span class="editic" title="แตะเพื่อแก้ไขชื่อฟาร์ม">${I.edit}</span><input class="farmname" value="${esc(farms[cf].name)}" aria-label="ชื่อฟาร์ม"></div><div class="setbar2"><button class="btn primary" id="addHouse">+ เพิ่มโรงเรือน</button><button class="btn" id="addFarm">+ เพิ่มฟาร์ม</button><button class="btn" id="importXlsx">📥 นำเข้าจาก Excel</button>`+(farms.length>1?`<button class="btn warn" id="delFarm">ลบฟาร์มนี้</button>`:'')+`</div>`:'';
   const g=document.getElementById('grid');
   if(tab==='guide'||tab==='mgmt'){g.style.gridTemplateColumns='1fr';g.innerHTML=tab==='guide'?guideCard():mgmtCard();const pm=document.getElementById('printManual');if(pm)pm.onclick=buildManual;applyLock();return;}
   g.style.gridTemplateColumns='';
@@ -654,6 +707,7 @@ function render(){
   if(a)a.onclick=()=>{houses().push(house('เล้า '+(houses().length+1)));save();render();};
   if(af)af.onclick=()=>{farms.push({name:'ฟาร์มใหม่ '+(farms.length+1),houses:[house('เล้า 1')]});cf=farms.length-1;save();renderChips();render();};
   if(df)df.onclick=()=>{if(confirm('ลบฟาร์ม "'+farms[cf].name+'" ?')){farms.splice(cf,1);cf=0;save();renderChips();render();}};
+  const imp=document.getElementById('importXlsx');if(imp)imp.onclick=()=>document.getElementById('faceFile').click();
   applyLock();
 }
 function renderTabs(){document.getElementById('tabbar').innerHTML=TABS.map(t=>`<button data-tab="${t.id}" class="${t.id===tab?'on':''}">${t.id===tab?'<span class="ind"></span>':''}${I[t.icon]}<span>${t.label}</span></button>`).join('');}
@@ -767,6 +821,7 @@ document.getElementById('copyCancel').addEventListener('click',closeCopyModal);
 document.getElementById('copyAll').addEventListener('change',e=>{document.querySelectorAll('.copytgt').forEach(c=>c.checked=e.target.checked);});
 document.getElementById('copyList').addEventListener('change',()=>{const all=[...document.querySelectorAll('.copytgt')],ca=document.getElementById('copyAll');if(ca)ca.checked=all.length>0&&all.every(c=>c.checked);});
 document.getElementById('copymodal').addEventListener('click',e=>{if(e.target.id==='copymodal')closeCopyModal();});
+document.getElementById('faceFile').addEventListener('change',e=>{const fs=e.target.files;ensureXLSX(()=>importFaceSheets(fs));e.target.value='';});
 renderChips();renderTabs();render();
 (function(){var i=document.querySelector('header .logo img');if(i){var l=document.createElement('link');l.rel='icon';l.type='image/png';l.href=i.src;document.head.appendChild(l);}})();
 syncAutoInit();
