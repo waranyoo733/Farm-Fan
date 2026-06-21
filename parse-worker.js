@@ -5,22 +5,25 @@ importScripts('https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js
 var RD={type:'array',cellFormula:false,cellHTML:false,cellText:false,cellNF:false,cellStyles:false,sheetStubs:false};
 function num(c){return c&&c.t!=='e'&&c.v!=null&&!isNaN(+c.v)?+c.v:0;}  // c.t==='e' = เซลล์ error (#VALUE! ฯลฯ) → ข้าม
 function zeros(){return new Array(42).fill(0);}
-function farmInfo(fn){
-  if(/ชัยนาท/.test(fn))return'ฟาร์ม ชัยนาท';
-  if(/รุ่งเรือง|หนึ่ง/.test(fn))return'ฟาร์ม หนึ่งรุ่งเรือง';
-  if(/ยิ่งรวย/.test(fn))return'ฟาร์ม ยิ่งรวย';
-  if(/ขวัญใจ/.test(fn))return'ฟาร์ม ขวัญใจ';
-  return fn.replace(/\.xlsx?$/i,'').replace(/ใบหน้าเล้า|ฟาร์ม/g,'').trim()||'ฟาร์ม';
+function nameFromKeywords(txt){
+  if(/ชัยนาท/.test(txt))return'ฟาร์ม ชัยนาท';
+  if(/ยิ่งรวย/.test(txt))return'ฟาร์ม ยิ่งรวย';
+  if(/รุ่งเรือง/.test(txt))return'ฟาร์ม หนึ่งรุ่งเรือง';
+  if(/ขวัญใจ/.test(txt))return'ฟาร์ม ขวัญใจ';
+  if(/พุ่มวงศ์/.test(txt))return'ฟาร์ม พุ่มวงศ์';
+  if(/ดอนทอง/.test(txt))return'ฟาร์ม PPF ดอนทอง';
+  return null;
 }
-function faceFarmName(fn){
-  if(/ชัยนาท/.test(fn))return'ฟาร์ม ชัยนาท';
-  if(/รุ่งเรือง|หนึ่ง/.test(fn))return'ฟาร์ม หนึ่งรุ่งเรือง';
-  if(/ยิ่งรวย/.test(fn))return'ฟาร์ม ยิ่งรวย';
-  if(/ขวัญใจ/.test(fn))return'ฟาร์ม ขวัญใจ';
-  return 'ฟาร์ม '+(fn.replace(/\.xlsx?$/i,'').replace(/ใบหน้าเล้า|ฟาร์ม|รุ่นที่|รุ่น/g,'').replace(/[0-9.()_\-]+/g,' ').replace(/\s+/g,' ').trim()||'นำเข้า');
+function farmTexts(wb){var t=[];wb.SheetNames.forEach(function(sn){var ws=wb.Sheets[sn];if(!ws)return;for(var k in ws){if(k.charAt(0)==='!')continue;var c=ws[k];if(c&&c.t==='s'&&typeof c.v==='string'&&c.v.indexOf('ฟาร์ม')>=0)t.push(c.v);}});return t;}
+function smartFarmName(wb,fileName){
+  var byFile=nameFromKeywords(fileName||''); if(byFile)return byFile;        // 1) ชื่อไฟล์
+  var texts=farmTexts(wb);
+  var byContent=nameFromKeywords(texts.join(' ')); if(byContent)return byContent;  // 2) คีย์เวิร์ดในเนื้อไฟล์
+  for(var i=0;i<texts.length;i++){var m=texts[i].match(/ฟาร์ม[\s.…]*([ก-๙a-zA-Z]{2,})/);if(m){var nm=m[1].replace(/รุ่น.*$/,'').trim();if(nm.length>=2)return'ฟาร์ม '+nm;}}  // 3) จับชื่อจาก title
+  return 'ฟาร์ม '+((fileName||'').replace(/\.xlsx?$/i,'').replace(/ใบหน้าเล้า|ฟาร์ม|รุ่นที่|รุ่น/g,'').replace(/[0-9.()_\-]+/g,' ').replace(/\s+/g,' ').trim()||'นำเข้า');  // 4) จากชื่อไฟล์
 }
-function parseWB(wb,fileName){
-  var name=farmInfo(fileName), houses=[];
+function parseWB(wb,name){
+  var houses=[];
   wb.SheetNames.forEach(function(sn){
     if(!/^H\s*\d+$/.test(sn))return;
     var ws=wb.Sheets[sn]; if(!ws||!ws['!ref'])return;
@@ -67,10 +70,11 @@ onmessage=function(e){
   var d=e.data;
   try{
     var wb=XLSX.read(new Uint8Array(d.buf),RD);
+    var fname=smartFarmName(wb,d.fileName);
     if(d.mode==='face'){
-      postMessage({id:d.id,ok:true,faceName:faceFarmName(d.fileName),houses:parseFace(wb)});
+      postMessage({id:d.id,ok:true,faceName:fname,houses:parseFace(wb)});
     }else{
-      var f=parseWB(wb,d.fileName);
+      var f=parseWB(wb,fname);
       if(f){var sum=parseSummary(wb);f.houses.forEach(function(h){var k=+h.name.replace(/[^0-9]/g,'');var dd=sum[k];if(dd&&Math.abs(dd.birds-h.birds)<2){var loss=h.dead.reduce(function(a,b){return a+b;},0);var okD=Math.abs(dd.cumDead-loss)<=Math.max(5,loss*0.03),okA=Math.abs(dd.alive-(h.birds-loss))<=Math.max(5,(h.birds-loss)*0.02);if(okD&&okA)h.detail=dd;}});}
       postMessage({id:d.id,ok:true,farm:f});
     }
