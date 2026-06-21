@@ -124,8 +124,8 @@ function parseWB(wb,fileName){
     const ws=wb.Sheets[sn]; if(!ws||!ws['!ref'])return;
     const birds=Math.round(num(ws['W4'])); if(birds<=1000)return;
     const dead=new Array(42).fill(0), cull=new Array(42).fill(0);
-    const rng=XLSX.utils.decode_range(ws['!ref']); let last=0;
-    for(let r=rng.s.r;r<=rng.e.r;r++){
+    const rng=XLSX.utils.decode_range(ws['!ref']); let last=0; const maxR=Math.min(rng.e.r,rng.s.r+1000);
+    for(let r=rng.s.r;r<=maxR;r++){
       const rr=r+1, bc=ws['B'+rr]; if(!bc)continue;
       const day=+bc.v; if(!(Number.isInteger(day)&&day>=1&&day<=42))continue;
       const loss=Math.round(num(ws['W'+rr]));
@@ -141,8 +141,8 @@ function parseSummary(wb){
   const ws=wb.Sheets[sn]; if(!ws||!ws['!ref'])return {};
   const rng=XLSX.utils.decode_range(ws['!ref']);
   const get=(col,r)=>{const c=ws[col+r];return c&&c.v!=null?c.v:null;};
-  const out={};
-  for(let r=rng.s.r;r<=rng.e.r;r++){
+  const out={}, maxR=Math.min(rng.e.r,rng.s.r+1000);
+  for(let r=rng.s.r;r<=maxR;r++){
     const rr=r+1, bv=get('B',rr);
     if(!(Number.isInteger(bv)&&bv>=1&&bv<=60))continue;
     const birds=Math.round(+get('G',rr)||0); if(birds<=1000)continue;

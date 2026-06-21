@@ -340,8 +340,8 @@ function parseFace(wb){
     if(!/^H\s*\d+$/.test(sn))return;
     const ws=wb.Sheets[sn];if(!ws||!ws['!ref'])return;
     const bc=ws['W4'];const birds=bc&&bc.v!=null?Math.round(+bc.v):0;if(!(birds>1000))return;
-    const dead=zeros();const rng=XLSX.utils.decode_range(ws['!ref']);let last=0;
-    for(let r=rng.s.r;r<=rng.e.r;r++){const rr=r+1,b=ws['B'+rr];if(!b)continue;const day=+b.v;if(!(Number.isInteger(day)&&day>=1&&day<=42))continue;const w=ws['W'+rr];const loss=w&&w.v!=null?Math.round(+w.v):0;dead[day-1]=loss;if(loss>0)last=Math.max(last,day);}
+    const dead=zeros();const rng=XLSX.utils.decode_range(ws['!ref']);let last=0;const maxR=Math.min(rng.e.r,rng.s.r+1000);
+    for(let r=rng.s.r;r<=maxR;r++){const rr=r+1,b=ws['B'+rr];if(!b)continue;const day=+b.v;if(!(Number.isInteger(day)&&day>=1&&day<=42))continue;const w=ws['W'+rr];const loss=w&&w.v!=null?Math.round(+w.v):0;dead[day-1]=loss;if(loss>0)last=Math.max(last,day);}
     out.push({num:+sn.replace(/[^0-9]/g,''),birds:birds,dead:dead,age:Math.max(1,last)});
   });
   return out.sort(function(a,b){return a.num-b.num;});
