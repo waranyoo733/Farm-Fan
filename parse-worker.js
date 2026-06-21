@@ -3,7 +3,7 @@
    mode 'face'      → คืนรายเล้า (num/birds/dead/age) สำหรับนำเข้าในแอปหลัก */
 importScripts('https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js');
 var RD={type:'array',cellFormula:false,cellHTML:false,cellText:false,cellNF:false,cellStyles:false,sheetStubs:false};
-function num(c){return c&&c.v!=null&&!isNaN(+c.v)?+c.v:0;}
+function num(c){return c&&c.t!=='e'&&c.v!=null&&!isNaN(+c.v)?+c.v:0;}  // c.t==='e' = เซลล์ error (#VALUE! ฯลฯ) → ข้าม
 function zeros(){return new Array(42).fill(0);}
 function farmInfo(fn){
   if(/ชัยนาท/.test(fn))return'ฟาร์ม ชัยนาท';
@@ -28,7 +28,7 @@ function parseWB(wb,fileName){
     var dead=zeros(),cull=zeros();
     var rng=XLSX.utils.decode_range(ws['!ref']); var last=0; var maxR=Math.min(rng.e.r,rng.s.r+1000);
     for(var r=rng.s.r;r<=maxR;r++){
-      var rr=r+1, bc=ws['B'+rr]; if(!bc)continue;
+      var rr=r+1, bc=ws['B'+rr]; if(!bc||bc.t==='e')continue;
       var day=+bc.v; if(!(Number.isInteger(day)&&day>=1&&day<=42))continue;
       var loss=Math.round(num(ws['W'+rr]));
       dead[day-1]=loss; cull[day-1]=0; if(loss>0)last=Math.max(last,day);
@@ -41,7 +41,7 @@ function parseSummary(wb){
   var sn=wb.SheetNames.find(function(s){return /ประมาณการ|คงเหลือจับ/.test(s);}); if(!sn)return {};
   var ws=wb.Sheets[sn]; if(!ws||!ws['!ref'])return {};
   var rng=XLSX.utils.decode_range(ws['!ref']);
-  var get=function(col,r){var c=ws[col+r];return c&&c.v!=null?c.v:null;};
+  var get=function(col,r){var c=ws[col+r];return c&&c.t!=='e'&&c.v!=null?c.v:null;};
   var out={}, maxR=Math.min(rng.e.r,rng.s.r+1000);
   for(var r=rng.s.r;r<=maxR;r++){
     var rr=r+1, bv=get('B',rr);
@@ -56,9 +56,9 @@ function parseFace(wb){
   wb.SheetNames.forEach(function(sn){
     if(!/^H\s*\d+$/.test(sn))return;
     var ws=wb.Sheets[sn]; if(!ws||!ws['!ref'])return;
-    var bc=ws['W4']; var birds=bc&&bc.v!=null?Math.round(+bc.v):0; if(!(birds>1000))return;
+    var birds=Math.round(num(ws['W4'])); if(!(birds>1000))return;
     var dead=zeros(); var rng=XLSX.utils.decode_range(ws['!ref']); var last=0; var maxR=Math.min(rng.e.r,rng.s.r+1000);
-    for(var r=rng.s.r;r<=maxR;r++){var rr=r+1,b=ws['B'+rr];if(!b)continue;var day=+b.v;if(!(Number.isInteger(day)&&day>=1&&day<=42))continue;var w=ws['W'+rr];var loss=w&&w.v!=null?Math.round(+w.v):0;dead[day-1]=loss;if(loss>0)last=Math.max(last,day);}
+    for(var r=rng.s.r;r<=maxR;r++){var rr=r+1,b=ws['B'+rr];if(!b||b.t==='e')continue;var day=+b.v;if(!(Number.isInteger(day)&&day>=1&&day<=42))continue;var loss=Math.round(num(ws['W'+rr]));dead[day-1]=loss;if(loss>0)last=Math.max(last,day);}
     out.push({num:+sn.replace(/[^0-9]/g,''),birds:birds,dead:dead,age:Math.max(1,last)});
   });
   return out.sort(function(a,b){return a.num-b.num;});
