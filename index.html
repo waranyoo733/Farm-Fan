@@ -97,6 +97,16 @@
   .agebtn:hover{background:var(--green);color:#fff;border-color:var(--green)}
   .agebtn:active{transform:scale(.9)}
   .agebtn:disabled{opacity:.4;cursor:not-allowed;background:#fff;color:var(--green-d);border-color:var(--line)}
+  .agebtn.sm{width:42px;height:42px;border-radius:11px;font-size:24px}
+  .miniin.cfan{flex-direction:column;align-items:stretch;gap:9px}
+  .cflab{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .cflab>span{font-size:13px;color:var(--muted);flex:1;min-width:120px}
+  .cfmode{flex:none;font-family:inherit;font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:999px;border:1px solid var(--green-br);background:var(--green-l);color:var(--green-d);cursor:pointer;white-space:nowrap}
+  .cfmode.manual{border-color:var(--amber);background:var(--amberbg);color:var(--amber)}
+  .cfmode:disabled{opacity:.5;cursor:not-allowed}
+  .cfstep{display:flex;align-items:center;justify-content:center;gap:14px}
+  .cfnum{font-size:15px;color:var(--muted);min-width:74px;text-align:center}
+  .cfnum b{font-size:26px;font-weight:700;color:var(--green-dd)}
   .tiles{display:grid;grid-template-columns:1fr 1fr;gap:11px}
   .tile{border-radius:14px;padding:12px 13px;border:1px solid transparent}
   .tile.wide{grid-column:1/3}
@@ -285,7 +295,7 @@ const EDIT_PIN='5671'; let canEdit=false;
 
 function zeros(){return new Array(42).fill(0);}
 const PAD={padH:1.8,padFront:28,padLeft:20,padRight:20,padBlock:0.54};
-function house(name,o){return Object.assign({name:name,placeDate:'',W:24,L:120,H:2,fan:52,fans:18,birds:30000,age:21,pts:[1124,1263,1398,1307,871,1289,1539,1364,1150],initStock:0,recv:zeros(),dead:zeros(),wtActual:0,padH:1.8,padFront:28,padLeft:20,padRight:20,padBlock:0.54,padFans:14},o||{});}
+function house(name,o){return Object.assign({name:name,placeDate:'',W:24,L:120,H:2,fan:52,fans:18,birds:30000,age:21,pts:[1124,1263,1398,1307,871,1289,1539,1364,1150],initStock:0,recv:zeros(),dead:zeros(),wtActual:0,padH:1.8,padFront:28,padLeft:20,padRight:20,padBlock:0.54,padFans:14,padFansAuto:true},o||{});}
 function cumDead(h,upto){let s=0;for(let d=1;d<=upto;d++)s+=(+h.dead[d-1]||0);return s;}
 function aliveAt(h,age){return Math.max(0,h.birds-cumDead(h,Math.max(0,age-1)));}
 const DEFAULTS=[
@@ -298,7 +308,7 @@ farms.forEach(fm=>fm.houses.forEach(h=>{if(h.placeDate){const ta=todayAge(h.plac
 try{const ui=JSON.parse(localStorage.getItem('ppf_ui')||'null');if(ui){if(TABS.some(t=>t.id===ui.tab))tab=ui.tab;if(Number.isInteger(ui.cf)&&ui.cf>=0&&ui.cf<farms.length)cf=ui.cf;}}catch(e){}
 function normalize(r){
   r.forEach(fm=>fm.houses.forEach(h=>{if(typeof h.placeDate!=='string')h.placeDate='';if(typeof h.initStock!=='number')h.initStock=0;if(typeof h.wtActual!=='number')h.wtActual=0;if(!Array.isArray(h.recv)||h.recv.length!==42)h.recv=zeros();if(!Array.isArray(h.dead)||h.dead.length!==42)h.dead=zeros();
-    for(const k in PAD){if(typeof h[k]!=='number')h[k]=PAD[k];}if(typeof h.padFans!=='number')h.padFans=Math.max(1,h.fans-2);}));
+    for(const k in PAD){if(typeof h[k]!=='number')h[k]=PAD[k];}if(typeof h.padFans!=='number')h.padFans=Math.max(1,h.fans-2);if(typeof h.padFansAuto!=='boolean')h.padFansAuto=true;}));
   return r;
 }
 function load(){
@@ -320,7 +330,8 @@ function calc(h){
   const velMax=cross>0?(ventMax*fm)/cross:0;
   const padNeeded=(h.age>7)&&(velMax>comfort+0.001);
   const reqFt=cross>0?reqAir/(cross*10.7639):0;
-  const totW=(+h.padFront||0)+(+h.padLeft||0)+(+h.padRight||0),used=Math.min(h.fans,+h.padFans||0);
+  const totW=(+h.padFront||0)+(+h.padLeft||0)+(+h.padRight||0);
+  const cfauto=(h.padFansAuto!==false),cfans=cfauto?ventMax:Math.min(h.fans,Math.max(0,+h.padFans||0)),used=Math.min(h.fans,cfans);
   const ratio=h.fans>0?used/h.fans:0,openH=(+h.padH||0)*ratio,openA=openH*totW,blocks=h.padBlock>0?openA/h.padBlock:0;
   const padArea=totW*(+h.padH||0);
   const padVel=padArea>0?(h.fans*fm)/padArea:0;
@@ -375,7 +386,8 @@ function ventCard(h,i){
     </div>
     ${adv}
     <div class="advice ok o-evap" style="display:none"></div>
-    <div class="miniin"><label>พัดลมที่เปิดจริงตอนนี้ (สำหรับคิดผ้าม่าน) · สูงสุด ${h.fans} ตัว</label><input type="number" data-k="padFans" value="${Math.min(h.padFans,h.fans)}" step="1" min="0" max="${h.fans}"></div>
+    <div class="miniin cfan"><div class="cflab"><span>พัดลมที่เปิด (คิดผ้าม่าน) · สูงสุด ${h.fans} ตัว</span><button class="cfmode o-cfmode" type="button" data-cfauto></button></div>
+      <div class="cfstep"><button class="agebtn sm" type="button" data-cfstep="-1" aria-label="ลดพัดลม">−</button><span class="cfnum"><b class="o-cfans">–</b> ตัว</span><button class="agebtn sm" type="button" data-cfstep="1" aria-label="เพิ่มพัดลม">+</button></div></div>
     <details><summary>ตารางอุณหภูมิเป้าหมาย + ปั๊มน้ำ รายวัน (1–42)</summary>
       <div class="inset"><div class="scroll"><table class="tt"><thead><tr><th>วัน</th><th>เป้าหมาย °C</th><th>ปั๊มน้ำ °C</th><th>แสง lux</th><th>เปิดไฟ ชม.</th></tr></thead><tbody>${trows}</tbody></table></div></div></details>
     <details><summary>ที่มาของตัวเลข (อธิบายสั้น)</summary><div class="inset" style="font-size:13.5px;color:var(--muted);line-height:1.7">
@@ -497,6 +509,9 @@ function refreshVent(el){
     const dx=fb.querySelector('.dmx');if(dx){dx.style.left=mxP+'%';dx.style.marginLeft='-5.5px';}}
   setT(el,'.o-openh',(r.openH*100).toFixed(0));
   setT(el,'.o-padsub','ใช้ '+r.used+'/'+h.fans+' ตัว · '+Math.round(r.blocks)+' ก้อน');
+  setT(el,'.o-cfans',r.used);
+  const cfm=el.querySelector('.o-cfmode');
+  if(cfm){const auto=(h.padFansAuto!==false);cfm.textContent=auto?'⚙ อัตโนมัติ (= สูงสุด)':'↺ กลับอัตโนมัติ';cfm.className='cfmode o-cfmode'+(auto?'':' manual');}
   setT(el,'.o-fd',r.fd);
   setT(el,'.o-fdsub','ทั้งเล้า '+Math.round(r.fhouse).toLocaleString()+' kg/วัน ('+r.alive.toLocaleString()+' ตัว)');
   const ev=el.querySelector('.o-evap');
@@ -548,7 +563,7 @@ function applyLock(){
   const lock=!canEdit;
   document.body.classList.toggle('locked',lock);
   document.querySelectorAll('#grid input,#grid select,#toolbar input').forEach(x=>{x.disabled=lock;});
-  document.querySelectorAll('#grid .todaybtn,#grid .xbtn,#grid .agebtn,#addHouse,#addFarm,#delFarm').forEach(b=>{if(b)b.disabled=lock;});
+  document.querySelectorAll('#grid .todaybtn,#grid .xbtn,#grid .agebtn,#grid .cfmode,#addHouse,#addFarm,#delFarm').forEach(b=>{if(b)b.disabled=lock;});
   updateLockBtn();
 }
 function tryUnlock(){
@@ -624,6 +639,10 @@ document.querySelector('.wrap').addEventListener('click',e=>{
   if(ed){const inp=ed.parentElement.querySelector('input.nm,input.farmname');if(inp){inp.focus();inp.select();}return;}
   const as=e.target.closest('[data-agestep]');
   if(as){if(!canEdit)return;const el=as.closest('.card');if(!el)return;const h=houses()[+el.dataset.i];h.age=Math.max(0,Math.min(42,h.age+(+as.dataset.agestep)));save();if(tab==='vent')refreshVent(el);else if(tab==='feed')recompFeed(el);return;}
+  const cs=e.target.closest('[data-cfstep]');
+  if(cs){if(!canEdit)return;const el=cs.closest('.card');if(!el)return;const h=houses()[+el.dataset.i];const r=calc(h);const base=(h.padFansAuto!==false)?r.ventMax:Math.min(h.fans,Math.max(0,+h.padFans||0));h.padFans=Math.max(0,Math.min(h.fans,base+(+cs.dataset.cfstep)));h.padFansAuto=false;save();refreshVent(el);return;}
+  const ca=e.target.closest('[data-cfauto]');
+  if(ca){if(!canEdit)return;const el=ca.closest('.card');if(!el)return;const h=houses()[+el.dataset.i];h.padFansAuto=true;save();refreshVent(el);return;}
   const tbn=e.target.closest('.todaybtn');
   if(tbn){const el=tbn.closest('.card');const h=houses()[+el.dataset.i];const ta=todayAge(h.placeDate);if(ta!==null){h.age=Math.max(1,Math.min(42,ta));save();render();}return;}
   const d=e.target.dataset.del;if(d===undefined)return;
