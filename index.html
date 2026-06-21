@@ -347,6 +347,7 @@ function parseFace(wb){
   return out.sort(function(a,b){return a.num-b.num;});
 }
 function ensureXLSX(cb){if(window.XLSX)return cb();const s=document.createElement('script');s.src='https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';s.onload=cb;s.onerror=function(){alert('โหลดตัวอ่าน Excel ไม่ได้ (เช็คเน็ต)');};document.head.appendChild(s);}
+function pdFromAge(age){const t=new Date();t.setHours(0,0,0,0);const d=new Date(t.getTime()-(Math.max(1,age)-1)*86400000);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function importFaceSheets(fileList){
   if(!canEdit){alert('ปลดล็อกก่อน (แตะแถบล็อก ใส่รหัส) จึงนำเข้าได้');return;}
   const files=[].slice.call(fileList);if(!files.length)return;
@@ -363,9 +364,10 @@ function importFaceSheets(fileList){
           let fm=null;for(let i=0;i<farms.length;i++){if(farms[i].name===fname){fm=farms[i];break;}}
           if(!fm){fm={name:fname,houses:[]};farms.push(fm);}
           hs.forEach(function(h){
+            const pd=pdFromAge(h.age);
             let ex=null;for(let j=0;j<fm.houses.length;j++){if((+String(fm.houses[j].name).replace(/[^0-9]/g,''))===h.num){ex=fm.houses[j];break;}}
-            if(ex){ex.birds=h.birds;ex.dead=h.dead;ex.age=h.age;ex.placeDate='';}
-            else fm.houses.push(house('เล้า '+h.num,{birds:h.birds,dead:h.dead,age:h.age}));
+            if(ex){ex.birds=h.birds;ex.dead=h.dead;ex.age=h.age;ex.placeDate=pd;}
+            else fm.houses.push(house('เล้า '+h.num,{birds:h.birds,dead:h.dead,age:h.age,placeDate:pd}));
           });
           fm.houses.sort(function(a,b){return (+String(a.name).replace(/[^0-9]/g,''))-(+String(b.name).replace(/[^0-9]/g,''));});
           lastCf=farms.indexOf(fm);
