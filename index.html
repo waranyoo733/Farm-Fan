@@ -9,21 +9,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#f1f7f9; --card:#fff; --ink:#0c3a47; --muted:#5b7785; --line:#e2eef1;
-    --green:#0e7490; --green-d:#155e75; --green-dd:#164e63; --green-br:#29a8c7; --green-l:#dcf3f8; --green-l2:#f0fafc;
-    --teal:#0891b2; --tealbg:#e0f7fa; --blue:#1d4ed8; --bluebg:#e6eefb;
-    --amber:#ca8a04; --amberbg:#fcf2da; --orange:#ea580c; --orangebg:#ffeede; --red:#e11d48; --redbg:#fdeaee;
+    --bg:#FFF6F0; --card:#fff; --ink:#3A1A0A; --muted:#A05A2C; --line:#FFE0CC;
+    --green:#FF6A00; --green-d:#D63C0C; --green-dd:#8A2A0A; --green-br:#FF9D2E; --green-l:#FFE6D6; --green-l2:#FFF6F0;
+    --teal:#E5322B; --tealbg:#FFEDE6; --blue:#1565C0; --bluebg:#E8F1FB;
+    --amber:#C2740C; --amberbg:#FCEFD9; --orange:#E5532B; --orangebg:#FFE6D6; --red:#D6213C; --redbg:#FDE7EA;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Sarabun',sans-serif;font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%;padding-bottom:88px}
-  header{background:linear-gradient(180deg,var(--green) 0%,var(--green-d) 100%);color:#fff;padding:15px 18px;display:flex;align-items:center;gap:13px;box-shadow:0 2px 10px rgba(13,75,90,.12)}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Sarabun',sans-serif;font-size:17px;line-height:1.55;-webkit-text-size-adjust:100%;padding-bottom:88px}
+  header{background:linear-gradient(135deg,#FF9D2E 0%,#FF6A00 50%,#E5322B 100%);color:#fff;padding:15px 18px;display:flex;align-items:center;gap:13px;box-shadow:0 3px 14px rgba(214,60,12,.28)}
   .logo{width:64px;height:64px;display:flex;align-items:center;justify-content:center;flex:none}
   .logo img{width:100%;height:100%;object-fit:contain;display:block;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3))}
-  header h1{margin:0;font-size:19px;font-weight:700;letter-spacing:.2px}
-  header p{margin:3px 0 0;font-size:12.5px;opacity:.9}
+  header h1{margin:0;font-size:22px;font-weight:700;letter-spacing:.2px}
+  header p{margin:3px 0 0;font-size:13.5px;opacity:.9}
   .chips{display:flex;gap:8px;overflow-x:auto;padding:14px 16px 6px;-webkit-overflow-scrolling:touch}
-  .chip{flex:none;font-family:inherit;font-size:14.5px;font-weight:500;padding:8px 15px;border:1px solid var(--line);background:#fff;color:var(--green-d);border-radius:999px;cursor:pointer;white-space:nowrap;transition:all .15s}
-  .chip.on{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 2px 8px rgba(14,116,144,.25)}
+  .chip{flex:none;font-family:inherit;font-size:15.5px;font-weight:500;padding:9px 16px;border:1px solid var(--line);background:#fff;color:var(--green-d);border-radius:999px;cursor:pointer;white-space:nowrap;transition:all .15s}
+  .chip.on{background:var(--green);border-color:var(--green);color:#fff;box-shadow:0 3px 10px rgba(255,106,0,.35)}
   .farmdd{display:none;position:relative;width:100%}
   .farmdd-btn{display:flex;align-items:center;gap:8px;width:100%;font-family:inherit;font-size:15px;font-weight:700;color:var(--green-dd);padding:11px 14px;border:1.5px solid var(--green-br);border-radius:12px;background:#fff;cursor:pointer;text-align:left}
   .farmdd-btn .cv{margin-left:auto;flex:none;width:18px;height:18px;color:var(--green-d);transition:transform .2s}
@@ -40,8 +40,8 @@
   .tabtitle{display:flex;align-items:center;gap:12px;margin:8px 0 16px}
   .tabtitle .ic{width:40px;height:40px;border-radius:12px;background:var(--green-l);color:var(--green-d);display:flex;align-items:center;justify-content:center;flex:none}
   .tabtitle .ic svg{width:22px;height:22px}
-  .tabtitle h2{margin:0;font-size:18px;font-weight:700;color:var(--green-dd)}
-  .tabtitle span{font-size:12.5px;color:var(--muted)}
+  .tabtitle h2{margin:0;font-size:20px;font-weight:700;color:var(--green-dd)}
+  .tabtitle span{font-size:13.5px;color:var(--muted)}
   .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px;align-items:center}
   .setbar1{display:flex;gap:8px;align-items:center;width:100%}
   .setbar2{display:flex;gap:10px;flex-wrap:wrap;width:100%}
@@ -57,26 +57,27 @@
   .syncstat{font-size:12.5px;margin-top:10px;color:var(--muted);font-weight:500}
   .syncstat.ok{color:var(--green-d)}.syncstat.err{color:var(--red)}
   .synchint{font-size:12px;color:var(--muted);margin-top:9px;line-height:1.55}
-  .btn{font-family:inherit;font-size:14.5px;font-weight:500;padding:10px 15px;border:1px solid var(--line);background:#fff;color:var(--green-d);border-radius:12px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s}
+  .btn{font-family:inherit;font-size:15.5px;font-weight:500;padding:11px 18px;border:1px solid var(--line);background:#fff;color:var(--green-d);border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all .15s}
   .btn svg{width:17px;height:17px}
   .btn:hover{border-color:var(--green-br)}
-  .btn.primary{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 2px 8px rgba(14,116,144,.22)}
+  .btn.primary{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 3px 10px rgba(255,106,0,.32)}
   .btn.warn{border-color:#f3c6cf;color:var(--red);background:#fff}
   .farmname{font-family:inherit;font-size:16px;font-weight:700;color:var(--green-dd);border:1px solid var(--line);border-radius:12px;padding:10px 14px;flex:1;min-width:160px;background:#fff}
   .grid{display:grid;grid-template-columns:1fr;gap:16px}
   @media(min-width:820px){.grid{grid-template-columns:repeat(3,1fr)}}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 1px 2px rgba(13,75,90,.04),0 6px 18px rgba(13,75,90,.05)}
-  .chead{display:flex;align-items:center;gap:10px;padding:13px 15px;background:#f7fbfc;border-bottom:1px solid var(--line)}
-  .chead .badge{font-size:13px;font-weight:700;color:#fff;background:var(--green);border-radius:9px;min-width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex:none}
-  .chead .nm{flex:1;font-size:16px;font-weight:700;color:var(--green-dd);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .chead input.nm{border:none;background:transparent;font-family:inherit;border-bottom:1px dashed var(--green-br)}
-  .chead input.nm:focus{outline:2px solid var(--green);border-radius:6px;border-bottom-color:transparent}
-  .editic{flex:none;color:var(--green-br);display:flex;align-items:center;cursor:pointer}
-  .editic svg{width:18px;height:18px}
-  .xbtn{border:none;background:transparent;color:var(--red);font-size:20px;cursor:pointer;line-height:1;padding:2px 6px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 1px 2px rgba(214,60,12,.05),0 8px 22px rgba(214,60,12,.10)}
+  .chead{display:flex;align-items:center;gap:10px;padding:14px 15px;background:linear-gradient(90deg,#E5532B,#FF7A1A);border-bottom:1px solid rgba(0,0,0,.08)}
+  .chead .badge{font-size:15px;font-weight:700;color:var(--green-d);background:#fff;border-radius:10px;min-width:29px;height:29px;display:flex;align-items:center;justify-content:center;flex:none}
+  .chead .nm{flex:1;font-size:18.5px;font-weight:700;color:#fff;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .chead input.nm{border:none;background:transparent;font-family:inherit;color:#fff;border-bottom:1px dashed rgba(255,255,255,.75)}
+  .chead input.nm::placeholder{color:rgba(255,255,255,.7)}
+  .chead input.nm:focus{outline:2px solid #fff;border-radius:6px;border-bottom-color:transparent}
+  .editic{flex:none;color:rgba(255,255,255,.92);display:flex;align-items:center;cursor:pointer}
+  .editic svg{width:19px;height:19px}
+  .xbtn{border:none;background:transparent;color:rgba(255,255,255,.9);font-size:22px;cursor:pointer;line-height:1;padding:2px 6px}
   .body{padding:15px}
   .daterow{display:flex;align-items:center;gap:7px;margin-bottom:12px;flex-wrap:wrap}
-  .daterow label{font-size:13px;color:var(--green-d);font-weight:700;display:inline-flex;align-items:center;gap:6px;flex-basis:100%;margin:0 0 4px}
+  .daterow label{font-size:14px;color:var(--green-d);font-weight:700;display:inline-flex;align-items:center;gap:6px;flex-basis:100%;margin:0 0 4px}
   .daterow label svg{width:16px;height:16px}
   .daterow .todaybtn svg{width:15px;height:15px}
   .daterow select{font-family:inherit;font-size:14.5px;font-weight:500;color:var(--ink);padding:9px 31px 9px 13px;border:1px solid var(--line);border-radius:11px;cursor:pointer;-webkit-appearance:none;-moz-appearance:none;appearance:none;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%235b7785' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 11px center}
@@ -85,7 +86,7 @@
   .daterow input[type=number]::-webkit-inner-spin-button,.daterow input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
   .daterow select:hover,.daterow input[type=number]:hover{border-color:var(--green-br)}
   .daterow select:focus,.daterow input[type=number]:focus{outline:2px solid var(--green);outline-offset:-1px;border-color:var(--green)}
-  .daterow .todaybtn{font-family:inherit;font-size:13px;font-weight:700;padding:9px 15px;border:1px solid var(--green);background:var(--green-l);color:var(--green-d);border-radius:11px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
+  .daterow .todaybtn{font-family:inherit;font-size:14px;font-weight:700;padding:9px 17px;border:1px solid var(--green);background:var(--green-l);color:var(--green-d);border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .15s}
   .daterow .todaybtn:hover{background:var(--green);color:#fff}
   .o-date{font-size:12.5px;color:var(--green-d);font-weight:500;margin:-2px 0 12px}
   .agewrap{display:flex;align-items:center;gap:12px;background:var(--green-l);border-radius:14px;padding:11px 14px;margin-bottom:14px}
@@ -93,11 +94,11 @@
   .agewrap input[type=range]{flex:1;accent-color:var(--green);height:6px}
   .agebig{font-size:15px;font-weight:500;color:var(--muted);flex:1;text-align:center;white-space:nowrap}
   .agebig b{font-size:26px;font-weight:700;color:var(--green-dd)}
-  .agebtn{flex:none;width:48px;height:48px;border-radius:13px;border:1.5px solid var(--green-br);background:#fff;color:var(--green-d);font-size:28px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none;transition:all .12s;touch-action:manipulation}
+  .agebtn{flex:none;width:50px;height:50px;border-radius:50%;border:2px solid var(--green-br);background:#fff;color:var(--green-d);font-size:28px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-user-select:none;user-select:none;transition:all .12s;touch-action:manipulation}
   .agebtn:hover{background:var(--green);color:#fff;border-color:var(--green)}
   .agebtn:active{transform:scale(.9)}
   .agebtn:disabled{opacity:.4;cursor:not-allowed;background:#fff;color:var(--green-d);border-color:var(--line)}
-  .agebtn.sm{width:42px;height:42px;border-radius:11px;font-size:24px}
+  .agebtn.sm{width:44px;height:44px;border-radius:50%;font-size:24px}
   .miniin.cfan{flex-direction:column;align-items:stretch;gap:9px}
   .cflab{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
   .cflab>span{font-size:13px;color:var(--muted);flex:1;min-width:120px}
@@ -110,10 +111,10 @@
   .tiles{display:grid;grid-template-columns:1fr 1fr;gap:11px}
   .tile{border-radius:14px;padding:12px 13px;border:1px solid transparent}
   .tile.wide{grid-column:1/3}
-  .tile .tl{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:500}
+  .tile .tl{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:500}
   .tile .tl svg{width:16px;height:16px;flex:none}
   .tile .tv{font-size:27px;font-weight:700;line-height:1.05;margin:4px 0 2px}
-  .tile .ts{font-size:11.5px;color:var(--muted);line-height:1.45}
+  .tile .ts{font-size:12.5px;color:var(--muted);line-height:1.45}
   .t-temp{background:var(--tealbg);border-color:#cdeef3;color:var(--teal)}
   .t-pump{background:var(--bluebg);border-color:#d4e0fb;color:var(--blue)}
   .t-pad{background:var(--green-l);border-color:#c9e9f0;color:var(--green-d)}
@@ -183,7 +184,7 @@
   .guide p{margin:7px 0;font-size:14px;line-height:1.6}
   .guide .why{font-size:13px;color:var(--muted)}
   nav.tabbar{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--line);display:flex;z-index:50;box-shadow:0 -2px 14px rgba(13,75,90,.08)}
-  nav.tabbar button{flex:1;border:none;background:transparent;font-family:inherit;color:var(--muted);padding:10px 4px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11.5px;font-weight:500;position:relative}
+  nav.tabbar button{flex:1;border:none;background:transparent;font-family:inherit;color:var(--muted);padding:10px 4px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12.5px;font-weight:500;position:relative}
   nav.tabbar button svg{width:24px;height:24px}
   nav.tabbar button.on{color:var(--green-d)}
   nav.tabbar button.on .ind{position:absolute;top:0;width:38px;height:3px;border-radius:0 0 3px 3px;background:var(--green)}
@@ -233,6 +234,19 @@
     #printarea table{font-size:9.5px;page-break-inside:auto}
     #printarea tr{page-break-inside:avoid}
   }
+  .modal{display:none;position:fixed;inset:0;background:rgba(80,28,8,.48);z-index:300;align-items:center;justify-content:center;padding:18px}
+  .modal.show{display:flex}
+  .modal-box{background:#fff;border-radius:18px;max-width:420px;width:100%;max-height:86vh;overflow:auto;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal-h{font-size:17px;font-weight:700;color:var(--green-dd);margin-bottom:6px}
+  .modal-sub{font-size:14px;color:var(--ink);margin-bottom:11px}
+  .modal-sub b{color:var(--green-d)}
+  .modal-note{font-size:12.5px;color:var(--muted);background:var(--green-l2);border-radius:10px;padding:9px 11px;margin-bottom:12px;line-height:1.55}
+  .copyall-row{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--green-d);padding:9px 4px;border-bottom:1px solid var(--line);margin-bottom:6px;cursor:pointer;user-select:none}
+  .copy-list{display:flex;flex-direction:column;gap:2px;margin-bottom:15px}
+  .copy-row{display:flex;align-items:center;gap:11px;font-size:15px;color:var(--ink);padding:10px 6px;border-radius:9px;cursor:pointer;user-select:none}
+  .copy-row:hover{background:var(--green-l2)}
+  .copy-row input,.copyall-row input{width:19px;height:19px;flex:none;accent-color:var(--green)}
+  .modal-btns{display:flex;gap:10px;justify-content:flex-end}
 </style>
 </head>
 <body>
@@ -252,6 +266,16 @@
 </div>
 <nav class="tabbar" id="tabbar"></nav>
 <div id="printarea"></div>
+<div id="copymodal" class="modal">
+  <div class="modal-box">
+    <div class="modal-h">📋 ก๊อปค่าโรงเรือน</div>
+    <div class="modal-sub" id="copyFrom"></div>
+    <div class="modal-note">ก๊อป: ขนาดเล้า · พัดลม · Cooling pad · แรงลม 9 จุด<br>ไม่รวม: จำนวนไก่ · วันลงไก่ · ข้อมูลอาหาร/ตาย</div>
+    <label class="copyall-row"><input type="checkbox" id="copyAll"> เลือกทั้งหมด</label>
+    <div class="copy-list" id="copyList"></div>
+    <div class="modal-btns"><button class="btn" id="copyCancel" type="button">ยกเลิก</button><button class="btn primary" id="copyDo" type="button">ก๊อปไปเล้าที่เลือก</button></div>
+  </div>
+</div>
 <script>
 const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2093,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278];
 const FEED=[0,14,18,21,24,27,31,34,38,42,47,51,56,61,66,71,76,82,87,93,98,104,109,115,120,125,130,135,140,145,150,154,159,163,167,171,175,178,182,185,188,192,194];
@@ -304,7 +328,8 @@ const DEFAULTS=[
  {name:'ฟาร์ม หนึ่งฟาร์มรุ่งเรือง',houses:[house('เล้า 1',{W:26,fans:18,birds:26000,age:28,padFans:8})]}
 ];
 let farms=load();
-farms.forEach(fm=>fm.houses.forEach(h=>{if(h.placeDate){const ta=todayAge(h.placeDate);if(ta!==null)h.age=Math.max(1,Math.min(42,ta));}}));
+function syncAgesToToday(){let chg=false;farms.forEach(fm=>fm.houses.forEach(h=>{if(h.placeDate){const ta=todayAge(h.placeDate);if(ta!==null){const na=Math.max(1,Math.min(42,ta));if(h.age!==na){h.age=na;chg=true;}}}}));return chg;}
+syncAgesToToday();
 try{const ui=JSON.parse(localStorage.getItem('ppf_ui')||'null');if(ui){if(TABS.some(t=>t.id===ui.tab))tab=ui.tab;if(Number.isInteger(ui.cf)&&ui.cf>=0&&ui.cf<farms.length)cf=ui.cf;}}catch(e){}
 function normalize(r){
   r.forEach(fm=>fm.houses.forEach(h=>{if(typeof h.placeDate!=='string')h.placeDate='';if(typeof h.initStock!=='number')h.initStock=0;if(typeof h.wtActual!=='number')h.wtActual=0;if(!Array.isArray(h.recv)||h.recv.length!==42)h.recv=zeros();if(!Array.isArray(h.dead)||h.dead.length!==42)h.dead=zeros();
@@ -422,7 +447,7 @@ function setCard(h,i){
     <div class="row">${fI('หน้า','padFront',h.padFront,0.5)}${fI('ซ้าย','padLeft',h.padLeft,0.5)}${fI('ขวา','padRight',h.padRight,0.5)}${fI('พื้นที่/ก้อน','padBlock',h.padBlock,0.01)}</div>
     <div class="sublab">แรงลมที่วัดได้ 9 จุด (ft/min) — ใช้หาประสิทธิภาพพัดลม</div>
     <div class="pts">${h.pts.map((v,j)=>`<input type="number" data-pt="${j}" value="${v}" aria-label="จุด ${j+1}">`).join('')}</div>
-    ${houses().length>1?`<button class="btn copyhouse" type="button" data-copy="${i}" style="width:100%;margin-top:14px;justify-content:center">📋 ใช้ค่าโรงเรือนนี้กับทุกเล้า</button>`:''}</div></div>`;
+    ${houses().length>1?`<button class="btn copyhouse" type="button" data-copy="${i}" style="width:100%;margin-top:14px;justify-content:center">📋 ก๊อปค่าไปเล้าอื่น…</button>`:''}</div></div>`;
 }
 function guideCard(){
   const G=[
@@ -522,7 +547,7 @@ function refreshVent(el){
       const high=r.padVel>2.0,good=r.padVel>=1.0&&r.padVel<=2.0;
       ev.className='advice '+(high?'warn':'ok')+' o-evap';
       const msg=high?'สูงไป (>2.0) — แพดเล็กเทียบจำนวนพัดลม ระบายความร้อนได้ไม่เต็มที่/น้ำอาจกระเด็น ควรเพิ่มพื้นที่แพดหรือลดพัดลมสูงสุด':good?'เหมาะสม (1.0–2.0 m/s) ระบายความร้อนแบบระเหยได้ดี':'ต่ำ (<1.0) — แพดใหญ่เพียงพอ (ระวังความชื้นสะสมถ้าเปิดแพดนานเกิน)';
-      ev.innerHTML=(high?I.alert:I.check)+'<div><b>ระบบ evap — ความเร็วลมผ่านแพด '+r.padVel.toFixed(2)+' m/s</b> · '+msg+'</div>';
+      ev.innerHTML=(high?I.alert:I.check)+'<div><b>ระบบ evap — ความเร็วลมผ่านแพด '+r.padVel.toFixed(2)+' m/s ('+Math.round(r.padVel*196.85)+' ft/min)</b> · '+msg+'</div>';
     }else ev.style.display='none';
   }
   updateDateLabel(el,h);
@@ -574,6 +599,23 @@ function tryUnlock(){
   if(p===EDIT_PIN){canEdit=true;applyLock();}
   else alert('รหัสไม่ถูกต้อง');
 }
+let copySrc=-1;
+const COPY_KEYS=['W','L','H','fan','fans','padFront','padLeft','padRight','padBlock','padH'];
+function openCopyModal(i){
+  copySrc=i;const src=houses()[i];if(!src)return;
+  document.getElementById('copyFrom').innerHTML='จาก <b>'+esc(src.name)+'</b> → เลือกเล้าปลายทาง:';
+  document.getElementById('copyList').innerHTML=houses().map((h,j)=>j===i?'':`<label class="copy-row"><input type="checkbox" class="copytgt" data-j="${j}" checked><span>${esc(h.name)} · ${h.W}×${h.L} ม. · พัดลม ${h.fans}</span></label>`).join('');
+  const ca=document.getElementById('copyAll');if(ca)ca.checked=true;
+  document.getElementById('copymodal').classList.add('show');
+}
+function closeCopyModal(){document.getElementById('copymodal').classList.remove('show');copySrc=-1;}
+function doCopyHouse(){
+  if(copySrc<0)return;const src=houses()[copySrc];if(!src){closeCopyModal();return;}
+  const tgts=[...document.querySelectorAll('.copytgt:checked')].map(c=>+c.dataset.j);
+  if(!tgts.length){closeCopyModal();return;}
+  tgts.forEach(j=>{const o=houses()[j];if(!o||o===src)return;COPY_KEYS.forEach(k=>o[k]=src[k]);o.pts=src.pts.slice();});
+  save();closeCopyModal();render();
+}
 function renderChips(){
   const cv='<svg class="cv" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
   const ck='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg>';
@@ -606,7 +648,7 @@ function render(){
   applyLock();
 }
 function renderTabs(){document.getElementById('tabbar').innerHTML=TABS.map(t=>`<button data-tab="${t.id}" class="${t.id===tab?'on':''}">${t.id===tab?'<span class="ind"></span>':''}${I[t.icon]}<span>${t.label}</span></button>`).join('');}
-document.getElementById('tabbar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.tab;renderTabs();render();});
+document.getElementById('tabbar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.tab;if(syncAgesToToday())save();renderTabs();render();});
 document.getElementById('chips').addEventListener('click',e=>{
   const chip=e.target.closest('.chip'); if(chip){cf=+chip.dataset.farm;renderChips();render();return;}
   const item=e.target.closest('.farmdd-item'); if(item){cf=+item.dataset.farm;renderChips();render();return;}
@@ -645,11 +687,7 @@ document.querySelector('.wrap').addEventListener('click',e=>{
   const ca=e.target.closest('[data-cfauto]');
   if(ca){if(!canEdit)return;const el=ca.closest('.card');if(!el)return;const h=houses()[+el.dataset.i];h.padFansAuto=true;save();refreshVent(el);return;}
   const cp=e.target.closest('[data-copy]');
-  if(cp){if(!canEdit)return;const src=houses()[+cp.dataset.copy];if(!src)return;const others=houses().filter(x=>x!==src);if(!others.length)return;
-    if(!confirm('ก๊อปปี้ค่า ขนาดเล้า · พัดลม · Cooling pad · แรงลม 9 จุด\nจาก "'+src.name+'" ไปยังอีก '+others.length+' เล้า?\n\n(ไม่รวม จำนวนไก่ · วันลงไก่ · ข้อมูลอาหาร/ตาย)'))return;
-    const keys=['W','L','H','fan','fans','padFront','padLeft','padRight','padBlock','padH'];
-    others.forEach(o=>{keys.forEach(k=>o[k]=src[k]);o.pts=src.pts.slice();});
-    save();render();return;}
+  if(cp){if(!canEdit)return;openCopyModal(+cp.dataset.copy);return;}
   const tbn=e.target.closest('.todaybtn');
   if(tbn){const el=tbn.closest('.card');const h=houses()[+el.dataset.i];const ta=todayAge(h.placeDate);if(ta!==null){h.age=Math.max(1,Math.min(42,ta));save();render();}return;}
   const d=e.target.dataset.del;if(d===undefined)return;
@@ -677,7 +715,7 @@ function syncPull(opts){ if(!syncCfg)return; opts=opts||{}; syncStat('กำล�
      const rts=+j.updatedAt||0, lts=syncTs(), hasR=j.data&&j.data.length>2;
      if(hasR&&(opts.force||rts>lts)){
        let d;try{d=JSON.parse(j.data);}catch(e){syncStat('ข้อมูลในชีทเสีย','err');return;}
-       if(Array.isArray(d)&&d[0]&&d[0].houses){ syncApplying=true; farms=normalize(d); cf=0; save(); syncApplying=false; syncSetTs(rts||Date.now()); renderChips(); render(); syncStat('ดึงจากชีทแล้ว '+syncNowStr(),'ok'); }
+       if(Array.isArray(d)&&d[0]&&d[0].houses){ syncApplying=true; farms=normalize(d); cf=0; syncAgesToToday(); save(); syncApplying=false; syncSetTs(rts||Date.now()); renderChips(); render(); syncStat('ดึงจากชีทแล้ว '+syncNowStr(),'ok'); }
        else syncStat('ข้อมูลในชีทไม่ถูกต้อง','err');
      } else { syncPush(); }
    }).catch(()=>syncStat('เชื่อมต่อไม่ได้ (เน็ต/ลิงก์?)','err')); }
@@ -710,16 +748,24 @@ function syncTick(){           // ซิงค์กับชีททุก 3 �
      if(hasR&&rts>lts){                                   // ชีทใหม่กว่า → ดึงลง (ข้ามถ้ากำลังพิมพ์)
        if(isTyping())return;
        let d;try{d=JSON.parse(j.data);}catch(e){return;}
-       if(Array.isArray(d)&&d[0]&&d[0].houses){ syncApplying=true; farms=normalize(d); if(cf>=farms.length)cf=0; save(); syncApplying=false; syncSetTs(rts); renderChips(); render(); }
+       if(Array.isArray(d)&&d[0]&&d[0].houses){ syncApplying=true; farms=normalize(d); if(cf>=farms.length)cf=0; syncAgesToToday(); save(); syncApplying=false; syncSetTs(rts); renderChips(); render(); }
      } else if(lts>rts){ syncPush(); }                    // เครื่องนี้ใหม่กว่า → ดันขึ้น (กันกรณีดันก่อนหน้าไม่สำเร็จ)
    }).catch(()=>{}).finally(()=>{syncBusy=false;});
 }
 document.getElementById('lockBtn').addEventListener('click',tryUnlock);
+document.getElementById('copyDo').addEventListener('click',doCopyHouse);
+document.getElementById('copyCancel').addEventListener('click',closeCopyModal);
+document.getElementById('copyAll').addEventListener('change',e=>{document.querySelectorAll('.copytgt').forEach(c=>c.checked=e.target.checked);});
+document.getElementById('copyList').addEventListener('change',()=>{const all=[...document.querySelectorAll('.copytgt')],ca=document.getElementById('copyAll');if(ca)ca.checked=all.length>0&&all.every(c=>c.checked);});
+document.getElementById('copymodal').addEventListener('click',e=>{if(e.target.id==='copymodal')closeCopyModal();});
 renderChips();renderTabs();render();
 (function(){var i=document.querySelector('header .logo img');if(i){var l=document.createElement('link');l.rel='icon';l.type='image/png';l.href=i.src;document.head.appendChild(l);}})();
 syncAutoInit();
 setInterval(syncTick,3000);                                                                   // ซิงค์กับชีททุก 3 วินาที
-document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible')syncTick(); });   // กลับมาเปิดแอป → ซิงค์ทันที
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){autoAge();syncTick();} });   // กลับมาเปิดแอป → เด้งอายุ + ซิงค์ทันที
+function autoAge(){ if(syncApplying||isTyping())return; if(syncAgesToToday()){ save(); render(); } }   // เด้งอายุไก่เป็นวันจริงเองตามวันลงไก่ (ไม่ต้องกด "วันนี้")
+window.addEventListener('focus',autoAge);                                                      // กลับมาที่หน้าต่าง → เด้งอายุ
+setInterval(autoAge,60000);                                                                    // กันเปิดค้างข้ามวัน → เช็คทุก 1 นาที
 </script>
 </body>
 </html>
