@@ -45,6 +45,10 @@
   tr.tot td{border-top:2px solid #8A1A3A;border-bottom:none;font-weight:700;color:#8A1A3A}
   .pill{font-weight:700}.red{color:var(--red)}.amber{color:var(--amber)}.green{color:var(--green)}
   .sbadge{font-size:10.5px;padding:2px 9px;border-radius:6px;font-weight:600;white-space:nowrap}
+  .delfarm{border:none;background:transparent;color:var(--brand);cursor:pointer;font-size:14px;line-height:1;padding:3px 7px;border-radius:6px;margin-left:6px}
+  .delfarm:hover{background:#FFDED6}
+  .clearbtn{font-family:inherit;font-size:12px;color:var(--brand);background:#fff;border:1px solid var(--line2);border-radius:8px;padding:6px 13px;cursor:pointer}
+  .clearbtn:hover{background:#FFF1F4}
   .watch{margin-top:14px;font-size:12.5px;color:var(--mute);background:#FFF6F2;border-left:3px solid var(--brand);border-radius:0 8px 8px 0;padding:10px 13px}
   .watch b{color:var(--brand)}
   .note{margin-top:8px;font-size:11px;color:var(--mute)}
@@ -65,6 +69,7 @@
     <b>ลากไฟล์มาวางที่นี่</b> หรือคลิกเพื่อเลือก · ใบหน้าเล้า .xlsx (ทีละหลายไฟล์ได้) หรือไฟล์สำรอง .json
   </label>
   <div class="files" id="files"></div>
+  <div id="clearRow" style="display:none;margin:-6px 0 14px;text-align:right"><button class="clearbtn" id="clearAll">🗑 ล้างข้อมูลทั้งหมด</button></div>
 
   <div id="dash" style="display:none">
     <div class="kpis">
@@ -168,8 +173,9 @@ function mergeFarms(newFarms){
   try{localStorage.setItem(LS,JSON.stringify(DATA));}catch(e){}
 }
 function render(){
-  if(!DATA||!DATA.length){document.getElementById('dash').style.display='none';return;}
-  document.getElementById('dash').style.display='';
+  const _cr=document.getElementById('clearRow');
+  if(!DATA||!DATA.length){document.getElementById('dash').style.display='none';if(_cr)_cr.style.display='none';return;}
+  document.getElementById('dash').style.display='';if(_cr)_cr.style.display='';
   let TB=0,TL=0,TC=0,TT=0;
   const farmRows=DATA.map(f=>{
     let b=0,l=0,c=0,t=0;
@@ -192,7 +198,7 @@ function render(){
   // pivot + status
   let ph='<tr><th>ฟาร์ม</th><th>เล้า</th><th>ลงไก่</th><th>ตายวันนี้</th><th>ตายสะสม</th><th>%สะสม</th><th>สถานะ</th></tr>';
   farmRows.forEach(r=>{const cls=r.cumPct>=2?'red':r.cumPct>=1?'amber':'green';const s=statusOf(r.cumPct);
-    ph+=`<tr class="frow" data-fn="${r.name}"><td>${r.name.replace('ฟาร์ม ','')} <span style="color:var(--mute)">›</span></td><td>${r.houses}</td><td>${n(r.birds)}</td><td>${n(r.today)}</td><td>${n(r.loss)}</td><td class="pill ${cls}">${r.cumPct.toFixed(2)}%</td><td><span class="sbadge" style="color:${s.c};background:${s.b}">${s.t}</span></td></tr>`;});
+    ph+=`<tr class="frow" data-fn="${r.name}"><td>${r.name.replace('ฟาร์ม ','')} <span style="color:var(--mute)">›</span></td><td>${r.houses}</td><td>${n(r.birds)}</td><td>${n(r.today)}</td><td>${n(r.loss)}</td><td class="pill ${cls}">${r.cumPct.toFixed(2)}%</td><td><span class="sbadge" style="color:${s.c};background:${s.b}">${s.t}</span><button class="delfarm" data-fn="${r.name}" title="ลบฟาร์มนี้ออกจากแดชบอร์ด">✕</button></td></tr>`;});
   ph+=`<tr class="tot"><td>รวมทั้งหมด</td><td>${totHouses}</td><td>${n(TB)}</td><td>${n(TT)}</td><td>${n(TL+TC)}</td><td>${totPct.toFixed(2)}%</td><td>—</td></tr>`;
   document.getElementById('pivot').innerHTML=ph;
 
@@ -279,7 +285,12 @@ fileInput.addEventListener('change',e=>handleFiles(e.target.files));
 drop.addEventListener('drop',e=>{handleFiles(e.dataTransfer.files);});
 document.getElementById('selFarm').addEventListener('change',e=>drawTrend(+e.target.value));
 document.getElementById('selFarm2').addEventListener('change',e=>drawHouses(+e.target.value));
-document.getElementById('pivot').addEventListener('click',e=>{const tr=e.target.closest('tr.frow');if(!tr)return;const idx=DATA.findIndex(f=>f.name===tr.dataset.fn);if(idx>=0){const sel=document.getElementById('selFarm2');sel.value=idx;drawHouses(idx);document.getElementById('houses').scrollIntoView({behavior:'smooth',block:'center'});}});
+document.getElementById('pivot').addEventListener('click',e=>{
+  const del=e.target.closest('.delfarm');
+  if(del){const fn=del.dataset.fn;if(confirm('ลบฟาร์ม "'+fn.replace('ฟาร์ม ','')+'" ออกจากแดชบอร์ด?\n(ไฟล์ต้นฉบับไม่ถูกลบ)')){DATA=(DATA||[]).filter(f=>f.name!==fn);try{localStorage.setItem(LS,JSON.stringify(DATA));}catch(err){}render();}return;}
+  const tr=e.target.closest('tr.frow');if(!tr)return;const idx=DATA.findIndex(f=>f.name===tr.dataset.fn);if(idx>=0){const sel=document.getElementById('selFarm2');sel.value=idx;drawHouses(idx);document.getElementById('houses').scrollIntoView({behavior:'smooth',block:'center'});}
+});
+document.getElementById('clearAll').addEventListener('click',()=>{if(confirm('ล้างข้อมูลทั้งหมดในแดชบอร์ด?\n(ไฟล์ต้นฉบับไม่ถูกลบ — โยนไฟล์ใหม่ได้)')){DATA=null;try{localStorage.removeItem(LS);}catch(e){}document.getElementById('files').innerHTML='';render();}});
 
 try{const saved=JSON.parse(localStorage.getItem(LS));if(saved&&saved.length){DATA=saved;render();}}catch(e){}
 window.__parseWB=parseWB; window.__getData=()=>DATA;
