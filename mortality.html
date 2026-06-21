@@ -7,13 +7,13 @@
 <title>รายงานสูญเสียไก่รายวัน · PPF</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root{--ink:#3A1620;--mute:#9A5563;--line:#FFEAE2;--line2:#FFE0D6;--red:#E5326B;--amber:#D97706;--green:#16a34a;--card:#fff;--brand:#E5326B}
   *{box-sizing:border-box}
-  body{margin:0;background:linear-gradient(180deg,#FFF4F0,#FFEAF0);background-attachment:fixed;color:var(--ink);font-family:'Sarabun',sans-serif;font-size:15px;line-height:1.5;padding:14px}
+  body{margin:0;background:linear-gradient(180deg,#FFF4F0,#FFEAF0);background-attachment:fixed;color:var(--ink);font-family:'Prompt',sans-serif;font-size:15px;line-height:1.5;padding:14px}
   .wrap{max-width:1000px;margin:0 auto}
   .hero{background:linear-gradient(135deg,#FF9D5C,#FF5A3C 52%,#E5326B);border-radius:16px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;box-shadow:0 8px 22px rgba(214,40,90,.16)}
   .hero h1{font-size:19px;font-weight:700;color:#fff;margin:0}
@@ -103,7 +103,7 @@
 const LS='ppf_mortality_v1';
 let DATA=null, chF=null, chT=null;
 const FCOL=['#E5326B','#FF7A45','#F59E0B','#14B8A6','#3B82F6','#9333EA','#0EA5E9','#65A30D','#DB2777','#0D9488'];
-const barValLabel={id:'barValLabel',afterDatasetsDraw(c){const ctx=c.ctx;ctx.save();ctx.font='600 11px Sarabun,sans-serif';ctx.fillStyle='#8A1A3A';ctx.textAlign='center';const m=c.getDatasetMeta(0);m.data.forEach((bar,i)=>{const v=c.data.datasets[0].data[i];if(v>0)ctx.fillText(v,bar.x,bar.y-5);});ctx.restore();}};
+const barValLabel={id:'barValLabel',afterDatasetsDraw(c){const ctx=c.ctx;ctx.save();ctx.font='600 11px Prompt,sans-serif';ctx.fillStyle='#8A1A3A';ctx.textAlign='center';const m=c.getDatasetMeta(0);m.data.forEach((bar,i)=>{const v=c.data.datasets[0].data[i];if(v>0)ctx.fillText(v,bar.x,bar.y-5);});ctx.restore();}};
 // ===== สูตรมาตรฐานคละเพศ (port จากแอปหลัก index.html — validate แล้ว) =====
 const D=a=>Math.max(0,Math.min(42,Math.round(a)));
 const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2093,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278];
@@ -232,7 +232,7 @@ function drawTrend(fi){
   const tr=[];for(let d=0;d<maxAge;d++){let s=0;f.houses.forEach(h=>s+=(h.dead[d]||0)+(h.cull[d]||0));tr.push(s);}
   const ctx=document.getElementById('chTrend');
   if(chT)chT.destroy();
-  chT=new Chart(ctx,{type:'bar',plugins:[barValLabel],data:{labels:tr.map((_,i)=>i+1),datasets:[{label:'ตาย+คัด',data:tr,backgroundColor:tr.map((_,i)=>i<7?'#E5326B':'#FF7A45'),borderRadius:3}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>'วันที่ '+c[0].label}}},scales:{x:{title:{display:true,text:'อายุ (วัน)',font:{family:'Sarabun'}},grid:{display:false},ticks:{font:{family:'Sarabun'}}},y:{grace:'14%',beginAtZero:true,grid:{color:'#FFEAE2'},ticks:{font:{family:'Sarabun'}}}},maintainAspectRatio:false}});
+  chT=new Chart(ctx,{type:'bar',plugins:[barValLabel],data:{labels:tr.map((_,i)=>i+1),datasets:[{label:'ตาย+คัด',data:tr,backgroundColor:tr.map((_,i)=>i<7?'#E5326B':'#FF7A45'),borderRadius:3}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>'วันที่ '+c[0].label}}},scales:{x:{title:{display:true,text:'อายุ (วัน)',font:{family:'Prompt'}},grid:{display:false},ticks:{font:{family:'Prompt'}}},y:{grace:'14%',beginAtZero:true,grid:{color:'#FFEAE2'},ticks:{font:{family:'Prompt'}}}},maintainAspectRatio:false}});
 }
 function drawHouses(fi){
   const f=DATA[fi]; if(!f)return;
