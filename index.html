@@ -421,7 +421,8 @@ function setCard(h,i){
     <div class="sublab">ขนาด Cooling pad (เมตร)</div>
     <div class="row">${fI('หน้า','padFront',h.padFront,0.5)}${fI('ซ้าย','padLeft',h.padLeft,0.5)}${fI('ขวา','padRight',h.padRight,0.5)}${fI('พื้นที่/ก้อน','padBlock',h.padBlock,0.01)}</div>
     <div class="sublab">แรงลมที่วัดได้ 9 จุด (ft/min) — ใช้หาประสิทธิภาพพัดลม</div>
-    <div class="pts">${h.pts.map((v,j)=>`<input type="number" data-pt="${j}" value="${v}" aria-label="จุด ${j+1}">`).join('')}</div></div></div>`;
+    <div class="pts">${h.pts.map((v,j)=>`<input type="number" data-pt="${j}" value="${v}" aria-label="จุด ${j+1}">`).join('')}</div>
+    ${houses().length>1?`<button class="btn copyhouse" type="button" data-copy="${i}" style="width:100%;margin-top:14px;justify-content:center">📋 ใช้ค่าโรงเรือนนี้กับทุกเล้า</button>`:''}</div></div>`;
 }
 function guideCard(){
   const G=[
@@ -563,7 +564,7 @@ function applyLock(){
   const lock=!canEdit;
   document.body.classList.toggle('locked',lock);
   document.querySelectorAll('#grid input,#grid select,#toolbar input').forEach(x=>{x.disabled=lock;});
-  document.querySelectorAll('#grid .todaybtn,#grid .xbtn,#grid .agebtn,#grid .cfmode,#addHouse,#addFarm,#delFarm').forEach(b=>{if(b)b.disabled=lock;});
+  document.querySelectorAll('#grid .todaybtn,#grid .xbtn,#grid .agebtn,#grid .cfmode,#grid .copyhouse,#addHouse,#addFarm,#delFarm').forEach(b=>{if(b)b.disabled=lock;});
   updateLockBtn();
 }
 function tryUnlock(){
@@ -643,6 +644,12 @@ document.querySelector('.wrap').addEventListener('click',e=>{
   if(cs){if(!canEdit)return;const el=cs.closest('.card');if(!el)return;const h=houses()[+el.dataset.i];const r=calc(h);const base=(h.padFansAuto!==false)?r.ventMax:Math.min(h.fans,Math.max(0,+h.padFans||0));h.padFans=Math.max(0,Math.min(h.fans,base+(+cs.dataset.cfstep)));h.padFansAuto=false;save();refreshVent(el);return;}
   const ca=e.target.closest('[data-cfauto]');
   if(ca){if(!canEdit)return;const el=ca.closest('.card');if(!el)return;const h=houses()[+el.dataset.i];h.padFansAuto=true;save();refreshVent(el);return;}
+  const cp=e.target.closest('[data-copy]');
+  if(cp){if(!canEdit)return;const src=houses()[+cp.dataset.copy];if(!src)return;const others=houses().filter(x=>x!==src);if(!others.length)return;
+    if(!confirm('ก๊อปปี้ค่า ขนาดเล้า · พัดลม · Cooling pad · แรงลม 9 จุด\nจาก "'+src.name+'" ไปยังอีก '+others.length+' เล้า?\n\n(ไม่รวม จำนวนไก่ · วันลงไก่ · ข้อมูลอาหาร/ตาย)'))return;
+    const keys=['W','L','H','fan','fans','padFront','padLeft','padRight','padBlock','padH'];
+    others.forEach(o=>{keys.forEach(k=>o[k]=src[k]);o.pts=src.pts.slice();});
+    save();render();return;}
   const tbn=e.target.closest('.todaybtn');
   if(tbn){const el=tbn.closest('.card');const h=houses()[+el.dataset.i];const ta=todayAge(h.placeDate);if(ta!==null){h.age=Math.max(1,Math.min(42,ta));save();render();}return;}
   const d=e.target.dataset.del;if(d===undefined)return;
