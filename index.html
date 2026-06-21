@@ -348,33 +348,34 @@ function parseFace(wb){
 }
 function ensureXLSX(cb){if(window.XLSX)return cb();const s=document.createElement('script');s.src='https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';s.onload=cb;s.onerror=function(){alert('โหลดตัวอ่าน Excel ไม่ได้ (เช็คเน็ต)');};document.head.appendChild(s);}
 function pdFromAge(age){const t=new Date();t.setHours(0,0,0,0);const d=new Date(t.getTime()-(Math.max(1,age)-1)*86400000);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+let pWorker=null;
+function getWorker(){if(pWorker)return pWorker;pWorker=new Worker('parse-worker.js');return pWorker;}
 function importFaceSheets(fileList){
   if(!canEdit){alert('ปลดล็อกก่อน (แตะแถบล็อก ใส่รหัส) จึงนำเข้าได้');return;}
   const files=[].slice.call(fileList);if(!files.length)return;
-  let pending=files.length;const log=[];let lastCf=cf;
-  files.forEach(function(file){
+  let pending=files.length;const log=[];let lastCf=cf;const w=getWorker();
+  files.forEach(function(file,idx){
     const fr=new FileReader();
     fr.onload=function(e){
-      try{
-        const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-        const hs=parseFace(wb);
-        if(!hs.length){log.push('⚠️ '+file.name+' — ไม่พบชีต H1..');}
-        else{
-          const fname=faceFarmName(file.name);
-          let fm=null;for(let i=0;i<farms.length;i++){if(farms[i].name===fname){fm=farms[i];break;}}
-          if(!fm){fm={name:fname,houses:[]};farms.push(fm);}
-          hs.forEach(function(h){
-            const pd=pdFromAge(h.age);
-            let ex=null;for(let j=0;j<fm.houses.length;j++){if((+String(fm.houses[j].name).replace(/[^0-9]/g,''))===h.num){ex=fm.houses[j];break;}}
-            if(ex){ex.birds=h.birds;ex.dead=h.dead;ex.age=h.age;ex.placeDate=pd;}
-            else fm.houses.push(house('เล้า '+h.num,{birds:h.birds,dead:h.dead,age:h.age,placeDate:pd}));
-          });
-          fm.houses.sort(function(a,b){return (+String(a.name).replace(/[^0-9]/g,''))-(+String(b.name).replace(/[^0-9]/g,''));});
-          lastCf=farms.indexOf(fm);
-          log.push('✅ '+fname+' — '+hs.length+' เล้า · อายุ '+hs.map(function(h){return h.age;}).join('/')+' วัน');
-        }
-      }catch(err){log.push('❌ '+file.name+' — '+err.message);}
-      if(--pending===0){cf=Math.max(0,lastCf);save();renderChips();render();alert('นำเข้าเสร็จ:\n\n'+log.join('\n')+'\n\nℹ️ แรงลม 9 จุด + ขนาดเล้า/พัดลม ใช้ค่าเดิม/ค่าเริ่มต้น — แก้เองได้ในแท็บตั้งค่า');}
+      const onMsg=function(ev){
+        if(ev.data.id!=='f'+idx)return; w.removeEventListener('message',onMsg);
+        if(ev.data.ok){
+          const hs=ev.data.houses;
+          if(!hs.length){log.push('⚠️ '+file.name+' — ไม่พบชีต H1..');}
+          else{
+            const fname=ev.data.faceName;
+            let fm=null;for(let i=0;i<farms.length;i++){if(farms[i].name===fname){fm=farms[i];break;}}
+            if(!fm){fm={name:fname,houses:[]};farms.push(fm);}
+            hs.forEach(function(h){const pd=pdFromAge(h.age);let ex=null;for(let j=0;j<fm.houses.length;j++){if((+String(fm.houses[j].name).replace(/[^0-9]/g,''))===h.num){ex=fm.houses[j];break;}}if(ex){ex.birds=h.birds;ex.dead=h.dead;ex.age=h.age;ex.placeDate=pd;}else fm.houses.push(house('เล้า '+h.num,{birds:h.birds,dead:h.dead,age:h.age,placeDate:pd}));});
+            fm.houses.sort(function(a,b){return (+String(a.name).replace(/[^0-9]/g,''))-(+String(b.name).replace(/[^0-9]/g,''));});
+            lastCf=farms.indexOf(fm);
+            log.push('✅ '+fname+' — '+hs.length+' เล้า · อายุ '+hs.map(function(h){return h.age;}).join('/')+' วัน');
+          }
+        }else{log.push('❌ '+file.name+' — '+ev.data.error);}
+        if(--pending===0){cf=Math.max(0,lastCf);save();renderChips();render();alert('นำเข้าเสร็จ:\n\n'+log.join('\n')+'\n\nℹ️ แรงลม 9 จุด + ขนาดเล้า/พัดลม ใช้ค่าเดิม/ค่าเริ่มต้น — แก้เองได้ในแท็บตั้งค่า');}
+      };
+      w.addEventListener('message',onMsg);
+      w.postMessage({mode:'face',buf:e.target.result,fileName:file.name,id:'f'+idx},[e.target.result]);
     };
     fr.readAsArrayBuffer(file);
   });
@@ -825,7 +826,7 @@ document.getElementById('copyCancel').addEventListener('click',closeCopyModal);
 document.getElementById('copyAll').addEventListener('change',e=>{document.querySelectorAll('.copytgt').forEach(c=>c.checked=e.target.checked);});
 document.getElementById('copyList').addEventListener('change',()=>{const all=[...document.querySelectorAll('.copytgt')],ca=document.getElementById('copyAll');if(ca)ca.checked=all.length>0&&all.every(c=>c.checked);});
 document.getElementById('copymodal').addEventListener('click',e=>{if(e.target.id==='copymodal')closeCopyModal();});
-document.getElementById('faceFile').addEventListener('change',e=>{const fs=e.target.files;ensureXLSX(()=>importFaceSheets(fs));e.target.value='';});
+document.getElementById('faceFile').addEventListener('change',e=>{const fs=e.target.files;importFaceSheets(fs);e.target.value='';});
 renderChips();renderTabs();render();
 (function(){var i=document.querySelector('header .logo img');if(i){var l=document.createElement('link');l.rel='icon';l.type='image/png';l.href=i.src;document.head.appendChild(l);}})();
 syncAutoInit();

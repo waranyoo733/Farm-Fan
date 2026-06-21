@@ -248,31 +248,29 @@ function drawHouses(fi){
 }
 
 // ---- file handling ----
+let pWorker=null;
+function getWorker(){if(pWorker)return pWorker;pWorker=new Worker('parse-worker.js');return pWorker;}
+function setFiles(files,marks){document.getElementById('files').innerHTML=files.map((x,i)=>`<span>${x.name} ${marks[i]||''}</span>`).join('');}
 function handleFiles(list){
   const files=[...list]; if(!files.length)return;
-  const names=[]; let pending=files.length; const collected=[];
-  files.forEach(file=>{
-    names.push(file.name);
+  const marks=files.map(()=>'⏳'); setFiles(files,marks);
+  let pending=files.length; const collected=[];
+  const done=()=>{if(--pending===0){mergeFarms(collected);render();}};
+  files.forEach((file,idx)=>{
     const reader=new FileReader();
     reader.onload=e=>{
-      try{
-        if(/\.json$/i.test(file.name)){
-          const arr=JSON.parse(new TextDecoder('utf-8').decode(e.target.result));
-          (Array.isArray(arr)?arr:[]).forEach(f=>{
-            const houses=(f.houses||[]).map(h=>({name:h.name,birds:+h.birds||0,dead:(h.dead||[]).map(x=>+x||0),cull:new Array(42).fill(0),age:+h.age||0}));
-            collected.push({name:f.name,houses});
-          });
-        }else{
-          const wb=XLSX.read(e.target.result,{type:'array'});
-          const f=parseWB(wb,file.name);
-          if(f){const sum=parseSummary(wb);f.houses.forEach(h=>{const num=+h.name.replace(/[^0-9]/g,'');const d=sum[num];if(d&&Math.abs(d.birds-h.birds)<2){const loss=h.dead.reduce((a,b)=>a+b,0)+h.cull.reduce((a,b)=>a+b,0);const okDead=Math.abs(d.cumDead-loss)<=Math.max(5,loss*0.03),okAlive=Math.abs(d.alive-(h.birds-loss))<=Math.max(5,(h.birds-loss)*0.02);if(okDead&&okAlive)h.detail=d;}});collected.push(f);}
-        }
-      }catch(err){console.error('parse error',file.name,err);}
-      if(--pending===0){mergeFarms(collected);render();}
+      if(/\.json$/i.test(file.name)){
+        try{const arr=JSON.parse(new TextDecoder('utf-8').decode(e.target.result));(Array.isArray(arr)?arr:[]).forEach(f=>{const houses=(f.houses||[]).map(h=>({name:h.name,birds:+h.birds||0,dead:(h.dead||[]).map(x=>+x||0),cull:new Array(42).fill(0),age:+h.age||0}));collected.push({name:f.name,houses});});marks[idx]='✓';}catch(err){console.error(err);marks[idx]='❌';}
+        setFiles(files,marks); done();
+      }else{
+        const w=getWorker();
+        const onMsg=ev=>{if(ev.data.id!=='m'+idx)return;w.removeEventListener('message',onMsg);if(ev.data.ok&&ev.data.farm){collected.push(ev.data.farm);marks[idx]='✓';}else{marks[idx]='❌';if(ev.data&&ev.data.error)console.error('worker',file.name,ev.data.error);}setFiles(files,marks);done();};
+        w.addEventListener('message',onMsg);
+        w.postMessage({mode:'mortality',buf:e.target.result,fileName:file.name,id:'m'+idx},[e.target.result]);
+      }
     };
     reader.readAsArrayBuffer(file);
   });
-  document.getElementById('files').innerHTML=names.map(x=>`<span>${x}</span>`).join('');
 }
 const drop=document.getElementById('drop'), fileInput=document.getElementById('file');
 fileInput.addEventListener('change',e=>handleFiles(e.target.files));
