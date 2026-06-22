@@ -413,7 +413,9 @@ function calc(h){
   const cross=h.W*h.H,fm=fanCFM*CFM_TO_M3S,comfort=maxWind(h.age);
   let ventMax,ventMin;
   if(h.age<=7){ventMax=Math.min(h.fans,4);ventMin=Math.min(1,ventMax);}
-  else{ventMax=vmaxCurve(fanCFM,h.birds,h.fans,h.age);ventMin=Math.min(ventMax,Math.max(1,Math.ceil(needMin)));ventMin=Math.max(ventMin,ventMax-GAP);}
+  // ventMax = สูตรตรงตาม Excel "พัดลมขั้นต่ำ": ⌈cfm/kg × นน.กก. × ไก่ ÷ ประสิทธิภาพพัดลม⌉ (vmaxRaw)
+  // คง floor 4 ตัวไว้ (ช่วงกก) ไม่ให้ค่าตกตอนพ้นวัน 7 — เลิกใช้ vmaxCurve ที่เกลี่ยโค้งแล้วพุ่งเกินช่วง 24-27 วัน
+  else{ventMax=Math.max(vmaxRaw(fanCFM,h.birds,h.fans,h.age),Math.min(h.fans,4));ventMin=Math.min(ventMax,Math.max(1,Math.ceil(needMin)));ventMin=Math.max(ventMin,ventMax-GAP);}
   const velMax=cross>0?(ventMax*fm)/cross:0;
   const padNeeded=(h.age>7)&&(velMax>comfort+0.001);
   const reqFt=cross>0?reqAir/(cross*10.7639):0;

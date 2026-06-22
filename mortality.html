@@ -108,7 +108,20 @@
 const LS='ppf_mortality_v1';
 let DATA=null, chF=null, chT=null;
 const FCOL=['#E5326B','#FF7A45','#F59E0B','#14B8A6','#3B82F6','#9333EA','#0EA5E9','#65A30D','#DB2777','#0D9488'];
-const barValLabel={id:'barValLabel',afterDatasetsDraw(c){const ctx=c.ctx;ctx.save();ctx.font='600 11px Prompt,sans-serif';ctx.fillStyle='#8A1A3A';ctx.textAlign='center';const m=c.getDatasetMeta(0);m.data.forEach((bar,i)=>{const v=c.data.datasets[0].data[i];if(v>0)ctx.fillText(v,bar.x,bar.y-5);});ctx.restore();}};
+// ป้ายตัวเลขบนแท่ง: เว้นระยะอัตโนมัติไม่ให้เบียดกันบนมือถือ + โชว์แท่งสูงสุดเสมอ
+const barValLabel={id:'barValLabel',afterDatasetsDraw(c){
+  const ctx=c.ctx,m=c.getDatasetMeta(0),data=c.data.datasets[0].data,area=c.chartArea;
+  const fontPx=area.width<340?9:area.width<480?10:11;
+  ctx.save();ctx.font='600 '+fontPx+'px Prompt,sans-serif';ctx.fillStyle='#8A1A3A';ctx.textAlign='center';
+  let maxW=0;data.forEach(v=>{if(v>0){const w=ctx.measureText(v).width;if(w>maxW)maxW=w;}});
+  const minGap=maxW+6;                                  // ระยะขั้นต่ำกันตัวเลขทับกัน
+  let maxI=-1,maxV=-1;data.forEach((v,i)=>{if(v>maxV){maxV=v;maxI=i;}});   // แท่งสูงสุด
+  const show=new Set();let lastX=-1e9;
+  m.data.forEach((bar,i)=>{if(!(data[i]>0))return;if(bar.x-lastX>=minGap){show.add(i);lastX=bar.x;}});
+  if(maxI>=0)show.add(maxI);
+  show.forEach(i=>{const b=m.data[i];ctx.fillText(data[i],b.x,Math.max(b.y-4,area.top+fontPx));});
+  ctx.restore();
+}};
 // ===== สูตรมาตรฐานคละเพศ (port จากแอปหลัก index.html — validate แล้ว) =====
 const D=a=>Math.max(0,Math.min(42,Math.round(a)));
 const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2093,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278];
@@ -219,10 +232,10 @@ function render(){
 function drawDonut(farmRows){
   let items;
   if(DATA.length===1){
-    items=DATA[0].houses.map(h=>{const s=houseStats(h);return {label:h.name,val:s.loss+s.cull};});
+    items=DATA[0].houses.map(h=>{const s=houseStats(h);return {label:h.name,val:s.loss+s.cull,rate:s.cumPct};});
     document.getElementById('donutTitle').textContent='สัดส่วนการตายตามเล้า';
   }else{
-    items=farmRows.map(r=>({label:r.name.replace('ฟาร์ม ',''),val:r.loss}));
+    items=farmRows.map(r=>({label:r.name.replace('ฟาร์ม ',''),val:r.loss,rate:r.cumPct}));
     document.getElementById('donutTitle').textContent='สัดส่วนการตายตามฟาร์ม';
   }
   items=items.filter(x=>x.val>0).sort((a,b)=>b.val-a.val);
@@ -230,7 +243,7 @@ function drawDonut(farmRows){
   document.getElementById('donutTot').textContent=n(tot);
   const ctx=document.getElementById('chDonut'); if(chF)chF.destroy();
   chF=new Chart(ctx,{type:'doughnut',data:{labels:items.map(x=>x.label),datasets:[{data:items.map(x=>x.val),backgroundColor:items.map((x,i)=>FCOL[i%FCOL.length]),borderWidth:2,borderColor:'#fff'}]},options:{cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+n(c.parsed)+' ตัว'}}},maintainAspectRatio:false}});
-  document.getElementById('donutLegend').innerHTML=items.map((x,i)=>`<div style="display:flex;align-items:center;gap:7px;margin:2px 0"><span style="width:10px;height:10px;border-radius:3px;background:${FCOL[i%FCOL.length]};flex:none"></span><span>${x.label} — <b>${n(x.val)}</b> ตัว (${tot>0?Math.round(x.val/tot*100):0}%)</span></div>`).join('')||'<span style="color:#9A5563">ยังไม่มีการตาย</span>';
+  document.getElementById('donutLegend').innerHTML=items.map((x,i)=>`<div style="display:flex;align-items:center;gap:7px;margin:2px 0"><span style="width:10px;height:10px;border-radius:3px;background:${FCOL[i%FCOL.length]};flex:none"></span><span>${x.label} — <b>${n(x.val)}</b> ตัว · ตาย <b>${(x.rate||0).toFixed(2)}%</b></span></div>`).join('')||'<span style="color:#9A5563">ยังไม่มีการตาย</span>';
 }
 function drawTrend(fi){
   const f=DATA[fi]; if(!f)return;
