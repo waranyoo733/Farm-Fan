@@ -294,6 +294,10 @@ const maxWind=a=>a<=7?0.3:a<=14?0.7:a<=21?1.2:a<=28?1.8:a<=35?2.3:2.8;
 function vmaxRaw(fc,birds,fans,age){const reqAir=cfmkg(age)*(BW[D(age)]/1000)*birds;return Math.min(fans,Math.max(1,Math.ceil(fc>0?reqAir/fc:0)));}
 function vmaxCurve(fc,birds,fans,age){const MS=[7,14,21,28,35,42];const vals=[4];for(let k=1;k<6;k++)vals.push(Math.max(vals[k-1],vmaxRaw(fc,birds,fans,MS[k])));if(age<=7)return 4;if(age>=42)return vals[5];for(let k=0;k<5;k++)if(age<=MS[k+1]){const t=(age-MS[k])/(MS[k+1]-MS[k]);const ts=t*t*(3-2*t);return Math.round(vals[k]+ts*(vals[k+1]-vals[k]));}return vals[5];}
 const choke=a=>{const x=D(a);if(x<=6){const on=[0.5,0.6,0.7,0.7,0.8,0.8,0.6][x];return{on:on>0.6?1:on,off:[10,9,8,7,6,5,3][x]};}return{on:3,off:2};};
+// แสดงเวลาโช้ค (รอบเปิด-ปิดพัดลม) มีหน่วย — ถ้าเวลาทำ < 1 นาที แปลงเป็นวินาที
+const chokeOnU=c=>c.on>=1?(c.on+' นาที'):(Math.round(c.on*60)+' วินาที');
+const chokeText=c=>'ทำ '+chokeOnU(c)+' หยุด '+c.off+' นาที';
+const chokeShort=c=>(c.on>=1?c.on+'น.':Math.round(c.on*60)+'วิ.')+' / '+c.off+'น.';
 const lux=a=>{const x=D(a);return x<=1?40:x<=14?30:x<=21?20:10;};
 const lightHr=a=>{const x=D(a);return x<=1?24:x<=7?20:x<=14?18:x<=21?16:x<=28?10:12;};
 const TM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
@@ -568,9 +572,9 @@ function buildManual(){
     let rows='',cumStd=0;
     for(let d=1;d<=42;d++){
       const r=calc(Object.assign({},h,{age:d}));cumStd+=FEED[d];const fcr=BW[d]>0?cumStd/BW[d]:0;
-      rows+=`<tr><td class="ag2">${d}</td><td>${r.tt.toFixed(1)}</td><td>${r.pump.toFixed(1)}</td><td>${r.lx}</td><td>${r.lhr}</td><td>${r.ventMin}</td><td>${r.ventMax}</td><td>${r.choke.on}/${r.choke.off}</td><td>${r.fd}</td><td>${Math.round(r.fhouse).toLocaleString()}</td><td>${fcr.toFixed(2)}</td></tr>`;
+      rows+=`<tr><td class="ag2">${d}</td><td>${r.tt.toFixed(1)}</td><td>${r.pump.toFixed(1)}</td><td>${r.lx}</td><td>${r.lhr}</td><td>${r.ventMin}</td><td>${r.ventMax}</td><td>${chokeShort(r.choke)}</td><td>${r.fd}</td><td>${Math.round(r.fhouse).toLocaleString()}</td><td>${fcr.toFixed(2)}</td></tr>`;
     }
-    html+=`<table><thead><tr><th>วัน</th><th>อุณหภูมิ °C</th><th>ปั๊มน้ำ °C</th><th>แสง lux</th><th>ไฟ ชม.</th><th>พัดลม ขั้นต่ำ</th><th>พัดลม สูงสุด</th><th>โช้ค เปิด/ปิด น.</th><th>อาหาร g/ตัว</th><th>อาหาร kg/เล้า</th><th>FCR เป้า</th></tr></thead><tbody>${rows}</tbody></table>`;
+    html+=`<table><thead><tr><th>วัน</th><th>อุณหภูมิ °C</th><th>ปั๊มน้ำ °C</th><th>แสง lux</th><th>ไฟ ชม.</th><th>พัดลม ขั้นต่ำ</th><th>พัดลม สูงสุด</th><th>โช้ค ทำ/หยุด</th><th>อาหาร g/ตัว</th><th>อาหาร kg/เล้า</th><th>FCR เป้า</th></tr></thead><tbody>${rows}</tbody></table>`;
   });
   const feed=[['0–7 วัน','โรยอาหารบนกระดาษ + วางถาด/จานระดับพื้น ให้ลูกไก่เห็นและเข้าถึงง่าย'],['8–14 วัน','ยกจานขึ้น ขอบจานระดับอก–หลังลูกไก่ ค่อย ๆ เลิกโรยกระดาษ'],['15–28 วัน','ยกขอบล่างจานให้อยู่ระดับหลังไก่ ปรับสูงตามไก่โตทุกวัน'],['29–จับ','ยกจานสูงตามตัวไก่ ขอบจานระดับหลัง คุมอาหารในจานพอดี ไม่ล้น']];
   const water=[['0–7 วัน','ระดับตา–ปากลูกไก่ ก้มเล็กน้อย กดง่าย แรงดันน้ำต่ำ','ระดับตา'],['8–14 วัน','ยกให้ไก่เริ่มเงยคอกด','~35°'],['15–28 วัน','ยกสูงขึ้น ไก่เงยคอชัดเจน เพิ่มแรงดัน','~45°'],['29–จับ','นิปเปิ้ลเหนือหัวเล็กน้อย ไก่เงยคอตั้ง เพิ่มแรงดันสูงสุด','~75–85°']];
@@ -590,7 +594,7 @@ function refreshVent(el){
   setT(el,'.o-tt',r.tt.toFixed(1));
   setT(el,'.o-pump',r.pump.toFixed(1));
   setT(el,'.o-lux',r.lx);setT(el,'.o-lhr',r.lhr);
-  setT(el,'.o-min',r.ventMin);setT(el,'.o-minsub','โช้ค '+r.choke.on+'/'+r.choke.off+' น.');
+  setT(el,'.o-min',r.ventMin);setT(el,'.o-minsub',chokeText(r.choke));
   setT(el,'.o-max',r.ventMax);setT(el,'.o-maxsub',' ');
   const fb=el.querySelector('.fanbar');
   if(fb){const tot=Math.max(1,h.fans),mnP=Math.min(100,r.ventMin/tot*100),mxP=Math.min(100,r.ventMax/tot*100);
