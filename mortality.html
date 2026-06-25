@@ -86,7 +86,7 @@
           <div id="donutLegend" style="font-size:11.5px;line-height:1.9;flex:1;min-width:120px;color:#5A3210"></div>
         </div>
       </div>
-      <div class="card pad"><div class="sec"><span>ไก่ตายรายวัน</span><select id="selFarm"></select></div><div class="chartbox"><canvas id="chTrend"></canvas></div></div>
+      <div class="card pad"><div class="sec"><span>ไก่ตายรายวัน + สะสม</span><select id="selFarm"></select></div><div class="chartbox"><canvas id="chTrend"></canvas></div></div>
     </div>
 
     <div class="card pad">
@@ -249,9 +249,13 @@ function drawTrend(fi){
   const f=DATA[fi]; if(!f)return;
   const maxAge=Math.max(...f.houses.map(h=>h.age),1);
   const tr=[];for(let d=0;d<maxAge;d++){let s=0;f.houses.forEach(h=>s+=(h.dead[d]||0)+(h.cull[d]||0));tr.push(s);}
+  let cum=0; const cumA=tr.map(v=>cum+=v);   // ตายสะสม = ผลรวมสะสมรายวัน
   const ctx=document.getElementById('chTrend');
   if(chT)chT.destroy();
-  chT=new Chart(ctx,{type:'bar',plugins:[barValLabel],data:{labels:tr.map((_,i)=>i+1),datasets:[{label:'ตาย+คัด',data:tr,backgroundColor:tr.map((_,i)=>i<7?'#E5326B':'#FF7A45'),borderRadius:3}]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>'วันที่ '+c[0].label}}},scales:{x:{title:{display:true,text:'อายุ (วัน)',font:{family:'Prompt'}},grid:{display:false},ticks:{font:{family:'Prompt'}}},y:{grace:'14%',beginAtZero:true,grid:{color:'#FFEAE2'},ticks:{font:{family:'Prompt'}}}},maintainAspectRatio:false}});
+  chT=new Chart(ctx,{type:'bar',plugins:[barValLabel],data:{labels:tr.map((_,i)=>i+1),datasets:[
+    {type:'bar',label:'ตาย+คัด/วัน',data:tr,backgroundColor:tr.map((_,i)=>i<7?'#E5326B':'#FF7A45'),borderRadius:3,yAxisID:'y',order:1},
+    {type:'line',label:'ตายสะสม',data:cumA,borderColor:'#1D4ED8',backgroundColor:'rgba(29,78,216,.07)',borderWidth:2.5,pointRadius:0,pointHoverRadius:4,tension:.3,fill:true,yAxisID:'y1',order:2}
+  ]},options:{plugins:{legend:{display:true,position:'top',align:'end',labels:{font:{family:'Prompt'},usePointStyle:true,boxWidth:8,padding:12}},tooltip:{callbacks:{title:c=>'วันที่ '+c[0].label,label:c=>c.dataset.label+': '+n(c.parsed.y)+' ตัว'}}},scales:{x:{title:{display:true,text:'อายุ (วัน)',font:{family:'Prompt'}},grid:{display:false},ticks:{font:{family:'Prompt'}}},y:{grace:'14%',beginAtZero:true,grid:{color:'#FFEAE2'},ticks:{font:{family:'Prompt'}},title:{display:true,text:'รายวัน',font:{family:'Prompt',size:10},color:'#9A5563'}},y1:{position:'right',beginAtZero:true,grid:{display:false},ticks:{font:{family:'Prompt'},color:'#1D4ED8'},title:{display:true,text:'สะสม',font:{family:'Prompt',size:10},color:'#1D4ED8'}}},maintainAspectRatio:false}});
 }
 function drawHouses(fi){
   const f=DATA[fi]; if(!f)return;
