@@ -36,6 +36,11 @@ body{background:#f0f2f5;display:flex;justify-content:center;align-items:center;m
 .age-pick{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
 .age-pick button{border:1px solid #cbd5e1;background:#fff;border-radius:999px;padding:4px 11px;font-size:.8rem;cursor:pointer;color:#475569}
 .age-pick button.on{background:#15803d;color:#fff;border-color:#15803d}
+.ref{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:4px;background:#fff;border-radius:8px;overflow:hidden}
+.ref th{background:#dcefe2;color:#15803d;font-weight:600;padding:7px 9px;text-align:left;font-size:.78rem}
+.ref td{padding:7px 9px;border-top:1px solid #eef3f0;color:#475569}
+.ref tr.on td{background:#eafaf0;color:#15803d;font-weight:600}
+.ref td b{color:#15803d}
 </style>
 </head>
 <body>
@@ -46,8 +51,14 @@ body{background:#f0f2f5;display:flex;justify-content:center;align-items:center;m
   </div>
   <div class="modal-body">
     <div class="smart-helper">
-      <div class="helper-text">💡 <strong>คำแนะนำระบบ:</strong> <span id="hint">ไก่อายุ 25 วัน (ไก่โต) — ความเร็วลมเหมาะสมเพื่อสร้าง Wind-Chill ที่ <strong>1.8 – 3.0 m/s</strong></span></div>
+      <div class="helper-text">💡 <strong>คำแนะนำระบบ:</strong> <span id="hint"></span></div>
       <div class="age-pick" id="agepick"></div>
+      <table class="ref"><thead><tr><th>ช่วงอายุ</th><th>ความเร็วลมเหมาะสม</th><th>ft/min</th></tr></thead>
+        <tbody>
+          <tr data-band="0"><td>1–7 วัน · ลูกไก่</td><td><b>0.1–0.3</b> m/s</td><td>20–60</td></tr>
+          <tr data-band="1"><td>8–21 วัน · ไก่รุ่น</td><td><b>0.5–1.5</b> m/s</td><td>100–300</td></tr>
+          <tr data-band="2"><td>22 วัน+ · ไก่โต (Tunnel)</td><td><b>2.0–3.0</b> m/s</td><td>400–600</td></tr>
+        </tbody></table>
       <button class="btn-quick-apply" id="apply">ใช้ค่าแนะนำตามอายุอัตโนมัติ</button>
     </div>
 
@@ -75,14 +86,23 @@ body{background:#f0f2f5;display:flex;justify-content:center;align-items:center;m
   </div>
 </div>
 <script>
-// maxWind ตามอายุ (สูตรเดียวกับแอป Farm-Fan)
-function maxWind(a){return a<=7?0.3:a<=14?0.7:a<=21?1.2:a<=28?1.8:a<=35?2.3:2.8;}
-var AGES=[7,14,21,25,32,40],cur=25;
+// ช่วงความเร็วลมเหมาะสมตามอายุ (3 ช่วง) + ขอบวิกฤต
+var BANDS=[
+  {name:'ลูกไก่ (กก)',     lo:0.1,hi:0.3,cmin:0.1,cmax:0.5},
+  {name:'ไก่รุ่น',          lo:0.5,hi:1.5,cmin:0.3,cmax:2.0},
+  {name:'ไก่โต (Tunnel)',  lo:2.0,hi:3.0,cmin:1.5,cmax:4.0}
+];
+function bandOf(a){return a<=7?0:a<=21?1:2;}
+var AGES=[5,14,21,25,32,40],cur=25;
 var ap=document.getElementById('agepick');
 AGES.forEach(function(a){var b=document.createElement('button');b.textContent=a+' วัน';if(a===cur)b.className='on';b.onclick=function(){cur=a;[].forEach.call(ap.children,function(c){c.className='';});b.className='on';updateHint();};ap.appendChild(b);});
-function band(a){return a<=7?'ไก่เล็ก (กก)':a<=21?'ไก่รุ่น':'ไก่โต';}
-function updateHint(){var w=maxWind(cur);document.getElementById('hint').innerHTML='ไก่อายุ '+cur+' วัน ('+band(cur)+') — ความเร็วลมเหมาะสมสูงสุดที่ไก่ทนได้ ≈ <strong>'+w.toFixed(1)+' m/s</strong>';}
-document.getElementById('apply').onclick=function(){var w=maxWind(cur);document.getElementById('wmax').value=w.toFixed(1);document.getElementById('cmax').value=(w+0.8).toFixed(1);document.getElementById('wmin').value=(cur<=7?0.2:0.5).toFixed(1);document.getElementById('cmin').value='0.3';};
+function updateHint(){var i=bandOf(cur),B=BANDS[i];
+  document.getElementById('hint').innerHTML='ไก่อายุ '+cur+' วัน ('+B.name+') — ความเร็วลมเหมาะสม <strong>'+B.lo.toFixed(1)+' – '+B.hi.toFixed(1)+' m/s</strong> เพื่อสร้าง Wind-Chill พอดี';
+  [].forEach.call(document.querySelectorAll('.ref tbody tr'),function(tr){tr.className=(+tr.dataset.band===i)?'on':'';});
+}
+document.getElementById('apply').onclick=function(){var B=BANDS[bandOf(cur)];
+  document.getElementById('wmin').value=B.lo.toFixed(1);document.getElementById('wmax').value=B.hi.toFixed(1);
+  document.getElementById('cmin').value=B.cmin.toFixed(1);document.getElementById('cmax').value=B.cmax.toFixed(1);};
 document.getElementById('save').onclick=function(){var s=document.getElementById('saved');s.style.display='block';setTimeout(function(){s.style.display='none';},2200);};
 updateHint();
 </script>
