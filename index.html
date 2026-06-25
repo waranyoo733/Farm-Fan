@@ -372,7 +372,7 @@ function fanStrip(p,st){
   for(let n=1;n<=p.nf;n++){
     let cls='d-off',sp='';
     if(st.man.indexOf(n)>=0){cls='d-man';sp=' spin';}
-    else if(p.choke.indexOf(n)>=0){cls='d-ck';sp=' spin slow';}
+    else if(p.choke.indexOf(n)>=0){cls='d-ck';}
     else{for(const s of st.steps)if(s.fans.indexOf(n)>=0){cls='d-au';break;}}
     fans+='<div class="fan"><div class="disc '+cls+'"><div class="blade'+sp+'"></div></div><div class="num">'+n+'</div></div>';
   }
