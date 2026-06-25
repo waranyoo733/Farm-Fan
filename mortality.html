@@ -284,7 +284,7 @@ function render(){
   document.getElementById('k-today').textContent='ตายวันนี้ '+n(TT)+' ตัว';
   document.getElementById('k-pct').textContent=totPct.toFixed(2)+'%';
   document.getElementById('k-alive').textContent=n(TB-(TL+TC));
-  document.getElementById('sub').textContent='PPF · '+DATA.length+' ฟาร์ม · '+totHouses+' เล้า · ประจำวันนี้';
+  document.getElementById('sub').textContent='PPF · '+(DATA.length===1?DATA[0].name:DATA.length+' ฟาร์ม')+' · '+totHouses+' เล้า · ประจำวันนี้';
   const st=statusOf(totPct), badge=document.getElementById('statusBadge');
   badge.style.display=''; badge.textContent='ภาพรวม: '+st.t; badge.style.color=st.c;
 
@@ -316,7 +316,7 @@ function drawDonut(farmRows){
   let items;
   if(DATA.length===1){
     items=DATA[0].houses.map(h=>{const s=houseStats(h);return {label:h.name,val:s.loss+s.cull,rate:s.cumPct};});
-    document.getElementById('donutTitle').textContent='สัดส่วนการตายตามเล้า';
+    document.getElementById('donutTitle').textContent='สัดส่วนการตายตามเล้า · '+DATA[0].name;
   }else{
     items=farmRows.map(r=>({label:r.name.replace('ฟาร์ม ',''),val:r.loss,rate:r.cumPct}));
     document.getElementById('donutTitle').textContent='สัดส่วนการตายตามฟาร์ม';
@@ -336,7 +336,7 @@ function rankItems(farmRows){
 }
 function drawRank(farmRows){
   const items=rankItems(farmRows);
-  document.getElementById('rankTitle').textContent=DATA.length===1?'ยอดตายตามเล้า':'ยอดตายตามฟาร์ม';
+  document.getElementById('rankTitle').textContent=DATA.length===1?'ยอดตายตามเล้า · '+DATA[0].name:'ยอดตายตามฟาร์ม';
   const box=document.getElementById('chRankBox');if(box)box.style.height=Math.max(200,items.length*30+34)+'px';
   const ctx=document.getElementById('chRank');if(chK)chK.destroy();
   chK=new Chart(ctx,{type:'bar',plugins:[trackBg],data:{labels:items.map(x=>x.label),datasets:[{data:items.map(x=>x.val),_rate:items.map(x=>x.rate),backgroundColor:items.map((x,i)=>FCOL[i%FCOL.length]),borderRadius:7,borderSkipped:false,barPercentage:0.62,categoryPercentage:0.88,hoverBackgroundColor:items.map((x,i)=>FCOL[i%FCOL.length])}]},options:{
