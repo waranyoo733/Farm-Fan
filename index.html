@@ -283,6 +283,21 @@
   .ladrow.hot{background:#fdeef0}.ladrow.hot .ladt{background:#fbd0d8;color:#b03048}
   .ladx{color:var(--ink)}
   .fplad-note{font-size:12.5px;color:var(--muted);margin:8px 2px 2px;text-align:center}
+  /* ผังโรงเรือน Evap + พัดลมหมุน */
+  .barn{display:flex;gap:9px;align-items:stretch;margin:0 0 9px}
+  .barn .pad{flex:none;width:44px;border-radius:10px;background:repeating-linear-gradient(135deg,#cfeadb,#cfeadb 5px,#bfe2cd 5px,#bfe2cd 10px);border:1px solid #aed9bf;display:flex;align-items:center;justify-content:center;text-align:center;color:#155f3c;font-size:9.5px;font-weight:700;line-height:1.25;padding:4px}
+  .barn .flow{flex:none;width:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:#c6ddcd;font-size:15px;line-height:1}
+  .fangrid{flex:1;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+  .fan{width:38px;display:flex;flex-direction:column;align-items:center;gap:1px}
+  .disc{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+  .disc .blade{width:22px;height:22px;border-radius:50%;background:conic-gradient(#fff 0 18%,transparent 0 50%,#fff 0 68%,transparent 0 100%)}
+  .spin{animation:fspin 1.1s linear infinite}.spin.slow{animation-duration:2.4s}
+  @keyframes fspin{to{transform:rotate(360deg)}}
+  .fan .num{font-size:10px;color:var(--muted);font-weight:600}
+  .d-man{background:#16a34a}.d-ck{background:#ec6ca0}
+  .d-au{background:#cfe0ee;border:1px dashed #7fb0dd}.d-au .blade{background:conic-gradient(#5f97c9 0 18%,transparent 0 50%,#5f97c9 0 68%,transparent 0 100%)}
+  .d-off{background:#e2e7e3}.d-off .blade{background:conic-gradient(#c2cbc5 0 18%,transparent 0 50%,#c2cbc5 0 68%,transparent 0 100%)}
+  @media (prefers-reduced-motion:reduce){.spin{animation:none}}
 </style>
 </head>
 <body>
@@ -353,14 +368,15 @@ function fanStateAt(p,age){
   return{man,steps,tgt:+tgt.toFixed(1),chokeTemp:+(tgt+1).toFixed(1),pumpTemp:+pumpT(a).toFixed(1),next};
 }
 function fanStrip(p,st){
-  let b='';for(let n=1;n<=p.nf;n++){
-    let cls='off';
-    if(st.man.indexOf(n)>=0)cls='man';
-    else if(p.choke.indexOf(n)>=0)cls='ck';
-    else{for(const s of st.steps)if(s.fans.indexOf(n)>=0){cls='au';break;}}
-    b+='<span class="fbx '+cls+'">'+n+'</span>';
+  let fans='';
+  for(let n=1;n<=p.nf;n++){
+    let cls='d-off',sp='';
+    if(st.man.indexOf(n)>=0){cls='d-man';sp=' spin';}
+    else if(p.choke.indexOf(n)>=0){cls='d-ck';sp=' spin slow';}
+    else{for(const s of st.steps)if(s.fans.indexOf(n)>=0){cls='d-au';break;}}
+    fans+='<div class="fan"><div class="disc '+cls+'"><div class="blade'+sp+'"></div></div><div class="num">'+n+'</div></div>';
   }
-  return '<div class="fstrip">'+b+'</div>';
+  return '<div class="barn"><div class="pad">Cooling Pad</div><div class="flow">›<br>›<br>›</div><div class="fangrid">'+fans+'</div></div>';
 }
 function ladRow(cls,t,x){return '<div class="ladrow '+cls+'"><span class="ladt">'+t+'</span><span class="ladx">'+x+'</span></div>';}
 function fanPlanHTML(h,farmName){
