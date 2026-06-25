@@ -250,6 +250,23 @@
   .copy-row:hover{background:var(--green-l2)}
   .copy-row input,.copyall-row input{width:19px;height:19px;flex:none;accent-color:var(--green)}
   .modal-btns{display:flex;gap:10px;justify-content:flex-end}
+  /* แผนการทำงานพัดลม */
+  .fanplan{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin:12px 0}
+  .fanplan .tl{font-weight:800;color:var(--ink);font-size:15.5px;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+  .fanplan .planpick{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:14px;background:var(--green-l2);color:var(--ink);margin-bottom:10px}
+  .fptag{display:inline-block;font-size:12.5px;color:var(--muted);margin:-4px 0 9px}
+  .fpnote{font-size:14px;color:var(--muted);padding:6px 0}
+  .fstrip{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 10px}
+  .fbx{min-width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;font-weight:800;color:#fff;background:#cdd3da;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
+  .fbx.man{background:#1faa59}.fbx.ck{background:#ef5da8}.fbx.au{background:#3b82c4}.fbx.off{background:#d7dce2;color:#8a929c}
+  .fplegend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--muted);margin-bottom:11px}
+  .fplegend span{display:flex;align-items:center;gap:5px}
+  .fplegend .lg{width:14px;height:14px;border-radius:4px;display:inline-block}
+  .lg.man{background:#1faa59}.lg.ck{background:#ef5da8}.lg.au{background:#3b82c4}.lg.off{background:#d7dce2}
+  .fpline{font-size:14.5px;line-height:1.6;padding:8px 11px;border-radius:10px;margin-bottom:7px}
+  .fpline b{color:var(--ink)}.fpline .fpd{font-size:12.5px;color:var(--muted);font-weight:600}
+  .fpline.g{background:#e8f7ee}.fpline.a{background:#eaf2fb}.fpline.w{background:#eef5fb}
+  .fpnext{font-size:14px;color:var(--brand,#e0541b);font-weight:700;padding:4px 2px 2px}
 </style>
 </head>
 <body>
@@ -300,6 +317,58 @@ const chokeText=c=>'ทำ '+chokeOnU(c)+' หยุด '+c.off+' นาที';
 const chokeShort=c=>(c.on>=1?c.on+'น.':Math.round(c.on*60)+'วิ.')+' / '+c.off+'น.';
 const lux=a=>{const x=D(a);return x<=1?40:x<=14?30:x<=21?20:10;};
 const lightHr=a=>{const x=D(a);return x<=1?24:x<=7?20:x<=14?18:x<=21?16:x<=28?10:12;};
+/* ===== แผนการทำงานพัดลม (ฤดูร้อน) — ถอดจาก Excel "แผนการระบายอากาศ หมอวรัญญู" คงลำดับเดิมของแต่ละฟาร์ม =====
+   choke = พัดลมโช๊ค (วิ่ง Cycle ตอน≤เป้า / ต่อเนื่องที่เป้า+1) · steps[].n = Step Auto (เปิดที่เป้า+(n-1)°C) · manual[] = เปิดมือตามอายุ (สะสม) */
+const FANPLANS={"chai34":{"farms":["ชัยนาท"],"size":"34×120","nf":24,"choke":[7,18],"steps":[{"n":2,"fans":[]},{"n":3,"fans":[5,20]},{"n":4,"fans":[3,22]}],"manual":[{"age":8,"fans":[2,23]},{"age":12,"fans":[9,16]},{"age":22,"fans":[11,14]},{"age":25,"fans":[6,19]},{"age":29,"fans":[4,21]},{"age":33,"fans":[1,24]},{"age":36,"fans":[8,17]},{"age":39,"fans":[10,12,13,15]}]},"chai28":{"farms":["ชัยนาท"],"size":"28×120","nf":18,"choke":[4,15],"steps":[{"n":2,"fans":[]},{"n":3,"fans":[6,13]},{"n":4,"fans":[2,17]}],"manual":[{"age":8,"fans":[8,11]},{"age":15,"fans":[3,16]},{"age":22,"fans":[1,18]},{"age":29,"fans":[5,14]},{"age":33,"fans":[7,12]},{"age":36,"fans":[9,10]}]},"thana":{"farms":["ธนวัฒน์"],"size":"28×120","nf":18,"choke":[2,17],"steps":[{"n":2,"fans":[4,15]},{"n":3,"fans":[6,13]},{"n":4,"fans":[8,11]}],"manual":[{"age":10,"fans":[9]},{"age":15,"fans":[1,18]},{"age":19,"fans":[10]},{"age":21,"fans":[7,12]},{"age":23,"fans":[5]},{"age":25,"fans":[14]},{"age":26,"fans":[3]},{"age":27,"fans":[16]}]},"phum":{"farms":["พุ่มวงษ์","พุ่มวงศ์"],"size":"28×120","nf":22,"choke":[2,21],"steps":[],"manual":[{"age":8,"fans":[11]},{"age":14,"fans":[1,22]},{"age":16,"fans":[14]},{"age":17,"fans":[9]},{"age":20,"fans":[10,18]},{"age":22,"fans":[3,5,7,16,20]},{"age":27,"fans":[13]},{"age":29,"fans":[8,12,15]},{"age":32,"fans":[6,17]},{"age":33,"fans":[4,19]}]},"money":{"farms":["มันนี่","สาธิต"],"size":"21×120","nf":16,"choke":[2,15],"steps":[{"n":2,"fans":[4,13]},{"n":3,"fans":[6,11]},{"n":4,"fans":[7,10]}],"manual":[{"age":12,"fans":[8]},{"age":15,"fans":[1,16]},{"age":21,"fans":[5,12]},{"age":24,"fans":[3,14]},{"age":28,"fans":[9]}]},"mk12":{"farms":["มั้งกี้1","มอส"],"size":"16×100","nf":12,"choke":[5],"steps":[{"n":2,"fans":[2,11]},{"n":3,"fans":[7]}],"manual":[{"age":13,"fans":[6]},{"age":16,"fans":[1,12]},{"age":22,"fans":[4,8]},{"age":26,"fans":[10]},{"age":29,"fans":[3]},{"age":31,"fans":[9]}]},"mk10":{"farms":["มั้งกี้2","มอส"],"size":"16×100","nf":10,"choke":[4],"steps":[{"n":2,"fans":[1,10]},{"n":3,"fans":[6]}],"manual":[{"age":13,"fans":[5]},{"age":22,"fans":[3,7]},{"age":26,"fans":[9]},{"age":29,"fans":[2]},{"age":31,"fans":[8]}]},"mos25":{"farms":["มอส"],"size":"25×120","nf":14,"choke":[2,13],"steps":[{"n":2,"fans":[4,11]},{"n":3,"fans":[6,9]}],"manual":[{"age":10,"fans":[7]},{"age":14,"fans":[1,14]},{"age":18,"fans":[8]},{"age":21,"fans":[3,12]},{"age":23,"fans":[5,10]}]},"sriha":{"farms":["ศรีเหรา"],"size":"40×128","nf":28,"choke":[2,25],"steps":[{"n":2,"fans":[4,23]},{"n":3,"fans":[5,22]},{"n":4,"fans":[7,20]}],"manual":[{"age":7,"fans":[13]},{"age":11,"fans":[3,24]},{"age":16,"fans":[1,9,14,18,26]},{"age":20,"fans":[15]},{"age":21,"fans":[11]},{"age":22,"fans":[6,19,21]},{"age":25,"fans":[8,17]},{"age":26,"fans":[12]},{"age":27,"fans":[16]},{"age":29,"fans":[10]}]},"teng":{"farms":["เต็งหนึ่ง"],"size":"28×84","nf":20,"choke":[6,15],"steps":[{"n":2,"fans":[4,17]},{"n":3,"fans":[9,12]},{"n":4,"fans":[2,19]}],"manual":[{"age":7,"fans":[10]},{"age":12,"fans":[3,18]},{"age":17,"fans":[8,13]},{"age":22,"fans":[11]},{"age":24,"fans":[5,7,14,16]},{"age":32,"fans":[1,20]}]}};
+function planFor(h,farmName){
+  if(h&&h.planKey&&FANPLANS[h.planKey])return{key:h.planKey,p:FANPLANS[h.planKey]};
+  const fn=(farmName||'').replace(/ฟาร์ม|\s/g,'');
+  const cand=Object.entries(FANPLANS).filter(([k,p])=>p.nf===(h&&h.fans));
+  let m=cand.find(([k,p])=>p.farms.some(f=>fn&&(fn.indexOf(f)>=0||f.indexOf(fn)>=0)));
+  if(!m)m=cand[0];
+  return m?{key:m[0],p:m[1]}:null;
+}
+function manualUpTo(p,a){const out=[];for(const s of p.manual)if(s.age<=a)out.push.apply(out,s.fans);return out.sort((x,y)=>x-y);}
+function fanStateAt(p,age){
+  const a=D(age),tgt=targetT(a);
+  const man=manualUpTo(p,a);
+  const steps=p.steps.filter(s=>s.fans.length).map(s=>({n:s.n,fans:s.fans,temp:+(tgt+(s.n-1)).toFixed(1)}));
+  let next=null;for(const s of p.manual)if(s.age>a){next=s;break;}
+  return{man,steps,tgt:+tgt.toFixed(1),chokeTemp:+(tgt+1).toFixed(1),pumpTemp:+pumpT(a).toFixed(1),next};
+}
+function fanStrip(p,st){
+  let b='';for(let n=1;n<=p.nf;n++){
+    let cls='off';
+    if(st.man.indexOf(n)>=0)cls='man';
+    else if(p.choke.indexOf(n)>=0)cls='ck';
+    else{for(const s of st.steps)if(s.fans.indexOf(n)>=0){cls='au';break;}}
+    b+='<span class="fbx '+cls+'">'+n+'</span>';
+  }
+  return '<div class="fstrip">'+b+'</div>';
+}
+function fanPlanHTML(h,farmName){
+  const pm=planFor(h,farmName);
+  const optList=Object.keys(FANPLANS).map(k=>{const p=FANPLANS[k];return '<option value="'+k+'"'+(pm&&pm.key===k?' selected':'')+'>'+esc(p.farms.join('/'))+' · '+p.size+' · '+p.nf+' ตัว</option>';}).join('');
+  const sel='<select class="planpick"'+(canEdit?'':' disabled')+'><option value="">— เลือกแผนพัดลม (อัตโนมัติตามฟาร์ม) —</option>'+optList+'</select>';
+  const head='<div class="tl">'+I.fan+'แผนการทำงานพัดลม (ตามอายุ)</div>';
+  if(!pm)return head+sel+'<div class="fpnote">ยังไม่มีแผนสำหรับ '+(h.fans)+' ตัว — เลือกแผนจากรายการ หรือเพิ่มภายหลัง</div>';
+  const p=pm.p,st=fanStateAt(p,h.age);
+  const matched=pm.key===h.planKey?'':'<span class="fptag">อัตโนมัติ: '+esc(p.farms.join('/'))+'</span>';
+  const manTxt=st.man.length?st.man.map(n=>'<b>'+n+'</b>').join(' · '):'— (ยังไม่เปิดมือ)';
+  const ckTxt='โช๊ค <b>'+p.choke.join('·')+'</b> <span class="fpd">(Cycle เมื่อ ≤'+st.tgt+'° · ต่อเนื่อง @'+st.chokeTemp+'°)</span>';
+  const stepTxt=st.steps.map(s=>'Step'+s.n+' <b>'+s.fans.join('·')+'</b> @'+s.temp+'°').join(' · ');
+  const nextTxt=st.next?'<div class="fpnext">⏭ ครั้งถัดไป: <b>วัน '+st.next.age+'</b> เปิดเพิ่มตัวที่ '+st.next.fans.join('·')+'</div>':'<div class="fpnext">✓ เปิดมือครบแล้ว</div>';
+  // full table 1-42
+  let grows='';for(let d=1;d<=42;d++){const m=manualUpTo(p,d);grows+='<tr class="'+(d===D(h.age)?'now':'')+'"><td>'+d+'</td><td>'+(m.length||0)+'</td><td style="text-align:left">'+(m.length?m.join(' · '):'—')+'</td></tr>';}
+  return head+sel+matched
+    +fanStrip(p,st)
+    +'<div class="fplegend"><span><i class="lg man"></i>แมนนวล (เปิดแล้ว)</span><span><i class="lg ck"></i>โช๊ค</span><span><i class="lg au"></i>Auto/Step</span><span><i class="lg off"></i>ยังไม่เปิด</span></div>'
+    +'<div class="fpline g">🟢 <b>Manual ที่ต้องเปิดตอนอายุ '+h.age+' วัน — รวม '+st.man.length+' ตัว:</b> '+manTxt+'</div>'
+    +'<div class="fpline a">⚙️ <b>Auto (คุมอุณหภูมิ):</b> '+ckTxt+(stepTxt?' · '+stepTxt:'')+'</div>'
+    +'<div class="fpline w">💧 <b>ปั๊มน้ำ/แพด</b> เปิดที่ '+st.pumpTemp+'°C (เป้า+3)</div>'
+    +nextTxt
+    +'<details><summary>ตารางพัดลมแมนนวลรายวัน (1–42)</summary><div class="inset"><div class="scroll"><table class="tt"><thead><tr><th>วัน</th><th>จำนวน</th><th>พัดลมแมนนวล (สะสม)</th></tr></thead><tbody>'+grows+'</tbody></table></div></div></details>';
+}
 const TM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 function fmtThai(d){return d.getDate()+' '+TM[d.getMonth()]+' '+String((d.getFullYear()+543)%100).padStart(2,'0');}
 function todayAge(pd){if(!pd)return null;const t=new Date();t.setHours(0,0,0,0);const p=new Date(pd+'T00:00:00');if(isNaN(p.getTime()))return null;return Math.floor((t-p)/86400000)+1;}
@@ -479,6 +548,7 @@ function ventCard(h,i){
     </div>
     ${adv}
     <div class="advice ok o-evap" style="display:none"></div>
+    <div class="fanplan o-fanplan">${fanPlanHTML(h,farms[cf].name)}</div>
     <div class="miniin cfan"><div class="cflab"><span>พัดลมที่เปิด (คิดผ้าม่าน) · สูงสุด ${h.fans} ตัว</span><button class="cfmode o-cfmode" type="button" data-cfauto></button></div>
       <div class="cfstep"><button class="agebtn sm" type="button" data-cfstep="-1" aria-label="ลดพัดลม">−</button><span class="cfnum"><b class="o-cfans">–</b> ตัว</span><button class="agebtn sm" type="button" data-cfstep="1" aria-label="เพิ่มพัดลม">+</button></div></div>
     <details><summary>ตารางอุณหภูมิเป้าหมาย + ปั๊มน้ำ รายวัน (1–42)</summary>
@@ -618,6 +688,7 @@ function refreshVent(el){
       ev.innerHTML=(high?I.alert:I.check)+'<div><b>ระบบ evap — ความเร็วลมผ่านแพด '+r.padVel.toFixed(2)+' m/s ('+Math.round(r.padVel*196.85)+' ft/min)</b> · '+msg+'</div>';
     }else ev.style.display='none';
   }
+  const fp=el.querySelector('.o-fanplan');if(fp)fp.innerHTML=fanPlanHTML(h,farms[cf].name);
   updateDateLabel(el,h);
 }
 function recompFeed(el){
@@ -734,6 +805,7 @@ document.querySelector('.wrap').addEventListener('input',e=>{
   if(!canEdit)return;
   if(t.classList.contains('farmname')){farms[cf].name=t.value;save();renderChips();return;}
   const el=t.closest('.card');if(!el)return;const h=houses()[+el.dataset.i];
+  if(t.classList.contains('planpick')){h.planKey=t.value;save();refreshVent(el);return;}
   if(t.classList.contains('pdd')||t.classList.contains('pmm')||t.classList.contains('pyy')){
     const dd=+el.querySelector('.pdd').value,mm=+el.querySelector('.pmm').value,by=+el.querySelector('.pyy').value;
     if(dd&&mm&&by&&by>2400){const ce=by-543;h.placeDate=ce+'-'+String(mm).padStart(2,'0')+'-'+String(dd).padStart(2,'0');const ta=todayAge(h.placeDate);if(ta!==null)h.age=Math.max(1,Math.min(42,ta));const sl=el.querySelector('.age');if(sl)sl.value=h.age;}
