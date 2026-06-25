@@ -250,23 +250,39 @@
   .copy-row:hover{background:var(--green-l2)}
   .copy-row input,.copyall-row input{width:19px;height:19px;flex:none;accent-color:var(--green)}
   .modal-btns{display:flex;gap:10px;justify-content:flex-end}
-  /* แผนการทำงานพัดลม */
+  /* แผนการทำงานพัดลม (ใบสั่งงานสัตวบาล) */
   .fanplan{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin:12px 0}
-  .fanplan .tl{font-weight:800;color:var(--ink);font-size:15.5px;margin-bottom:9px;display:flex;align-items:center;gap:7px}
-  .fanplan .planpick{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:14px;background:var(--green-l2);color:var(--ink);margin-bottom:10px}
-  .fptag{display:inline-block;font-size:12.5px;color:var(--muted);margin:-4px 0 9px}
+  .fanplan .tl{font-weight:800;color:var(--ink);font-size:16px;margin-bottom:2px;display:flex;align-items:center;gap:7px}
+  .fpwho{font-size:12.5px;color:var(--muted);margin-bottom:11px}
+  .fpsel{font-size:13px;color:var(--muted);margin-top:11px}
+  .fpsel select{padding:8px 10px;border:1px solid var(--line);border-radius:9px;font:inherit;font-size:13.5px;background:var(--green-l2);color:var(--ink);max-width:100%}
   .fpnote{font-size:14px;color:var(--muted);padding:6px 0}
-  .fstrip{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 10px}
-  .fbx{min-width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13px;font-weight:800;color:#fff;background:#cdd3da;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
-  .fbx.man{background:#1faa59}.fbx.ck{background:#ef5da8}.fbx.au{background:#3b82c4}.fbx.off{background:#d7dce2;color:#8a929c}
-  .fplegend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--muted);margin-bottom:11px}
+  .muted2{color:var(--muted);font-weight:600}
+  .fpact{background:#e8f7ee;border:1.5px solid #b7e6c8;border-radius:12px;padding:11px 13px;margin-bottom:12px}
+  .fpact-h{font-size:14px;font-weight:800;color:#137a3e;margin-bottom:8px}
+  .fpact-n{font-size:15.5px;color:var(--ink);line-height:1.7}
+  .fpnums b{display:inline-block;min-width:24px;text-align:center;background:#1faa59;color:#fff;border-radius:7px;padding:2px 7px;margin:2px 1px;font-size:16px}
+  .fptoday{margin-top:9px;background:#fff3d6;border-radius:8px;padding:7px 10px;font-size:14px;font-weight:700;color:#9a6700}
+  .fpnext{margin-top:9px;font-size:14px;color:#e0541b;font-weight:700}
+  .fpnext.done{color:#137a3e}
+  .fpstriphead{font-size:13px;font-weight:700;color:var(--ink);margin:2px 0 7px}
+  .fstrip{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 8px}
+  .fbx{min-width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;font-size:13.5px;font-weight:800;color:#fff;background:#cdd3da;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
+  .fbx.man{background:#1faa59}.fbx.ck{background:#ef5da8}.fbx.au{background:#3b82c4}.fbx.off{background:#dde1e7;color:#9aa1ab}
+  .fplegend{display:flex;flex-wrap:wrap;gap:11px;font-size:12px;color:var(--muted);margin-bottom:12px}
   .fplegend span{display:flex;align-items:center;gap:5px}
-  .fplegend .lg{width:14px;height:14px;border-radius:4px;display:inline-block}
-  .lg.man{background:#1faa59}.lg.ck{background:#ef5da8}.lg.au{background:#3b82c4}.lg.off{background:#d7dce2}
-  .fpline{font-size:14.5px;line-height:1.6;padding:8px 11px;border-radius:10px;margin-bottom:7px}
-  .fpline b{color:var(--ink)}.fpline .fpd{font-size:12.5px;color:var(--muted);font-weight:600}
-  .fpline.g{background:#e8f7ee}.fpline.a{background:#eaf2fb}.fpline.w{background:#eef5fb}
-  .fpnext{font-size:14px;color:var(--brand,#e0541b);font-weight:700;padding:4px 2px 2px}
+  .fplegend .lg{width:13px;height:13px;border-radius:4px;display:inline-block}
+  .lg.man{background:#1faa59}.lg.ck{background:#ef5da8}.lg.au{background:#3b82c4}.lg.off{background:#dde1e7}
+  .fplad-h{font-size:13.5px;font-weight:800;color:#2c6ca3;margin-bottom:7px}
+  .fplad{border:1px solid #d4e3f1;border-radius:10px;overflow:hidden}
+  .ladrow{display:flex;align-items:center;gap:10px;padding:8px 11px;font-size:14px;border-top:1px solid #eef3f8}
+  .ladrow:first-child{border-top:0}
+  .ladrow .ladt{flex:none;min-width:60px;font-weight:800;text-align:center;border-radius:7px;padding:3px 6px;font-size:13.5px}
+  .ladrow.cool{background:#f2f8fc}.ladrow.cool .ladt{background:#d6ebf7;color:#1f6f9c}
+  .ladrow.warm{background:#fff8ef}.ladrow.warm .ladt{background:#ffe3bf;color:#a86a18}
+  .ladrow.hot{background:#fdeef0}.ladrow.hot .ladt{background:#fbd0d8;color:#b03048}
+  .ladx{color:var(--ink)}
+  .fplad-note{font-size:12.5px;color:var(--muted);margin:8px 2px 2px;text-align:center}
 </style>
 </head>
 <body>
@@ -346,28 +362,39 @@ function fanStrip(p,st){
   }
   return '<div class="fstrip">'+b+'</div>';
 }
+function ladRow(cls,t,x){return '<div class="ladrow '+cls+'"><span class="ladt">'+t+'</span><span class="ladx">'+x+'</span></div>';}
 function fanPlanHTML(h,farmName){
   const pm=planFor(h,farmName);
   const optList=Object.keys(FANPLANS).map(k=>{const p=FANPLANS[k];return '<option value="'+k+'"'+(pm&&pm.key===k?' selected':'')+'>'+esc(p.farms.join('/'))+' · '+p.size+' · '+p.nf+' ตัว</option>';}).join('');
-  const sel='<select class="planpick"'+(canEdit?'':' disabled')+'><option value="">— เลือกแผนพัดลม (อัตโนมัติตามฟาร์ม) —</option>'+optList+'</select>';
-  const head='<div class="tl">'+I.fan+'แผนการทำงานพัดลม (ตามอายุ)</div>';
-  if(!pm)return head+sel+'<div class="fpnote">ยังไม่มีแผนสำหรับ '+(h.fans)+' ตัว — เลือกแผนจากรายการ หรือเพิ่มภายหลัง</div>';
-  const p=pm.p,st=fanStateAt(p,h.age);
-  const matched=pm.key===h.planKey?'':'<span class="fptag">อัตโนมัติ: '+esc(p.farms.join('/'))+'</span>';
-  const manTxt=st.man.length?st.man.map(n=>'<b>'+n+'</b>').join(' · '):'— (ยังไม่เปิดมือ)';
-  const ckTxt='โช๊ค <b>'+p.choke.join('·')+'</b> <span class="fpd">(Cycle เมื่อ ≤'+st.tgt+'° · ต่อเนื่อง @'+st.chokeTemp+'°)</span>';
-  const stepTxt=st.steps.map(s=>'Step'+s.n+' <b>'+s.fans.join('·')+'</b> @'+s.temp+'°').join(' · ');
-  const nextTxt=st.next?'<div class="fpnext">⏭ ครั้งถัดไป: <b>วัน '+st.next.age+'</b> เปิดเพิ่มตัวที่ '+st.next.fans.join('·')+'</div>':'<div class="fpnext">✓ เปิดมือครบแล้ว</div>';
-  // full table 1-42
-  let grows='';for(let d=1;d<=42;d++){const m=manualUpTo(p,d);grows+='<tr class="'+(d===D(h.age)?'now':'')+'"><td>'+d+'</td><td>'+(m.length||0)+'</td><td style="text-align:left">'+(m.length?m.join(' · '):'—')+'</td></tr>';}
-  return head+sel+matched
+  const sel='<div class="fpsel">แผนที่ใช้: <select class="planpick"'+(canEdit?'':' disabled')+'><option value="">— อัตโนมัติตามฟาร์ม —</option>'+optList+'</select></div>';
+  const head='<div class="tl">'+I.fan+'แผนการทำงานพัดลม</div>';
+  if(!pm)return head+'<div class="fpnote">ยังไม่มีแผนสำหรับ '+(h.fans)+' ตัว — เลือกแผนด้านล่าง</div>'+sel;
+  const p=pm.p,st=fanStateAt(p,h.age),a=D(h.age);
+  const autoN=p.choke.length+p.steps.reduce((s,x)=>s+x.fans.length,0);
+  const todayAdd=p.manual.find(m=>m.age===a);
+  const manList=st.man.length?'<span class="fpnums">'+st.man.map(n=>'<b>'+n+'</b>').join('')+'</span>':'<span class="muted2">ยังไม่ต้องเปิดมือ</span>';
+  // 1) ใบสั่งเปิดมือวันนี้
+  let act='<div class="fpact"><div class="fpact-h">📋 อายุ '+h.age+' วัน — สัตวบาลเปิดพัดลม "มือ" ตามนี้</div>'
+    +'<div class="fpact-n">🟢 เปิด <b>'+st.man.length+'</b> ตัว: '+manList+'</div>';
+  if(todayAdd)act+='<div class="fptoday">★ วันนี้เปิดเพิ่มตัวที่ '+todayAdd.fans.join(' · ')+'</div>';
+  act+=st.next?'<div class="fpnext">⏭ ครั้งหน้า: <b>วัน '+st.next.age+'</b> (อีก '+(st.next.age-a)+' วัน) เปิดเพิ่มตัวที่ '+st.next.fans.join(' · ')+'</div>':'<div class="fpnext done">✓ เปิดมือครบทุกตัวแล้ว</div>';
+  act+='</div>';
+  // 2) ผังพัดลมทั้งเล้า
+  const strip='<div class="fpstriphead">ผังพัดลมทั้งเล้า · เดินตอนนี้รวม '+st.man.length+'–'+Math.min(p.nf,st.man.length+autoN)+' ตัว (จาก '+p.nf+')</div>'
     +fanStrip(p,st)
-    +'<div class="fplegend"><span><i class="lg man"></i>แมนนวล (เปิดแล้ว)</span><span><i class="lg ck"></i>โช๊ค</span><span><i class="lg au"></i>Auto/Step</span><span><i class="lg off"></i>ยังไม่เปิด</span></div>'
-    +'<div class="fpline g">🟢 <b>Manual ที่ต้องเปิดตอนอายุ '+h.age+' วัน — รวม '+st.man.length+' ตัว:</b> '+manTxt+'</div>'
-    +'<div class="fpline a">⚙️ <b>Auto (คุมอุณหภูมิ):</b> '+ckTxt+(stepTxt?' · '+stepTxt:'')+'</div>'
-    +'<div class="fpline w">💧 <b>ปั๊มน้ำ/แพด</b> เปิดที่ '+st.pumpTemp+'°C (เป้า+3)</div>'
-    +nextTxt
-    +'<details><summary>ตารางพัดลมแมนนวลรายวัน (1–42)</summary><div class="inset"><div class="scroll"><table class="tt"><thead><tr><th>วัน</th><th>จำนวน</th><th>พัดลมแมนนวล (สะสม)</th></tr></thead><tbody>'+grows+'</tbody></table></div></div></details>';
+    +'<div class="fplegend"><span><i class="lg man"></i>เปิดมือแล้ว</span><span><i class="lg ck"></i>โช๊ค (ตู้คุม)</span><span><i class="lg au"></i>ตู้เติมเมื่อร้อน</span><span><i class="lg off"></i>ยังไม่เปิด</span></div>';
+  // 3) ตู้คุมเอง — บันไดอุณหภูมิ
+  const step2=st.steps.find(s=>s.n===2),later=st.steps.filter(s=>s.n>=3);
+  let lad='<div class="fplad-h">⚙️ ส่วนนี้ตู้คอนโทรลคุมเอง ตามอุณหภูมิ (ไม่ต้องเปิดมือ)</div><div class="fplad">';
+  lad+=ladRow('cool','≤ '+st.tgt+'°','โช๊ค '+p.choke.join('·')+' เดินเป็นจังหวะ (ระบายขั้นต่ำ)');
+  lad+=ladRow('warm',st.chokeTemp+'°','โช๊ค '+p.choke.join('·')+' เดินตลอด'+(step2?' + เปิด '+step2.fans.join('·'):''));
+  for(const s of later)lad+=ladRow('warm',s.temp+'°','เปิดเพิ่ม '+s.fans.join('·'));
+  lad+=ladRow('hot',st.pumpTemp+'°','เปิดปั๊มน้ำ/แพด ลดความร้อน 💧');
+  lad+='</div><div class="fplad-note">ร้อนขึ้นทีละ 1° ตู้เติมพัดลมเอง · เย็นลงถอยกลับเอง</div>';
+  // 4) ตารางเต็ม
+  let grows='';for(let d=1;d<=42;d++){const m=manualUpTo(p,d);grows+='<tr class="'+(d===a?'now':'')+'"><td>'+d+'</td><td>'+(m.length||0)+'</td><td style="text-align:left">'+(m.length?m.join(' · '):'—')+'</td></tr>';}
+  const tbl='<details><summary>ดูตารางเปิดมือทั้ง 1–42 วัน</summary><div class="inset"><div class="scroll"><table class="tt"><thead><tr><th>วัน</th><th>เปิดมือ</th><th>ตัวที่ (สะสม)</th></tr></thead><tbody>'+grows+'</tbody></table></div></div></details>';
+  return head+'<div class="fpwho">'+esc(p.farms.join('/'))+' · '+p.size+' · '+p.nf+' ตัว</div>'+act+strip+lad+tbl+sel;
 }
 const TM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 function fmtThai(d){return d.getDate()+' '+TM[d.getMonth()]+' '+String((d.getFullYear()+543)%100).padStart(2,'0');}
