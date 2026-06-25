@@ -104,10 +104,13 @@
           <div id="donutLegend" style="font-size:11.5px;line-height:1.9;flex:1;min-width:120px;color:#5A3210"></div>
         </div>
       </div>
-      <div class="card pad"><div class="sec"><span>ตาย/คัด เช้า–เย็น รายวัน + สะสม</span><select id="selFarm"></select></div>
-        <div class="leg"><span><i style="background:#DC2626"></i>ตายเช้า</span><span><i style="background:#F59E0B"></i>คัดเช้า</span><span><i style="background:#7C3AED"></i>ตายเย็น</span><span><i style="background:#14B8A6"></i>คัดเย็น</span><span><i style="background:#1D4ED8"></i>ตายสะสม</span></div>
-        <div class="chartbox"><canvas id="chTrend"></canvas></div></div>
+      <div class="card pad"><div class="sec" id="rankTitle">ยอดตายตามเล้า</div>
+        <div id="chRankBox" style="position:relative;height:260px"><canvas id="chRank"></canvas></div></div>
     </div>
+
+    <div class="card pad"><div class="sec"><span>ตาย/คัด เช้า–เย็น รายวัน + สะสม</span><select id="selFarm"></select></div>
+      <div class="leg"><span><i style="background:#DC2626"></i>ตายเช้า</span><span><i style="background:#F59E0B"></i>คัดเช้า</span><span><i style="background:#7C3AED"></i>ตายเย็น</span><span><i style="background:#14B8A6"></i>คัดเย็น</span><span><i style="background:#1D4ED8"></i>ตายสะสม</span></div>
+      <div class="chartbox"><canvas id="chTrend"></canvas></div></div>
 
     <div class="card pad">
       <div class="sec"><span>📈 อัตราตายรายวัน (%) + เส้นแนวโน้ม 3 วัน</span><span style="font-weight:400;color:var(--mute);font-size:11px" id="rateFarmName"></span></div>
@@ -133,8 +136,16 @@
 
 <script>
 const LS='ppf_mortality_v1';
-let DATA=null, chF=null, chT=null, chR=null;
-const FCOL=['#E5326B','#FF7A45','#F59E0B','#14B8A6','#3B82F6','#9333EA','#0EA5E9','#65A30D','#DB2777','#0D9488'];
+let DATA=null, chF=null, chT=null, chR=null, chK=null;
+const FCOL=['#3B82F6','#22C55E','#F97316','#EC4899','#A855F7','#06B6D4','#EAB308','#14B8A6','#EF4444','#8B5CF6','#0EA5E9','#F43F5E','#84CC16','#D946EF'];
+// แถบพื้นหลัง (track) หลังแท่งแนวนอน — สไตล์ BI แบบภาพอ้างอิง
+function roundRectPath(ctx,x,y,w,h,r){r=Math.min(r,h/2,Math.abs(w)/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+const trackBg={id:'trackBg',beforeDatasetsDraw(c){
+  const ctx=c.ctx,a=c.chartArea,x=c.scales.x,meta=c.getDatasetMeta(0);if(!meta||!meta.data)return;
+  ctx.save();ctx.fillStyle='#F1F2F4';
+  meta.data.forEach(bar=>{const h=bar.height||14;const x0=x.getPixelForValue(0);roundRectPath(ctx,x0,bar.y-h/2,a.right-x0,h,7);ctx.fill();});
+  ctx.restore();
+}};
 // ป้ายยอดรวมบนหัวสแต็ก (รวมทุกชุดแท่งของวันนั้น) — เว้นระยะอัตโนมัติกันเบียด + โชว์วันสูงสุดเสมอ
 const stackTotalLabel={id:'stackTotalLabel',afterDatasetsDraw(c){
   const ctx=c.ctx,area=c.chartArea;
@@ -295,6 +306,7 @@ function render(){
   sf.innerHTML=opts; sf2.innerHTML=opts; sf.value=Math.min(keep,DATA.length-1); sf2.value=Math.min(keep2,DATA.length-1);
 
   drawDonut(farmRows);
+  drawRank(farmRows);
   drawTrend(+sf.value);
   drawRate(+sf.value);
   drawHouses(+sf2.value);
@@ -315,6 +327,24 @@ function drawDonut(farmRows){
   const ctx=document.getElementById('chDonut'); if(chF)chF.destroy();
   chF=new Chart(ctx,{type:'doughnut',data:{labels:items.map(x=>x.label),datasets:[{data:items.map(x=>x.val),backgroundColor:items.map((x,i)=>FCOL[i%FCOL.length]),borderWidth:2,borderColor:'#fff'}]},options:{cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+n(c.parsed)+' ตัว'}}},maintainAspectRatio:false}});
   document.getElementById('donutLegend').innerHTML=items.map((x,i)=>`<div style="display:flex;align-items:center;gap:7px;margin:2px 0"><span style="width:10px;height:10px;border-radius:3px;background:${FCOL[i%FCOL.length]};flex:none"></span><span>${x.label} — <b>${n(x.val)}</b> ตัว · ตาย <b>${(x.rate||0).toFixed(2)}%</b></span></div>`).join('')||'<span style="color:#9A5563">ยังไม่มีการตาย</span>';
+}
+function rankItems(farmRows){
+  let items;
+  if(DATA.length===1){items=DATA[0].houses.map(h=>{const s=houseStats(h);return {label:h.name,val:s.loss+s.cull,rate:s.cumPct};});}
+  else{items=farmRows.map(r=>({label:r.name.replace('ฟาร์ม ',''),val:r.loss,rate:r.cumPct}));}
+  return items.filter(x=>x.val>0).sort((a,b)=>b.val-a.val);
+}
+function drawRank(farmRows){
+  const items=rankItems(farmRows);
+  document.getElementById('rankTitle').textContent=DATA.length===1?'ยอดตายตามเล้า':'ยอดตายตามฟาร์ม';
+  const box=document.getElementById('chRankBox');if(box)box.style.height=Math.max(200,items.length*30+34)+'px';
+  const ctx=document.getElementById('chRank');if(chK)chK.destroy();
+  chK=new Chart(ctx,{type:'bar',plugins:[trackBg],data:{labels:items.map(x=>x.label),datasets:[{data:items.map(x=>x.val),_rate:items.map(x=>x.rate),backgroundColor:items.map((x,i)=>FCOL[i%FCOL.length]),borderRadius:7,borderSkipped:false,barPercentage:0.62,categoryPercentage:0.88,hoverBackgroundColor:items.map((x,i)=>FCOL[i%FCOL.length])}]},options:{
+    indexAxis:'y',
+    plugins:{legend:{display:false},tooltip:{padding:11,backgroundColor:'#2A1118',titleFont:{family:'Prompt',size:13,weight:'600'},bodyFont:{family:'Prompt',size:12.5},displayColors:false,callbacks:{title:its=>its[0].label,label:c=>'ตาย : '+n(c.parsed.x)+' ตัว',afterLabel:c=>{const r=c.dataset._rate[c.dataIndex];return r!=null?'อัตรา : '+r.toFixed(2)+'%':'';}}}},
+    scales:{x:{beginAtZero:true,grace:'6%',grid:{color:'#F1F2F4',drawTicks:false},border:{display:false},ticks:{font:{family:'Prompt',size:11},color:'#9A5563',callback:v=>v>=1000?(v/1000)+'k':v}},
+      y:{grid:{display:false},border:{display:false},ticks:{font:{family:'Prompt',size:12.5},color:'#3A1620'}}},
+    maintainAspectRatio:false}});
 }
 function farmSeries(f,maxAge,arr){const a=[];for(let d=0;d<maxAge;d++){let s=0;f.houses.forEach(h=>s+=((h[arr]&&h[arr][d])||0));a.push(s);}return a;}
 function drawTrend(fi){
