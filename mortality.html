@@ -65,7 +65,35 @@
   .leg i{width:11px;height:11px;border-radius:3px;display:inline-block}
   .note{margin-top:8px;font-size:11px;color:var(--mute)}
   select{font-family:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--line2);border-radius:8px;background:#fff;color:var(--ink)}
-  @media(max-width:760px){.kpis{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}}
+  /* ===== สรุปผู้บริหาร (หน้าเดียว สำหรับแคปหน้าจอ) ===== */
+  .execbtn{font-family:inherit;font-size:12.5px;font-weight:600;color:#fff;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.55);border-radius:999px;padding:8px 15px;cursor:pointer}
+  .execbtn:hover{background:rgba(255,255,255,.32)}
+  .execwrap{position:fixed;inset:0;background:rgba(40,17,24,.6);z-index:60;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:16px}
+  .execwrap.on{display:flex}
+  .execcard{background:#fff;border-radius:18px;width:100%;max-width:1000px;box-shadow:0 24px 70px rgba(0,0,0,.35);overflow:hidden}
+  .exechead{background:linear-gradient(135deg,#FF9D5C,#FF5A3C 52%,#E5326B);color:#fff;padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  .exechead h2{margin:0;font-size:21px;font-weight:700}
+  .exechead .es{font-size:12.5px;opacity:.95;margin-top:3px}
+  .exec-st{font-size:13px;font-weight:700;padding:7px 15px;border-radius:999px;background:#fff}
+  .execbody{padding:16px 22px 20px}
+  .execkpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+  .ek{border:1px solid var(--line2);border-radius:12px;padding:10px 12px;text-align:center}
+  .ek .l{font-size:11px;color:var(--mute)}
+  .ek .v{font-size:21px;font-weight:700;line-height:1.25;margin-top:2px}
+  .ek .s{font-size:10.5px;color:var(--mute);margin-top:1px}
+  .execgrid{display:grid;grid-template-columns:0.85fr 1.15fr;gap:16px;align-items:start}
+  .exectitle{font-size:13px;font-weight:600;color:#8A1A3A;margin:0 0 8px}
+  table.exec{width:100%;border-collapse:collapse;font-size:12.5px}
+  table.exec th{color:var(--mute);font-size:10.5px;text-align:right;border-bottom:1.5px solid #8A1A3A;padding:6px 5px;font-weight:600;white-space:nowrap}
+  table.exec th:first-child{text-align:left}
+  table.exec td{text-align:right;border-bottom:1px solid var(--line);padding:6px 5px;white-space:nowrap}
+  table.exec td:first-child{text-align:left}
+  table.exec tr.tot td{border-top:2px solid #8A1A3A;font-weight:700;color:#8A1A3A;border-bottom:none}
+  .execwatch{margin-top:14px;font-size:12.5px;color:var(--ink);background:#FFF6F2;border-left:3px solid var(--brand);border-radius:0 8px 8px 0;padding:10px 13px;line-height:1.6}
+  .execwatch b{color:var(--brand)}
+  .execfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:var(--mute)}
+  .execclose{font-family:inherit;font-size:13px;font-weight:600;color:#fff;background:var(--brand);border:none;border-radius:9px;padding:9px 18px;cursor:pointer}
+  @media(max-width:760px){.kpis{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.execkpis{grid-template-columns:repeat(2,1fr)}.execgrid{grid-template-columns:1fr}}
   @media print{body{background:#fff;padding:0}.card,.kpi,.hero{break-inside:avoid}}
 </style>
 </head>
@@ -73,7 +101,10 @@
 <div class="wrap">
   <div class="hero">
     <div><h1>รายงานสูญเสียไก่รายวัน</h1><div class="sub" id="sub">PPF · ลากไฟล์ "ใบหน้าเล้า" .xlsx มาวางเพื่อเริ่ม</div></div>
-    <span class="status" id="statusBadge" style="display:none">–</span>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <button class="execbtn" id="execBtn" style="display:none">📋 สรุปผู้บริหาร (หน้าเดียว)</button>
+      <span class="status" id="statusBadge" style="display:none">–</span>
+    </div>
   </div>
 
   <label class="drop" id="drop">
@@ -134,9 +165,30 @@
   </div>
 </div>
 
+<div class="execwrap" id="execWrap">
+  <div class="execcard" id="execCard">
+    <div class="exechead">
+      <div><h2>รายงานสรุปการสูญเสียไก่</h2><div class="es" id="execSub">–</div></div>
+      <div class="exec-st" id="execStatus">–</div>
+    </div>
+    <div class="execbody">
+      <div class="execkpis" id="execKpis"></div>
+      <div class="execgrid">
+        <div><div class="exectitle" id="execChartTitle">ยอดตายตามเล้า</div><div style="position:relative" id="execChartBox"><canvas id="chExec"></canvas></div></div>
+        <div><div class="exectitle" id="execTblTitle">สรุปรายเล้า</div><div style="overflow-x:auto"><table class="exec" id="execTbl"></table></div></div>
+      </div>
+      <div class="execwatch" id="execWatch"></div>
+      <div class="execfoot">
+        <span id="execFoot">เกณฑ์: ตายปกติ ~0.05–0.1%/วัน · สัปดาห์แรก &lt;1% · ทั้งรุ่น ~3–5% · 📸 แคปหน้าจอนี้ส่งผู้บริหารได้เลย</span>
+        <button class="execclose" id="execClose">ปิด</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 const LS='ppf_mortality_v1';
-let DATA=null, chF=null, chT=null, chR=null, chK=null;
+let DATA=null, chF=null, chT=null, chR=null, chK=null, chE=null;
 const FCOL=['#3B82F6','#22C55E','#F97316','#EC4899','#A855F7','#06B6D4','#EAB308','#14B8A6','#EF4444','#8B5CF6','#0EA5E9','#F43F5E','#84CC16','#D946EF'];
 // แถบพื้นหลัง (track) หลังแท่งแนวนอน — สไตล์ BI แบบภาพอ้างอิง
 function roundRectPath(ctx,x,y,w,h,r){r=Math.min(r,h/2,Math.abs(w)/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
@@ -259,6 +311,46 @@ function renderAlerts(){
   }).join('');
 }
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+// ===== สรุปผู้บริหาร หน้าเดียว (แคปส่งเจ้านาย) =====
+function buildExec(){
+  if(!DATA||!DATA.length)return;
+  let TB=0,TL=0,TT=0,totHouses=0;
+  const farmRows=DATA.map(f=>{let b=0,l=0,t=0;f.houses.forEach(h=>{const s=houseStats(h);b+=h.birds;l+=s.loss+s.cull;t+=s.today;});totHouses+=f.houses.length;TB+=b;TL+=l;TT+=t;return{name:f.name,houses:f.houses.length,birds:b,loss:l,today:t,cumPct:b>0?l/b*100:0};});
+  const totPct=TB>0?TL/TB*100:0, alive=TB-TL, st=statusOf(totPct), single=DATA.length===1;
+  const today=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('execSub').textContent=(single?DATA[0].name:DATA.length+' ฟาร์ม')+' · '+totHouses+' เล้า · รายงาน ณ '+today;
+  const eS=document.getElementById('execStatus');eS.textContent='ภาพรวม: '+st.t;eS.style.color=st.c;
+  document.getElementById('execKpis').innerHTML=[
+    ['ลงไก่ทั้งหมด',n(TB),(single?DATA[0].name:DATA.length+' ฟาร์ม')+' · '+totHouses+' เล้า'],
+    ['ตายสะสม (ตาย+คัด)',n(TL),'ตายวันนี้ '+n(TT)+' ตัว'],
+    ['% สูญเสียสะสม',totPct.toFixed(2)+'%',st.t],
+    ['ตายวันนี้',n(TT),'ตัว'],
+    ['ไก่คงเหลือ',n(alive),'ประมาณการ']
+  ].map(k=>`<div class="ek"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="s">${k[2]}</div></div>`).join('');
+  const items=rankItems(farmRows);
+  document.getElementById('execChartTitle').textContent=single?('ยอดตายตามเล้า · '+DATA[0].name):'ยอดตายตามฟาร์ม';
+  document.getElementById('execChartBox').style.height=Math.max(180,items.length*26+28)+'px';
+  if(chE)chE.destroy();
+  chE=new Chart(document.getElementById('chExec'),{type:'bar',plugins:[trackBg],data:{labels:items.map(x=>x.label),datasets:[{data:items.map(x=>x.val),_rate:items.map(x=>x.rate),backgroundColor:items.map((x,i)=>FCOL[i%FCOL.length]),borderRadius:6,borderSkipped:false,barPercentage:0.6,categoryPercentage:0.86}]},options:{indexAxis:'y',animation:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{beginAtZero:true,grace:'6%',grid:{color:'#F1F2F4',drawTicks:false},border:{display:false},ticks:{font:{family:'Prompt',size:10},color:'#9A5563',callback:v=>v>=1000?(v/1000)+'k':v}},y:{grid:{display:false},border:{display:false},ticks:{font:{family:'Prompt',size:12},color:'#3A1620'}}},maintainAspectRatio:false}});
+  if(single){
+    const f=DATA[0];document.getElementById('execTblTitle').textContent='สรุปรายเล้า';
+    let h='<tr><th>เล้า</th><th>ลงไก่</th><th>อายุ</th><th>ตายวันนี้</th><th>ตายสะสม</th><th>%สะสม</th><th>สถานะ</th></tr>';
+    f.houses.forEach(ho=>{const s=houseStats(ho);const cls=s.cumPct>=2?'red':s.cumPct>=1?'amber':'green';const ss=statusOf(s.cumPct);h+=`<tr><td>${esc(ho.name)}</td><td>${n(ho.birds)}</td><td>${ho.age}</td><td>${n(s.today)}</td><td>${n(s.loss+s.cull)}</td><td class="pill ${cls}">${s.cumPct.toFixed(2)}%</td><td><span class="sbadge" style="color:${ss.c};background:${ss.b}">${ss.t}</span></td></tr>`;});
+    h+=`<tr class="tot"><td>รวม</td><td>${n(TB)}</td><td>—</td><td>${n(TT)}</td><td>${n(TL)}</td><td>${totPct.toFixed(2)}%</td><td>—</td></tr>`;
+    document.getElementById('execTbl').innerHTML=h;
+  }else{
+    document.getElementById('execTblTitle').textContent='สรุปรายฟาร์ม';farmRows.sort((a,b)=>b.cumPct-a.cumPct);
+    let h='<tr><th>ฟาร์ม</th><th>เล้า</th><th>ลงไก่</th><th>ตายวันนี้</th><th>ตายสะสม</th><th>%สะสม</th><th>สถานะ</th></tr>';
+    farmRows.forEach(r=>{const cls=r.cumPct>=2?'red':r.cumPct>=1?'amber':'green';const ss=statusOf(r.cumPct);h+=`<tr><td>${esc(r.name.replace('ฟาร์ม ',''))}</td><td>${r.houses}</td><td>${n(r.birds)}</td><td>${n(r.today)}</td><td>${n(r.loss)}</td><td class="pill ${cls}">${r.cumPct.toFixed(2)}%</td><td><span class="sbadge" style="color:${ss.c};background:${ss.b}">${ss.t}</span></td></tr>`;});
+    h+=`<tr class="tot"><td>รวม</td><td>${totHouses}</td><td>${n(TB)}</td><td>${n(TT)}</td><td>${n(TL)}</td><td>${totPct.toFixed(2)}%</td><td>—</td></tr>`;
+    document.getElementById('execTbl').innerHTML=h;
+  }
+  const al=computeAlerts(), w=document.getElementById('execWatch');
+  if(!al.length)w.innerHTML='<b>✅ ภาพรวมปกติ</b> — ไม่พบเล้าที่ตายสูงผิดปกติ แนวโน้มขาขึ้น หรือวันพีค';
+  else w.innerHTML='<b>🔔 ประเด็นเฝ้าระวัง:</b> '+al.slice(0,4).map(a=>`${esc(a.farm.replace('ฟาร์ม ',''))} ${esc(a.house)} (${esc(a.reasons[0])})`).join(' · ');
+}
+function openExec(){buildExec();document.getElementById('execWrap').classList.add('on');}
+function closeExec(){document.getElementById('execWrap').classList.remove('on');if(chE){chE.destroy();chE=null;}}
 function mergeFarms(newFarms){
   const map={}; (DATA||[]).forEach(f=>map[f.name]=f);
   newFarms.forEach(f=>{if(f)map[f.name]=f;});
@@ -287,6 +379,7 @@ function render(){
   document.getElementById('sub').textContent='PPF · '+(DATA.length===1?DATA[0].name:DATA.length+' ฟาร์ม')+' · '+totHouses+' เล้า · ประจำวันนี้';
   const st=statusOf(totPct), badge=document.getElementById('statusBadge');
   badge.style.display=''; badge.textContent='ภาพรวม: '+st.t; badge.style.color=st.c;
+  const eb=document.getElementById('execBtn'); if(eb)eb.style.display='';
 
   // pivot + status
   let ph='<tr><th>ฟาร์ม</th><th>เล้า</th><th>ลงไก่</th><th>ตายวันนี้</th><th>ตายสะสม</th><th>%สะสม</th><th>สถานะ</th></tr>';
@@ -438,6 +531,10 @@ fileInput.addEventListener('change',e=>handleFiles(e.target.files));
 ['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
 drop.addEventListener('drop',e=>{handleFiles(e.dataTransfer.files);});
 document.getElementById('selFarm').addEventListener('change',e=>{drawTrend(+e.target.value);drawRate(+e.target.value);});
+document.getElementById('execBtn').addEventListener('click',openExec);
+document.getElementById('execClose').addEventListener('click',closeExec);
+document.getElementById('execWrap').addEventListener('click',e=>{if(e.target.id==='execWrap')closeExec();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeExec();});
 document.getElementById('selFarm2').addEventListener('change',e=>drawHouses(+e.target.value));
 document.getElementById('pivot').addEventListener('click',e=>{
   const del=e.target.closest('.delfarm');
