@@ -129,6 +129,10 @@
   .kpi6 .kv i{font-size:12.5px;font-weight:500;color:var(--muted);font-style:normal;margin-left:2px}
   .kpi6 .kv.temp{color:#C01038}.kpi6 .kv.pump{color:#1E54B0}
   .kpi6 .ks{font-size:10.5px;color:var(--muted);margin-top:auto;padding-top:3px;line-height:1.3;opacity:.92}
+  .kpi6 .kwide{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:3px 10px;min-height:0;padding:11px 12px;background:var(--green-l2)}
+  .kpi6 .kwide .kl{margin-bottom:0;font-size:12.5px;font-weight:700;color:var(--green-dd)}
+  .kpi6 .kwide .kv{line-height:1;color:var(--green-d)}
+  .kpi6 .kwide .ks{margin-top:0;padding-top:0;opacity:1;flex-basis:100%}
   .fanrow{display:flex;align-items:flex-end;gap:12px;margin-bottom:11px}
   .fanrow .fc{text-align:center}
   .fanrow .fc.mn{color:var(--green-d)}.fanrow .fc.mx{color:var(--amber)}
@@ -689,6 +693,7 @@ function ventCard(h,i){
       <div class="k"><div class="kl">เปิดผ้าม่าน</div><div class="kv"><span class="o-openh">–</span><i>ซม.</i></div><div class="ks o-padsub">&nbsp;</div></div>
       <div class="k"><div class="kl">ความเข้มแสง</div><div class="kv"><span class="o-lux">–</span><i>lux</i></div><div class="ks">เปิดไฟ <span class="o-lhr">–</span> ชม./วัน</div></div>
       <div class="k"><div class="kl">อาหาร/ตัว</div><div class="kv"><span class="o-fd">–</span><i>g</i></div><div class="ks o-fdsub">&nbsp;</div></div>
+      <div class="k kwide"><div class="kl">🌬️ ลมที่ไก่ต้องการ (อายุนี้)</div><div class="kv"><span class="o-wind">–</span><i>m/s</i></div><div class="ks"><span class="o-windft">–</span> ft/min · สูงสุดที่ไก่ทนได้ <span class="o-windmax">–</span> m/s</div></div>
     </div>
     <div class="fanplan o-fanplan">${fanPlanHTML(h,farms[cf].name)}</div>
     <div class="miniin cfan"><div class="cflab"><span>พัดลมที่เปิด (คิดผ้าม่าน) · สูงสุด ${h.fans} ตัว</span><button class="cfmode o-cfmode" type="button" data-cfauto></button></div>
@@ -858,6 +863,7 @@ function refreshVent(el){
   if(cfm){const auto=(h.padFansAuto!==false);cfm.textContent=auto?'⚙ อัตโนมัติ (= สูงสุด)':'↺ กลับอัตโนมัติ';cfm.className='cfmode o-cfmode'+(auto?'':' manual');}
   setT(el,'.o-fd',r.fd);
   setT(el,'.o-fdsub','ทั้งเล้า '+Math.round(r.fhouse).toLocaleString()+' kg/วัน ('+r.alive.toLocaleString()+' ตัว)');
+  setT(el,'.o-wind',r.windTarget.toFixed(2));setT(el,'.o-windft',Math.round(r.windTarget*196.85));setT(el,'.o-windmax',r.comfort.toFixed(1));
   const ev=el.querySelector('.o-evap');
   if(ev){
     if(r.padVel>0){
@@ -1148,7 +1154,7 @@ function openFanModal(p,age,name){
   for(let n=1;n<=p.nf;n++){const gi=g[n],grp=gi?gi.grp:'off';const lab=grp==='ck'?'โช๊ค':grp==='man'?'มือ':grp==='off'?'–':grp.replace('s','S');
     wall+='<div class="bfan"><span class="bdot g-'+grp+'">'+n+'</span><span class="bsl2">'+lab+'</span></div>';}
   let rows='<div class="bstep"><div class="bsl">Step 1 · โช๊ค<small>เดิน cycle ขั้นต่ำ (≤ เป้า)</small></div><div class="bsd">'+fmDots(p.choke,'ck')+'</div></div>';
-  p.steps.forEach(s=>{if(s.fans.length)rows+='<div class="bstep"><div class="bsl">Step '+s.n+'<small>เป้า +'+(s.n-1)+'°C</small></div><div class="bsd">'+fmDots(s.fans,'s'+s.n)+'</div></div>';});
+  p.steps.forEach(s=>{const c=s.fans.length?fmDots(s.fans,'s'+s.n):'<span style="font-size:12.5px;color:var(--muted)">โช๊คเดินต่อเนื่อง — ไม่เพิ่มพัดลมใหม่</span>';rows+='<div class="bstep"><div class="bsl">Step '+s.n+'<small>เป้า +'+(s.n-1)+'°C</small></div><div class="bsd">'+c+'</div></div>';});
   if(p.steps.length)rows+='<div class="bstep"><div class="bsl">เปิดปั๊ม/แพด<small>เป้า +3°C</small></div><div class="bsd">💧 เปิดน้ำเข้า Cooling pad</div></div>';
   p.manual.forEach(mm=>{rows+='<div class="bstep"><div class="bsl">เปิดมือ<small>วัน '+mm.age+'</small></div><div class="bsd">'+fmDots(mm.fans,'man')+'</div></div>';});
   document.getElementById('fanmodalTitle').textContent='ผังพัดลม · '+name+' · '+p.nf+' ตัว';
