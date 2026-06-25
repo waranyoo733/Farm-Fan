@@ -485,9 +485,14 @@ function calc(h){
   const need=fanCFM>0?reqAir/fanCFM:0,needMin=fanCFM>0?(MINRATE*wkg*h.birds)/fanCFM:0;
   const cross=h.W*h.H,fm=fanCFM*CFM_TO_M3S,comfort=maxWind(h.age);
   let ventMax,ventMin;
-  if(h.age<=7){ventMax=Math.min(h.fans,4);ventMin=Math.min(1,ventMax);}
-  // ventMax = สูตรตรงตาม Excel "พัดลมขั้นต่ำ": ⌈cfm/kg × นน.กก. × ไก่ ÷ ประสิทธิภาพพัดลม⌉ (vmaxRaw)
-  // คง floor 4 ตัวไว้ (ช่วงกก) ไม่ให้ค่าตกตอนพ้นวัน 7 — เลิกใช้ vmaxCurve ที่เกลี่ยโค้งแล้วพุ่งเกินช่วง 24-27 วัน
+  // ถ้าจับคู่แผนพัดลม (Excel) ได้ → ใช้ค่าต่ออายุจากแผน: ต่ำ = Manual สะสม + โช๊ค · สูง = Manual สะสม + Auto ทั้งหมด
+  const _pm=planFor(h,(typeof farms!=='undefined'&&farms[cf])?farms[cf].name:'');
+  if(_pm){
+    const _a=D(h.age),_mc=manualUpTo(_pm.p,_a).length,_ck=_pm.p.choke.length,_au=_ck+_pm.p.steps.reduce((s,x)=>s+x.fans.length,0);
+    ventMax=Math.min(h.fans,_mc+_au);ventMin=Math.min(h.fans,_mc+_ck);
+  }
+  else if(h.age<=7){ventMax=Math.min(h.fans,4);ventMin=Math.min(1,ventMax);}
+  // fallback (ไม่มีแผน) = สูตรตรง Excel "พัดลมขั้นต่ำ": ⌈cfm/kg × นน.กก. × ไก่ ÷ ประสิทธิภาพพัดลม⌉ (vmaxRaw) · คง floor 4 ตัว
   else{ventMax=Math.max(vmaxRaw(fanCFM,h.birds,h.fans,h.age),Math.min(h.fans,4));ventMin=Math.min(ventMax,Math.max(1,Math.ceil(needMin)));ventMin=Math.max(ventMin,ventMax-GAP);}
   const velMax=cross>0?(ventMax*fm)/cross:0;
   const padNeeded=(h.age>7)&&(velMax>comfort+0.001);
