@@ -68,6 +68,8 @@
   /* ===== สรุปผู้บริหาร (หน้าเดียว สำหรับแคปหน้าจอ) ===== */
   .execbtn{font-family:inherit;font-size:12.5px;font-weight:600;color:#fff;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.55);border-radius:999px;padding:8px 15px;cursor:pointer}
   .execbtn:hover{background:rgba(255,255,255,.32)}
+  .execfab{position:fixed;right:16px;bottom:16px;z-index:40;display:none;align-items:center;gap:7px;font-family:inherit;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(135deg,#FF5A3C,#E5326B);border:none;border-radius:999px;padding:13px 21px;box-shadow:0 8px 24px rgba(214,40,90,.45);cursor:pointer}
+  .execfab:hover{filter:brightness(1.06)}
   .execwrap{position:fixed;inset:0;background:rgba(40,17,24,.6);z-index:60;display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:16px}
   .execwrap.on{display:flex}
   .execcard{background:#fff;border-radius:18px;width:100%;max-width:1000px;box-shadow:0 24px 70px rgba(0,0,0,.35);overflow:hidden}
@@ -164,6 +166,8 @@
     </div>
   </div>
 </div>
+
+<button class="execfab" id="execFab">📋 สรุปผู้บริหาร</button>
 
 <div class="execwrap" id="execWrap">
   <div class="execcard" id="execCard">
@@ -380,6 +384,7 @@ function render(){
   const st=statusOf(totPct), badge=document.getElementById('statusBadge');
   badge.style.display=''; badge.textContent='ภาพรวม: '+st.t; badge.style.color=st.c;
   const eb=document.getElementById('execBtn'); if(eb)eb.style.display='';
+  const ef=document.getElementById('execFab'); if(ef)ef.style.display='inline-flex';
 
   // pivot + status
   let ph='<tr><th>ฟาร์ม</th><th>เล้า</th><th>ลงไก่</th><th>ตายวันนี้</th><th>ตายสะสม</th><th>%สะสม</th><th>สถานะ</th></tr>';
@@ -532,6 +537,7 @@ fileInput.addEventListener('change',e=>handleFiles(e.target.files));
 drop.addEventListener('drop',e=>{handleFiles(e.dataTransfer.files);});
 document.getElementById('selFarm').addEventListener('change',e=>{drawTrend(+e.target.value);drawRate(+e.target.value);});
 document.getElementById('execBtn').addEventListener('click',openExec);
+document.getElementById('execFab').addEventListener('click',openExec);
 document.getElementById('execClose').addEventListener('click',closeExec);
 document.getElementById('execWrap').addEventListener('click',e=>{if(e.target.id==='execWrap')closeExec();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeExec();});
