@@ -22,34 +22,38 @@ function smartFarmName(wb,fileName){
   for(var i=0;i<texts.length;i++){var m=texts[i].match(/ฟาร์ม[\s.…]*([ก-๙a-zA-Z]{2,})/);if(m){var nm=m[1].replace(/รุ่น.*$/,'').trim();if(nm.length>=2)return'ฟาร์ม '+nm;}}  // 3) จับชื่อจาก title
   return 'ฟาร์ม '+((fileName||'').replace(/\.xlsx?$/i,'').replace(/ใบหน้าเล้า|ฟาร์ม|รุ่นที่|รุ่น/g,'').replace(/[0-9.()_\-]+/g,' ').replace(/\s+/g,' ').trim()||'นำเข้า');  // 4) จากชื่อไฟล์
 }
-/* อ่านยอดตายรายวันจากชีต H — รองรับ 2 เทมเพลต:
-   (1) แบบเก่า: คอลัมน์ B = วันอายุ 1..42, W = สูญเสีย/วัน (1 แถว/วัน)
-   (2) แบบบล็อกรายสัปดาห์ (ไฟล์ PPF ปัจจุบัน ทุกฟาร์ม): วันอายุไม่ได้อยู่คอลัมน์ B
-       (อยู่คอลัมน์ A แบบเยื้อง + วันที่คอลัมน์ C เป็นข้อความ/serial) → อ่านยอดตายคอลัมน์ W
-       ของ "แถวข้อมูล" เรียงตามลำดับเป็นวัน 1,2,3,...  แถวข้อมูล = W เป็นตัวเลข,
-       ไม่ใช่หัวตาราง, ข้ามแถวหัวไฟล์ (rr<6), ข้ามแถวสรุป/รวม (A>=200 หรือมีค่าในคอลัมน์ Z) */
+/* อ่านยอดตาย/คัด เช้า–เย็น รายวันจากชีต H — คอลัมน์ (ตรงกันทุกฟาร์ม PPF):
+   B=อายุ(วัน) · C=วันที่ · Q=ตายเช้า · R=คัดเช้า · S=ตายเย็น · T=คัดเย็น · W=สูญเสียรวม(สูตร)
+   รองรับ 2 เทมเพลต:
+   (1) คอลัมน์ B = วันอายุ 1..42 (ปกติทุกไฟล์ที่ cache ค่าไว้)
+   (2) บล็อกรายสัปดาห์ที่ B ไม่อยู่ → ไล่แถวข้อมูล (มี Q หรือ S เป็นตัวเลข) เรียงเป็นวัน 1,2,3..
+       ข้ามแถวหัวไฟล์ (rr<6) + แถวรวม (A>=200). [ตรวจแล้ว Q+R+S+T = W เป๊ะทุกเล้า 3 ฟาร์ม] */
 function readHouseDead(ws){
-  var dead=zeros(),last=0;
+  var mD=zeros(),mC=zeros(),eD=zeros(),eC=zeros(),last=0;
   var rng=XLSX.utils.decode_range(ws['!ref']); var maxR=Math.min(rng.e.r,rng.s.r+1000);
+  var rd=function(col,rr){var c=ws[col+rr];return c&&c.t!=='e'&&c.t!=='s'&&typeof c.v==='number'?Math.round(c.v):0;};
   // วิธี (1) คอลัมน์ B = วันอายุ
   var usedB=false;
   for(var r=rng.s.r;r<=maxR;r++){
     var rr=r+1, bc=ws['B'+rr]; if(!bc||bc.t==='e'||typeof bc.v!=='number')continue;
     var day=bc.v; if(!(Number.isInteger(day)&&day>=1&&day<=42))continue;
-    var wc=ws['W'+rr]; if(!wc||wc.t==='e'||typeof wc.v!=='number')continue;
-    dead[day-1]=Math.round(wc.v); if(wc.v>0)last=Math.max(last,day); usedB=true;
+    mD[day-1]=rd('Q',rr);mC[day-1]=rd('R',rr);eD[day-1]=rd('S',rr);eC[day-1]=rd('T',rr);
+    if(mD[day-1]+mC[day-1]+eD[day-1]+eC[day-1]>0)last=Math.max(last,day); usedB=true;
   }
-  if(usedB)return {dead:dead,last:last};
-  // วิธี (2) บล็อกรายสัปดาห์ — อ่าน W ตามลำดับแถวข้อมูล
-  var di=0;
-  for(var r2=rng.s.r;r2<=maxR;r2++){
-    var rr2=r2+1; if(rr2<6)continue;
-    var w=ws['W'+rr2]; if(!w||w.t==='s'||w.t==='e'||typeof w.v!=='number')continue;  // ข้ามหัวตาราง(ข้อความ)
-    var a=ws['A'+rr2]; if(a&&typeof a.v==='number'&&a.v>=200)continue;               // ข้ามแถวรวม (A=260,261,...)
-    var z=ws['Z'+rr2]; if(z&&z.v!=null&&z.v!=='')continue;                           // ข้ามแถวสะสม (มี ยอดคงเหลือ/ratio)
-    if(di<42){dead[di]=Math.round(w.v); if(w.v>0)last=di+1; di++;}
+  if(!usedB){
+    // วิธี (2) บล็อกรายสัปดาห์ — ไล่แถวข้อมูลตามลำดับ
+    var di=0;
+    for(var r2=rng.s.r;r2<=maxR;r2++){
+      var rr2=r2+1; if(rr2<6)continue;
+      var q=ws['Q'+rr2], s2=ws['S'+rr2];
+      var hasQ=q&&q.t!=='s'&&q.t!=='e'&&typeof q.v==='number';
+      var hasS=s2&&s2.t!=='s'&&s2.t!=='e'&&typeof s2.v==='number';
+      if(!hasQ&&!hasS)continue;                                                       // ข้ามหัวตาราง(ข้อความ "เช้า")
+      var a=ws['A'+rr2]; if(a&&typeof a.v==='number'&&a.v>=200)continue;              // ข้ามแถวรวม
+      if(di<42){mD[di]=rd('Q',rr2);mC[di]=rd('R',rr2);eD[di]=rd('S',rr2);eC[di]=rd('T',rr2);if(mD[di]+mC[di]+eD[di]+eC[di]>0)last=di+1;di++;}
+    }
   }
-  return {dead:dead,last:last};
+  return {mD:mD,mC:mC,eD:eD,eC:eC,last:last};
 }
 function parseWB(wb,name){
   var houses=[];
@@ -58,7 +62,9 @@ function parseWB(wb,name){
     var ws=wb.Sheets[sn]; if(!ws||!ws['!ref'])return;
     var birds=Math.round(num(ws['W4'])); if(birds<=1000)return;
     var d=readHouseDead(ws);
-    houses.push({name:'เล้า '+sn.replace(/[^0-9]/g,''),birds:birds,dead:d.dead,cull:zeros(),age:d.last});
+    var dead=zeros(),cull=zeros();
+    for(var i=0;i<42;i++){dead[i]=d.mD[i]+d.eD[i];cull[i]=d.mC[i]+d.eC[i];}            // ตายรวม=เช้า+เย็น, คัดรวม=เช้า+เย็น
+    houses.push({name:'เล้า '+sn.replace(/[^0-9]/g,''),birds:birds,dead:dead,cull:cull,mDead:d.mD,mCull:d.mC,eDead:d.eD,eCull:d.eC,age:d.last});
   });
   return houses.length?{name:name,houses:houses}:null;
 }
@@ -87,7 +93,8 @@ function parseFace(wb){
     var ws=wb.Sheets[sn]; if(!ws||!ws['!ref'])return;
     var birds=Math.round(num(ws['W4'])); if(!(birds>1000))return;
     var d=readHouseDead(ws);
-    out.push({num:+sn.replace(/[^0-9]/g,''),birds:birds,dead:d.dead,age:Math.max(1,d.last)});
+    var loss=zeros();for(var i=0;i<42;i++)loss[i]=d.mD[i]+d.mC[i]+d.eD[i]+d.eC[i];        // ใบหน้าเล้า→แอปหลัก ใช้สูญเสียรวม/วัน
+    out.push({num:+sn.replace(/[^0-9]/g,''),birds:birds,dead:loss,age:Math.max(1,d.last)});
   });
   return out.sort(function(a,b){return a.num-b.num;});
 }
