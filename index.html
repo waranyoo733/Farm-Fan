@@ -125,19 +125,32 @@
   .t-feed{border-left-color:#E5532B;color:#C24218}
   .t-light{border-left-color:#D9920E;color:#9A5E0A}
   .t-fan{background:#fff;border-color:var(--line)}
-  .kpi6{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:15px;overflow:hidden;margin-bottom:6px}
-  .kpi6 .k{background:#fff;padding:12px 7px 11px;text-align:center;display:flex;flex-direction:column;align-items:center;min-height:82px;position:relative}
-  .padzoom{position:absolute;top:5px;right:5px;width:22px;height:22px;border:none;border-radius:50%;background:var(--green-l);color:var(--green-d);font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .kpi6{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:8px}
+  .kpi6 .k{border-radius:14px;padding:11px 11px 12px;display:flex;flex-direction:column;align-items:flex-start;min-height:90px;position:relative;overflow:hidden;background:#fff;--kc:#16A34A;--kct:var(--ink)}
+  .kpi6 .k::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--kc)}
+  .kpi6 .kico{width:20px;height:20px;color:var(--kc);margin-bottom:7px;display:flex}
+  .kpi6 .kico svg{width:20px;height:20px}
+  .padzoom{position:absolute;top:7px;right:7px;width:23px;height:23px;border:none;border-radius:50%;background:rgba(255,255,255,.72);color:var(--kct);font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
   .padzoom:active{transform:scale(.9)}
-  .kpi6 .kl{font-size:12px;color:var(--muted);font-weight:500;line-height:1.2;margin-bottom:4px}
-  .kpi6 .kv{font-size:24px;font-weight:700;color:var(--ink);line-height:1.02}
-  .kpi6 .kv i{font-size:12.5px;font-weight:500;color:var(--muted);font-style:normal;margin-left:2px}
-  .kpi6 .kv.temp{color:#C01038}.kpi6 .kv.pump{color:#1E54B0}
-  .kpi6 .ks{font-size:10.5px;color:var(--muted);margin-top:auto;padding-top:3px;line-height:1.3;opacity:.92}
-  .kpi6 .kwide{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;align-items:baseline;justify-content:center;gap:3px 10px;min-height:0;padding:11px 12px;background:var(--green-l2)}
-  .kpi6 .kwide .kl{margin-bottom:0;font-size:12.5px;font-weight:700;color:var(--green-dd)}
-  .kpi6 .kwide .kv{line-height:1;color:var(--green-d)}
-  .kpi6 .kwide .ks{margin-top:0;padding-top:0;opacity:1;flex-basis:100%}
+  .kpi6 .kl{font-size:11px;color:var(--kct);font-weight:500;line-height:1.18;margin-bottom:5px;opacity:.92}
+  .kpi6 .kv{font-size:23px;font-weight:700;color:var(--kct);line-height:1;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}
+  .kpi6 .kv i{font-size:11px;font-weight:500;color:var(--kct);opacity:.6;font-style:normal;margin-left:2px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif}
+  .kpi6 .rdash{opacity:.5;margin:0 2px}
+  .kpi6 .ks{font-size:10px;color:var(--kct);opacity:.72;margin-top:5px;line-height:1.25}
+  .kpi6 .k-red{background:#FDEEEE;--kc:#E24B4A;--kct:#A32D2D}
+  .kpi6 .k-blue{background:#E9F2FC;--kc:#378ADD;--kct:#185FA5}
+  .kpi6 .k-teal{background:#E3F6EF;--kc:#1D9E75;--kct:#0F6E56}
+  .kpi6 .k-green{background:#EDF5E1;--kc:#639922;--kct:#3B6D11}
+  .kpi6 .k-amber{background:#FCF1DF;--kc:#D68A12;--kct:#854F0B}
+  .kpi6 .k-purple{background:#F0EFFE;--kc:#7F77DD;--kct:#534AB7}
+  .kpi6 .kwide{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;align-items:center;gap:3px 9px;min-height:0;padding:12px 13px;background:#E3F6EF;--kc:#1D9E75;--kct:#0F6E56}
+  .kpi6 .kwide .kl{margin-bottom:0;font-size:12px;font-weight:700}
+  .kpi6 .kwide .kv{line-height:1}
+  .kpi6 .kwide .ks{margin-top:0;flex-basis:100%;opacity:.85;font-family:system-ui,-apple-system,'Segoe UI',sans-serif}
+  .capbtn{flex:none;display:inline-flex;align-items:center;gap:5px;font-family:inherit;font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;background:rgba(255,255,255,.95);color:var(--green-d);border:none;cursor:pointer;white-space:nowrap}
+  .capbtn svg{width:15px;height:15px}
+  .capbtn:active{transform:scale(.94)}
+  .capbtn:disabled{opacity:.55;cursor:wait}
   .fanrow{display:flex;align-items:flex-end;gap:12px;margin-bottom:11px}
   .fanrow .fc{text-align:center}
   .fanrow .fc.mn{color:var(--green-d)}.fanrow .fc.mx{color:var(--amber)}
@@ -696,17 +709,17 @@ function ventCard(h,i){
     :r.padNeeded
     ?`<div class="advice warn">${I.alert}<div><b>เปิด Cooling pad</b> — เปิดพัดลม ${r.ventMax} ตัวแล้วลม ${r.velMax.toFixed(2)} m/s เกินที่ไก่ทน (${r.comfort.toFixed(1)}) ใช้แพดลดอุณหภูมิแทนการเพิ่มลม</div></div>`
     :`<div class="advice ok">${I.check}<div>ลมที่พัดลมสูงสุด ${r.velMax.toFixed(2)} m/s ยังไม่เกินที่ไก่ทน (${r.comfort.toFixed(1)}) — ระบายด้วยพัดลมพอ</div></div>`)+windTip;
-  return `<div class="card" data-i="${i}"><div class="chead"><span class="badge">${i+1}</span><div class="nm">${esc(h.name)}</div><button class="manchip" type="button" data-cfauto title="พัดลมคิดผ้าม่านถูกตั้งค่าเอง — แตะเพื่อกลับอัตโนมัติ" style="display:${h.padFansAuto===false?'inline-flex':'none'}">✋ ตั้งมือ</button></div><div class="body">
+  return `<div class="card" data-i="${i}"><div class="chead"><span class="badge">${i+1}</span><div class="nm">${esc(h.name)}</div><button class="manchip" type="button" data-cfauto title="พัดลมคิดผ้าม่านถูกตั้งค่าเอง — แตะเพื่อกลับอัตโนมัติ" style="display:${h.padFansAuto===false?'inline-flex':'none'}">✋ ตั้งมือ</button><button class="capbtn" type="button" data-cap aria-label="แคปการ์ดเป็นรูปภาพ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2 2 0 0 1 5 6.5h2l1.2-1.8a1 1 0 0 1 .83-.45h5.94a1 1 0 0 1 .83.45L17 6.5h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.2"/></svg>แคป</button></div><div class="body">
     ${dateRow(h)}
     <div class="agewrap"><span class="t">อายุไก่</span><button class="agebtn" data-agestep="-1" type="button" aria-label="ลดอายุ 1 วัน">−</button><span class="agebig"><b class="ageval">${h.age}</b> วัน</span><button class="agebtn" data-agestep="1" type="button" aria-label="เพิ่มอายุ 1 วัน">+</button></div>
     <div class="o-date"></div>
     <div class="kpi6">
-      <div class="k"><div class="kl">อุณหภูมิเป้า</div><div class="kv temp"><span class="o-tt">–</span><i>°C</i></div><div class="ks">ตั้งหน้าตู้คอนโทรล</div></div>
-      <div class="k"><div class="kl">ปั๊มน้ำ/แพด</div><div class="kv pump"><span class="o-pump">–</span><i>°C</i></div><div class="ks">เป้าหมาย + 3°</div></div>
-      <div class="k"><div class="kl">พัดลม (ตัว)</div><div class="kv"><span class="o-min">–</span><i>–</i><span class="o-max">–</span></div><div class="ks o-minsub">จาก ${h.fans} ตัว</div></div>
-      <div class="k"><button class="padzoom" type="button" aria-label="ดูภาพการเปิดผ้าม่าน">🔍</button><div class="kl">เปิดผ้าม่าน</div><div class="kv"><span class="o-openh">–</span><i>ซม.</i></div><div class="ks o-padsub">&nbsp;</div></div>
-      <div class="k"><div class="kl">ความเข้มแสง</div><div class="kv"><span class="o-lux">–</span><i>lux</i></div><div class="ks">เปิดไฟ <span class="o-lhr">–</span> ชม./วัน</div></div>
-      <div class="k"><div class="kl">อาหาร/ตัว</div><div class="kv"><span class="o-fd">–</span><i>g</i></div><div class="ks o-fdsub">&nbsp;</div></div>
+      <div class="k k-red"><span class="kico">${I.temp}</span><div class="kl">อุณหภูมิเป้า</div><div class="kv"><span class="o-tt">–</span><i>°C</i></div></div>
+      <div class="k k-blue"><span class="kico">${I.drop}</span><div class="kl">ปั๊มน้ำ/แพด</div><div class="kv"><span class="o-pump">–</span><i>°C</i></div></div>
+      <div class="k k-teal"><span class="kico">${I.fan}</span><div class="kl">พัดลม (ตัว)</div><div class="kv"><span class="o-min">–</span><span class="rdash">–</span><span class="o-max">–</span></div></div>
+      <div class="k k-green"><button class="padzoom" type="button" aria-label="ดูภาพการเปิดผ้าม่าน">🔍</button><span class="kico">${I.pad}</span><div class="kl">เปิดผ้าม่าน</div><div class="kv"><span class="o-openh">–</span><i>ซม.</i></div></div>
+      <div class="k k-amber"><span class="kico">${I.sun}</span><div class="kl">ความเข้มแสง</div><div class="kv"><span class="o-lux">–</span><i>lux</i></div><div class="ks">ไฟ <span class="o-lhr">–</span> ชม.</div></div>
+      <div class="k k-purple"><span class="kico">${I.feed}</span><div class="kl">อาหาร/ตัว</div><div class="kv"><span class="o-fd">–</span><i>g</i></div></div>
       <div class="k kwide"><div class="kl">🌬️ ลมที่ไก่ต้องการ (อายุนี้)</div><div class="kv"><span class="o-wind">–</span><i>m/s</i></div><div class="ks"><span class="o-windft">–</span> ft/min · สูงสุดที่ไก่ทนได้ <span class="o-windmax">–</span> m/s</div></div>
     </div>
     <div class="fanplan o-fanplan">${fanPlanHTML(h,farms[cf].name)}</div>
@@ -1031,6 +1044,8 @@ document.querySelector('.wrap').addEventListener('click',e=>{
   if(fw){const el=fw.closest('.card');if(el){const h=houses()[+el.dataset.i];const pm=planFor(h,farms[cf].name);if(pm)openFanModal(pm.p,h.age,h.name);}return;}
   const pz=e.target.closest('.padzoom');
   if(pz){const el=pz.closest('.card');if(el){openPadModal(houses()[+el.dataset.i]);}return;}
+  const cb=e.target.closest('.capbtn');
+  if(cb){const el=cb.closest('.card');if(el){capCard(el,houses()[+el.dataset.i]);}return;}
   const leg=e.target.closest('.fplegend');
   if(leg){leg.classList.toggle('faded');return;}
   const an=e.target.closest('.advnote');
@@ -1207,6 +1222,27 @@ function openPadModal(h){
   document.getElementById('padmodalSub').textContent='เปิดจากด้านบนลงมา '+Math.round((r.openH||0)*100)+' ซม. · ใช้พัดลม '+r.used+'/'+h.fans+' ตัว · แพดสูง '+(+h.padH||1.8)+' ม.';
   document.getElementById('padmodalBody').innerHTML=padDiagramSVG(h,r);
   document.getElementById('padmodal').classList.add('show');
+}
+function capCard(el,h){
+  var cap=el.querySelector('.capbtn'); var lbl=cap?cap.querySelector('svg'):null;
+  function go(){
+    if(cap){cap.disabled=true;}
+    var bg=getComputedStyle(document.body).backgroundColor||'#eef6ef';
+    window.html2canvas(el,{backgroundColor:bg,scale:2,useCORS:true,onclone:function(doc){
+      var c=doc.querySelector('.card[data-i="'+el.dataset.i+'"] .capbtn'); if(c)c.style.visibility='hidden';
+    }}).then(function(cv){
+      cv.toBlob(function(b){
+        if(!b){if(cap)cap.disabled=false;return;}
+        var url=URL.createObjectURL(b),a=document.createElement('a');
+        a.href=url;a.download=((h&&h.name)?h.name:'เล้า')+' อายุ'+(h?h.age:'')+'วัน.png';
+        document.body.appendChild(a);a.click();a.remove();
+        setTimeout(function(){URL.revokeObjectURL(url);},1500);
+        if(cap)cap.disabled=false;
+      },'image/png');
+    }).catch(function(){if(cap)cap.disabled=false;alert('แคปไม่สำเร็จ ลองใหม่อีกครั้ง');});
+  }
+  if(window.html2canvas)return go();
+  var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';s.onload=go;s.onerror=function(){alert('โหลดตัวแคปไม่ได้ (เช็คเน็ต)');};document.head.appendChild(s);
 }
 function closePadModal(){document.getElementById('padmodal').classList.remove('show');}
 document.getElementById('padClose').addEventListener('click',closePadModal);
