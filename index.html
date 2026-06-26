@@ -531,6 +531,7 @@ const chokeText=c=>'ทำ '+chokeOnU(c)+' หยุด '+c.off+' นาที';
 const chokeShort=c=>(c.on>=1?c.on+'น.':Math.round(c.on*60)+'วิ.')+' / '+c.off+'น.';
 function fanCFMof(h){const side=h.fan*2.514/30.48,area=side*side,avg=h.pts.reduce((a,b)=>a+(+b||0),0)/9;return area*avg;}
 const fmtMinT=m=>m<=0?'0':(m<1?Math.round(m*60)+' วินาที':(Math.round(m*10)/10)+' นาที');
+const fmtMc=m=>m<=0?'0':(m<1?Math.round(m*60)+'วิ':(Math.round(m*10)/10)+'น');
 // พัดลมขั้นต่ำ + เวลาทำงาน (สูตรหมอตั้ม): I = อากาศต้องการ ÷ ประสิทธิภาพพัดลม/ตัว · เดินโช๊คเป็นรอบ 5 นาที
 function minFan(h,nck){
   const fc=fanCFMof(h),wkg=bw(h.age)/1000,q=cfmkg(h.age)*wkg*(+h.birds||0),I=fc>0?q/fc:0,TC=5;
@@ -802,7 +803,7 @@ function ventCard(h,i){
     <div class="kpi6">
       <div class="k k-red"><span class="kico">${I.temp}</span><div class="kl">อุณหภูมิเป้า</div><div class="kv"><span class="o-tt">–</span><i>°C</i></div></div>
       <div class="k k-blue"><span class="kico">${I.drop}</span><div class="kl">ปั๊มน้ำ/แพด</div><div class="kv"><span class="o-pump">–</span><i>°C</i></div></div>
-      <div class="k k-teal kfan" role="button" tabindex="0" aria-label="ดูแผนการทำงานพัดลม"><span class="kfanchev">▾</span><span class="kico">${I.fan}</span><div class="kl">พัดลม (ตัว)</div><div class="kv"><span class="o-min">–</span><span class="rdash">–</span><span class="o-max">–</span></div></div>
+      <div class="k k-teal kfan" role="button" tabindex="0" aria-label="ดูแผนการทำงานพัดลม"><span class="kfanchev">▾</span><span class="kico">${I.fan}</span><div class="kl">พัดลม (ตัว)</div><div class="kv"><span class="o-min">–</span><span class="rdash">–</span><span class="o-max">–</span></div><div class="ks o-cksub"></div></div>
       <div class="k k-green"><button class="padzoom" type="button" aria-label="ดูภาพการเปิดผ้าม่าน">🔍</button><span class="kico">${I.pad}</span><div class="kl">เปิดผ้าม่าน</div><div class="kv"><span class="o-openh">–</span><i>ซม.</i></div></div>
       <div class="k k-amber"><span class="kico">${I.sun}</span><div class="kl">ความเข้มแสง</div><div class="kv"><span class="o-lux">–</span><i>lux</i></div><div class="ks">ไฟ <span class="o-lhr">–</span> ชม.</div></div>
       <div class="k k-purple"><span class="kico">${I.feed}</span><div class="kl">อาหาร/ตัว</div><div class="kv"><span class="o-fd">–</span><i>g</i></div></div>
@@ -964,6 +965,9 @@ function refreshVent(el){
   setT(el,'.o-lux',r.lx);setT(el,'.o-lhr',r.lhr);
   setT(el,'.o-min',r.ventMin);setT(el,'.o-minsub',chokeText(r.choke));
   setT(el,'.o-max',r.ventMax);setT(el,'.o-maxsub',' ');
+  const _pm=planFor(h,farms[cf].name);
+  if(_pm&&_pm.p.choke.length){const _mf=minFan(h,_pm.p.choke.length);const _cyc=_mf.cont?'ต่อเนื่อง':'⏱ '+fmtMc(_mf.on)+'/'+fmtMc(_mf.off);setT(el,'.o-cksub','ขั้นต่ำ '+(Math.round(_mf.I*10)/10)+' ตัว · '+_cyc);}
+  else setT(el,'.o-cksub','');
   const fb=el.querySelector('.fanbar');
   if(fb){const tot=Math.max(1,h.fans),mnP=Math.min(100,r.ventMin/tot*100),mxP=Math.min(100,r.ventMax/tot*100);
     const fi=fb.querySelector('i');if(fi){fi.style.left=mnP+'%';fi.style.width=Math.max(2,mxP-mnP)+'%';}
