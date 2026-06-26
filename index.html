@@ -330,6 +330,9 @@
   .fpact-h{font-size:14px;font-weight:800;color:#137a3e;margin-bottom:8px}
   .fpact-n{font-size:15.5px;color:var(--ink);line-height:1.7}
   .fpnums b{display:inline-block;min-width:24px;text-align:center;background:#1faa59;color:#fff;border-radius:7px;padding:2px 7px;margin:2px 1px;font-size:16px}
+  .fpact-ck{margin-top:9px;background:#fce8f0;border-radius:8px;padding:7px 10px;font-size:14px;font-weight:700;color:#a23a66}
+  .fpact-ck b{display:inline-block;min-width:22px;text-align:center;background:#ec6ca0;color:#fff;border-radius:7px;padding:1px 7px;margin:0 1px;font-size:15px}
+  .fpact-ck .cknote{font-weight:500;font-size:12.5px;color:#8a4a64}
   .fptoday{margin-top:9px;background:#fff3d6;border-radius:8px;padding:7px 10px;font-size:14px;font-weight:700;color:#9a6700}
   .fpnext{margin-top:9px;font-size:14px;color:#e0541b;font-weight:700}
   .fpnext.done{color:#137a3e}
@@ -581,6 +584,7 @@ function fanPlanHTML(h,farmName){
   // 1) ใบสั่งเปิดมือวันนี้
   let act='<div class="fpact"><div class="fpact-h">📋 อายุ '+h.age+' วัน — สัตวบาลเปิดพัดลม "มือ" ตามนี้</div>'
     +'<div class="fpact-n">🟢 เปิด <b>'+st.man.length+'</b> ตัว: '+manList+'</div>';
+  if(p.choke.length)act+='<div class="fpact-ck">⚙ ตู้คุมเดินโช๊คอยู่: '+p.choke.map(n=>'<b>'+n+'</b>').join('')+' <span class="cknote">(เดินเป็นจังหวะ ระบายขั้นต่ำ · ไม่ต้องเปิดมือ)</span></div>';
   if(todayAdd)act+='<div class="fptoday">★ วันนี้เปิดเพิ่มตัวที่ '+todayAdd.fans.join(' · ')+'</div>';
   act+=st.next?'<div class="fpnext">⏭ ครั้งหน้า: <b>อายุ '+st.next.age+' วัน</b> (อีก '+(st.next.age-a)+' วัน) เปิดเพิ่มตัวที่ '+st.next.fans.join(' · ')+'</div>':'<div class="fpnext done">✓ เปิดมือครบทุกตัวแล้ว</div>';
   act+='</div>';
