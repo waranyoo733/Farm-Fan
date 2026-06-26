@@ -72,6 +72,9 @@
   .chead input.nm{border:none;background:transparent;font-family:inherit;color:#fff;border-bottom:1px dashed rgba(255,255,255,.75)}
   .chead input.nm::placeholder{color:rgba(255,255,255,.7)}
   .chead input.nm:focus{outline:2px solid #fff;border-radius:6px;border-bottom-color:transparent}
+  .manchip{flex:none;display:inline-flex;align-items:center;gap:4px;font-family:inherit;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:999px;background:#FEF3C7;color:#92400E;border:1px solid #F59E0B;cursor:pointer;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .manchip:active{transform:scale(.93)}
+  .manchip:disabled{opacity:.55;cursor:not-allowed}
   .editic{flex:none;color:rgba(255,255,255,.92);display:flex;align-items:center;cursor:pointer}
   .editic svg{width:19px;height:19px}
   .xbtn{border:none;background:transparent;color:rgba(255,255,255,.9);font-size:22px;cursor:pointer;line-height:1;padding:2px 6px}
@@ -693,7 +696,7 @@ function ventCard(h,i){
     :r.padNeeded
     ?`<div class="advice warn">${I.alert}<div><b>เปิด Cooling pad</b> — เปิดพัดลม ${r.ventMax} ตัวแล้วลม ${r.velMax.toFixed(2)} m/s เกินที่ไก่ทน (${r.comfort.toFixed(1)}) ใช้แพดลดอุณหภูมิแทนการเพิ่มลม</div></div>`
     :`<div class="advice ok">${I.check}<div>ลมที่พัดลมสูงสุด ${r.velMax.toFixed(2)} m/s ยังไม่เกินที่ไก่ทน (${r.comfort.toFixed(1)}) — ระบายด้วยพัดลมพอ</div></div>`)+windTip;
-  return `<div class="card" data-i="${i}"><div class="chead"><span class="badge">${i+1}</span><div class="nm">${esc(h.name)}</div></div><div class="body">
+  return `<div class="card" data-i="${i}"><div class="chead"><span class="badge">${i+1}</span><div class="nm">${esc(h.name)}</div><button class="manchip" type="button" data-cfauto title="พัดลมคิดผ้าม่านถูกตั้งค่าเอง — แตะเพื่อกลับอัตโนมัติ" style="display:${h.padFansAuto===false?'inline-flex':'none'}">✋ ตั้งมือ</button></div><div class="body">
     ${dateRow(h)}
     <div class="agewrap"><span class="t">อายุไก่</span><button class="agebtn" data-agestep="-1" type="button" aria-label="ลดอายุ 1 วัน">−</button><span class="agebig"><b class="ageval">${h.age}</b> วัน</span><button class="agebtn" data-agestep="1" type="button" aria-label="เพิ่มอายุ 1 วัน">+</button></div>
     <div class="o-date"></div>
@@ -872,6 +875,8 @@ function refreshVent(el){
   setT(el,'.o-cfans',r.used);
   const cfm=el.querySelector('.o-cfmode');
   if(cfm){const auto=(h.padFansAuto!==false);cfm.textContent=auto?'⚙ อัตโนมัติ (= สูงสุด)':'↺ กลับอัตโนมัติ';cfm.className='cfmode o-cfmode'+(auto?'':' manual');}
+  const mc=el.querySelector('.manchip');
+  if(mc)mc.style.display=(h.padFansAuto===false)?'inline-flex':'none';
   setT(el,'.o-fd',r.fd);
   setT(el,'.o-fdsub','ทั้งเล้า '+Math.round(r.fhouse).toLocaleString()+' kg/วัน ('+r.alive.toLocaleString()+' ตัว)');
   setT(el,'.o-wind',r.windTarget.toFixed(2));setT(el,'.o-windft',Math.round(r.windTarget*196.85));setT(el,'.o-windmax',r.comfort.toFixed(1));
@@ -925,7 +930,7 @@ function applyLock(){
   const lock=!canEdit;
   document.body.classList.toggle('locked',lock);
   document.querySelectorAll('#grid input,#grid select,#toolbar input').forEach(x=>{x.disabled=lock;});
-  document.querySelectorAll('#grid .todaybtn,#grid .xbtn,#grid .agebtn,#grid .cfmode,#grid .copyhouse,#addHouse,#addFarm,#delFarm').forEach(b=>{if(b)b.disabled=lock;});
+  document.querySelectorAll('#grid .todaybtn,#grid .xbtn,#grid .agebtn,#grid .cfmode,#grid .manchip,#grid .copyhouse,#addHouse,#addFarm,#delFarm').forEach(b=>{if(b)b.disabled=lock;});
   updateLockBtn();
 }
 function tryUnlock(){
