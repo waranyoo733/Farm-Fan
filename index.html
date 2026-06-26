@@ -226,6 +226,11 @@
   .backhome{flex:none;border:1px solid var(--green-br);background:var(--green-l);color:var(--green-d);font-family:inherit;font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;cursor:pointer;margin-right:4px}
   .backhome:hover{background:var(--green-l2)}
   .backhome:active{transform:scale(.96)}
+  .aihero2{position:relative;width:100%;max-width:1120px;margin:4px auto 0;border-radius:20px;overflow:hidden;background:#E9F2EC;box-shadow:0 16px 44px rgba(16,90,60,.2);line-height:0}
+  .aihero2 .aiimg{display:block;width:100%;height:auto}
+  .hot{position:absolute;transform:translate(-50%,-50%);background:transparent;border:none;border-radius:14px;cursor:pointer;padding:0;transition:background .12s,box-shadow .12s}
+  .hot:hover{background:rgba(94,234,212,.16);box-shadow:0 0 0 2px rgba(94,234,212,.55)}
+  .hot:active{background:rgba(94,234,212,.28)}
   .aihero{position:relative;container-type:inline-size;width:100%;max-width:1120px;margin:4px auto 0;aspect-ratio:1280/770;border-radius:20px;overflow:hidden;background:#E9F2EC;box-shadow:0 16px 44px rgba(16,90,60,.2)}
   .aihero .aibg{position:absolute;inset:0;width:100%;height:100%}
   .aicard{position:absolute;transform:translate(-50%,-50%);width:9cqw;min-width:64px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:.4cqw;padding:1.1cqw .5cqw;background:rgba(7,36,30,.74);border:1px solid rgba(52,211,153,.6);border-radius:1.4cqw;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);box-shadow:0 0 1.4cqw rgba(52,211,153,.32);cursor:pointer;color:#EAFBF4;font-family:inherit;transition:transform .15s,box-shadow .15s;z-index:2}
@@ -1111,7 +1116,26 @@ function homeGo(t){
     else if(t==='pad'){if(typeof openPadModal==='function')openPadModal(houses()[0]);}
   },50);
 }
+function renderHomeSVG(){var g=document.getElementById('grid');if(g&&tab==='home')g.innerHTML=homeHeroSVG();}
 function homeHero(){
+  const hot=(l,t,w,h,act,lb)=>`<button class="hot" style="left:${l}%;top:${t}%;width:${w}%;height:${h}%" onclick="${act}" title="${lb}" aria-label="${lb}"></button>`;
+  return `<div style="padding:2px 0"><div id="homewrap" class="aihero2">
+  <img class="aiimg" src="home-render.jpg" alt="PPF Smart Farm" onerror="renderHomeSVG()">
+  ${hot(20,38,17,9,"goTab('vent')",'ระบายอากาศ')}
+  ${hot(19,47,17,9,"goTab('feed')",'อาหาร')}
+  ${hot(20,56,17,9,"goTab('analytics')",'วิเคราะห์')}
+  ${hot(50,33,9,14,"goTab('vent')",'อุณหภูมิเป้า')}
+  ${hot(49,49,9,14,"goTab('vent')",'ปั๊มน้ำ/แพด')}
+  ${hot(50,67,9,15,"homeGo('pad')",'เปิดผ้าม่าน')}
+  ${hot(60,30,9,13,"goTab('vent')",'ความเข้มแสง')}
+  ${hot(80,33,9,14,"homeGo('fan')",'พัดลม')}
+  ${hot(80,49,9,14,"goTab('feed')",'อาหาร/ตัว')}
+  ${hot(80,67,9,15,"goTab('mortality')",'ไก่ตาย')}
+  ${hot(66,48,7,12,"goTab('vent')",'AI')}
+  ${hot(70,87,23,12,"goTab('vent')",'เข้าสู่หน้าจัดการรายวัน')}
+  </div></div>`;
+}
+function homeHeroSVG(){
   const hs=houses(),N=hs.length,h0=hs[0],r0=calc(h0);
   const vTemp=r0.tt.toFixed(1)+'°C',vPump=r0.pump.toFixed(1)+'°C',vLux=r0.lx+' lux',vFan=r0.ventMin+'–'+r0.ventMax+' ตัว',vOpen=(r0.openH*100).toFixed(0)+' ซม.',vFeed=r0.fd+' g';
   const al=[];hs.forEach(function(h,i){try{if(calc(h).padNeeded)al.push(i+1);}catch(e){}});
