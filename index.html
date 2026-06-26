@@ -645,7 +645,8 @@ function calc(h){
   const reqFt=cross>0?reqAir/(cross*10.7639):0;
   const totW=(+h.padFront||0)+(+h.padLeft||0)+(+h.padRight||0);
   const cfauto=(h.padFansAuto!==false),cfans=cfauto?ventMax:Math.min(h.fans,Math.max(0,+h.padFans||0)),used=Math.min(h.fans,cfans);
-  const ratio=h.fans>0?used/h.fans:0,openH=(+h.padH||0)*ratio,openA=openH*totW,blocks=h.padBlock>0?openA/h.padBlock:0;
+  const padBlock=0.3*(+h.padH||0); // สูตรตายตัว: กว้างก้อน 0.3 ม. × ความสูงแพด
+  const ratio=h.fans>0?used/h.fans:0,openH=(+h.padH||0)*ratio,openA=openH*totW,blocks=padBlock>0?openA/padBlock:0;
   const padArea=totW*(+h.padH||0);
   const padVel=padArea>0?(h.fans*fm)/padArea:0;
   const alive=aliveAt(h,h.age);
@@ -733,7 +734,7 @@ function setCard(h,i){
     <div class="sublab">ขนาดโรงเรือน &amp; พัดลม</div>
     <div class="row">${fI('กว้างเล้า (ม.)','W',h.W,0.5)}${fI('ยาวเล้า (ม.)','L',h.L,1)}${fI('สูงเฉลี่ย (ม.)','H',h.H,0.1)}${fI('ขนาดพัดลม (นิ้ว)','fan',h.fan,1)}${fI('จำนวนพัดลม (ตัว)','fans',h.fans,1)}${fI('จำนวนไก่ (ตัว)','birds',h.birds,100)}</div>
     <div class="sublab">ขนาด Cooling pad (เมตร)</div>
-    <div class="row">${fI('หน้า','padFront',h.padFront,0.5)}${fI('ซ้าย','padLeft',h.padLeft,0.5)}${fI('ขวา','padRight',h.padRight,0.5)}${fI('พื้นที่/ก้อน','padBlock',h.padBlock,0.01)}</div>
+    <div class="row">${fI('หน้า','padFront',h.padFront,0.5)}${fI('ซ้าย','padLeft',h.padLeft,0.5)}${fI('ขวา','padRight',h.padRight,0.5)}${fI('สูง pad (ม.)','padH',h.padH,0.1)}</div>
     <div class="sublab">แรงลมที่วัดได้ 9 จุด (ft/min) — ใช้หาประสิทธิภาพพัดลม</div>
     <div class="pts">${h.pts.map((v,j)=>`<input type="number" data-pt="${j}" value="${v}" aria-label="จุด ${j+1}">`).join('')}</div>
     ${(houses().length>1||farms.length>1)?`<button class="btn copyhouse" type="button" data-copy="${i}" style="width:100%;margin-top:14px;justify-content:center">📋 ก๊อปค่าไปเล้าอื่น…</button>`:''}</div></div>`;
@@ -746,7 +747,7 @@ function guideCard(){
    ['4','พัดลมสูงสุด–ขั้นต่ำ','สูงสุด = ลมที่ต้องการ ÷ ประสิทธิภาพพัดลม (ปัดขึ้น, ≤ พัดลมจริง)','ขั้นต่ำ = ไม่ต่ำกว่า สูงสุด − 4 ตัว · วัน 1–7 สูงสุด ≤ 3','สูงสุด = อากาศร้อน/กลางวัน · ขั้นต่ำ = อากาศหนาว/กลางคืน (แค่คุณภาพอากาศ)'],
    ['5','พัดลมโช้ค (รอบหมุน)','วัน 0–6: เปิดสั้น/ปิดยาว (ดูตาราง) · วัน 7–42: เปิด 3 / ปิด 2 นาที','ช่วงกกระบายอากาศน้อยเพื่อรักษาความอุ่น','ลูกไก่ต้องการอากาศน้อย แต่ยังต้องไล่ความชื้น/แก๊ส จึงเปิดเป็นจังหวะสั้น ๆ'],
    ['6','ความเร็วลม & เปิดแพด','ความเร็วลม = (พัดลม × ประสิทธิภาพ) ÷ (กว้าง × สูงเฉลี่ย)','ถ้าลมเกินที่ไก่ทนได้ → เปิด Cooling pad','เพิ่มลมเกินทำให้ไก่เครียด ใช้แพดลดอุณหภูมิอากาศแทน ลมเท่าเดิมแต่เย็นลง'],
-   ['7','เปิดผ้าม่าน Cooling pad','ระยะเปิด = สูง pad × (พัดลมที่ใช้ ÷ พัดลมทั้งหมด)','เปิดมากเมื่อใช้พัดลมมาก','ให้ช่องลมผ่านแพดพอดีกับพัดลม ไม่อั้น (ลดความดันลบเกิน)'],
+   ['7','เปิดผ้าม่าน Cooling pad','ระยะเปิด = สูง pad × (พัดลมที่ใช้ ÷ พัดลมทั้งหมด) · ก้อน = พื้นที่ช่องเปิด ÷ (0.3 × สูง pad)','เปิดมากเมื่อใช้พัดลมมาก · 1 ก้อน = กว้าง 0.3 ม. × สูง pad','ให้ช่องลมผ่านแพดพอดีกับพัดลม ไม่อั้น (ลดความดันลบเกิน)'],
    ['8','อาหารรายวัน','% น้ำหนักตัว = อาหาร(g) ÷ น้ำหนัก(g) × 100 · ทั้งเล้า = อาหาร × ตัว ÷ 1000','ลูกไก่กิน ~17–25% ของน้ำหนัก ค่อยลดเหลือ ~6% เมื่อโต','เทียบกับน้ำหนักช่วยประเมินว่าไก่กินตามเกณฑ์ไหม (กินน้อย = ป่วย/เครียด)'],
    ['9','อาหารคงเหลือ','คงเหลือ = สต๊อก + รับเข้า − กินสะสม','ติดตามต่อหลังเพื่อสั่งอาหารทัน','กันอาหารหมดกลางรุ่น · รวมทั้งรุ่น ÷ น้ำหนักจับ = FCR (เป้า ~1.35)']
   ];
