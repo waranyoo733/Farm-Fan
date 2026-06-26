@@ -386,9 +386,15 @@
   .bstep .bpair{font-size:20px;color:var(--muted);font-weight:700;align-self:center}
   .g-ck{background:#ec6ca0}.g-s2{background:#f59e0b}.g-s3{background:#3b82c4}.g-s4{background:#8b5cf6}.g-man{background:#16a34a}
   .g-off{background:#dde1e7;color:#9aa1ab;box-shadow:inset 0 0 0 1px #c2cbc5}
-  .fpwrap{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
-  .fpwrap>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:11px;padding:12px 13px;background:linear-gradient(90deg,#E3F6EF,#EAF7F0)}
-  .fpwrap>summary::-webkit-details-marker{display:none}
+  .fanplan{margin:0;background:none;border:none;padding:0}
+  .fpnobox{background:#fff;border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin:12px 0}
+  .fpwrap{background:none}
+  .fpwrap[open]{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;margin:12px 0}
+  .fpwrap>summary{display:none}
+  .fphd{display:flex;align-items:center;gap:11px;padding:2px 0 12px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+  .kpi6 .kfan{cursor:pointer}
+  .kfanchev{position:absolute;top:6px;right:8px;color:var(--kct);font-size:12px;opacity:.6;transition:transform .2s}
+  .kpi6 .kfan.open .kfanchev{transform:rotate(180deg);opacity:1}
   .fpsum-ic{width:38px;height:38px;border-radius:11px;background:#16a34a;color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
   .fpsum-ic svg{width:22px;height:22px}
   .fpsum-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
@@ -567,7 +573,7 @@ function fanPlanHTML(h,farmName){
   const optList=Object.keys(FANPLANS).map(k=>{const p=FANPLANS[k];return '<option value="'+k+'"'+(pm&&pm.key===k?' selected':'')+'>'+esc(p.farms.join('/'))+' · '+p.size+' · '+p.nf+' ตัว</option>';}).join('');
   const sel='<div class="fpsel">แผนที่ใช้: <select class="planpick"'+(canEdit?'':' disabled')+'><option value="">— อัตโนมัติตามฟาร์ม —</option>'+optList+'</select></div>';
   const head='<div class="tl">แผนการทำงานพัดลม</div>';
-  if(!pm)return head+'<div class="fpnote">ยังไม่มีแผนสำหรับ '+(h.fans)+' ตัว — เลือกแผนด้านล่าง</div>'+sel;
+  if(!pm)return '<div class="fpnobox">'+head+'<div class="fpnote">ยังไม่มีแผนสำหรับ '+(h.fans)+' ตัว — เลือกแผนด้านล่าง</div>'+sel+'</div>';
   const p=pm.p,st=fanStateAt(p,h.age),a=D(h.age);
   const autoN=p.choke.length+p.steps.reduce((s,x)=>s+x.fans.length,0);
   const todayAdd=p.manual.find(m=>m.age===a);
@@ -595,8 +601,8 @@ function fanPlanHTML(h,farmName){
   let grows='';for(let d=1;d<=42;d++){const m=manualUpTo(p,d);grows+='<tr class="'+(d===a?'now':'')+'"><td>'+d+'</td><td>'+(m.length||0)+'</td><td style="text-align:left">'+(m.length?m.join(' · '):'—')+'</td></tr>';}
   const tbl='<details><summary>ดูตารางเปิดมือทั้ง 1–42 วัน</summary><div class="inset"><div class="scroll"><table class="tt"><thead><tr><th>วัน</th><th>เปิดมือ</th><th>ตัวที่ (สะสม)</th></tr></thead><tbody>'+grows+'</tbody></table></div></div></details>';
   const lifecycle=fanLifecycle(p,a);
-  const summary='<summary class="fpsum"><span class="fpsum-ic">'+I.fan+'</span><span class="fpsum-tx"><b>แผนการทำงานพัดลม</b><small>อายุ '+h.age+' วัน · เปิดมือ '+st.man.length+' ตัว · แตะดูแผน</small></span><span class="fpsum-chev">▾</span></summary>';
-  return '<details class="fpwrap">'+summary+'<div class="fpbody"><div class="fpwho">'+esc(p.farms.join('/'))+' · '+p.size+' · '+p.nf+' ตัว</div>'+act+lifecycle+strip+lad+tbl+sel+legend+'</div></details>';
+  const planHead='<div class="fphd"><span class="fpsum-ic">'+I.fan+'</span><span class="fpsum-tx"><b>แผนการทำงานพัดลม</b><small>อายุ '+h.age+' วัน · เปิดมือ '+st.man.length+' ตัว</small></span></div>';
+  return '<details class="fpwrap"><summary class="fpsum"></summary><div class="fpbody">'+planHead+'<div class="fpwho">'+esc(p.farms.join('/'))+' · '+p.size+' · '+p.nf+' ตัว</div>'+act+lifecycle+strip+lad+tbl+sel+legend+'</div></details>';
 }
 const TM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 function fmtThai(d){return d.getDate()+' '+TM[d.getMonth()]+' '+String((d.getFullYear()+543)%100).padStart(2,'0');}
@@ -773,7 +779,7 @@ function ventCard(h,i){
     <div class="kpi6">
       <div class="k k-red"><span class="kico">${I.temp}</span><div class="kl">อุณหภูมิเป้า</div><div class="kv"><span class="o-tt">–</span><i>°C</i></div></div>
       <div class="k k-blue"><span class="kico">${I.drop}</span><div class="kl">ปั๊มน้ำ/แพด</div><div class="kv"><span class="o-pump">–</span><i>°C</i></div></div>
-      <div class="k k-teal"><span class="kico">${I.fan}</span><div class="kl">พัดลม (ตัว)</div><div class="kv"><span class="o-min">–</span><span class="rdash">–</span><span class="o-max">–</span></div></div>
+      <div class="k k-teal kfan" role="button" tabindex="0" aria-label="ดูแผนการทำงานพัดลม"><span class="kfanchev">▾</span><span class="kico">${I.fan}</span><div class="kl">พัดลม (ตัว)</div><div class="kv"><span class="o-min">–</span><span class="rdash">–</span><span class="o-max">–</span></div></div>
       <div class="k k-green"><button class="padzoom" type="button" aria-label="ดูภาพการเปิดผ้าม่าน">🔍</button><span class="kico">${I.pad}</span><div class="kl">เปิดผ้าม่าน</div><div class="kv"><span class="o-openh">–</span><i>ซม.</i></div></div>
       <div class="k k-amber"><span class="kico">${I.sun}</span><div class="kl">ความเข้มแสง</div><div class="kv"><span class="o-lux">–</span><i>lux</i></div><div class="ks">ไฟ <span class="o-lhr">–</span> ชม.</div></div>
       <div class="k k-purple"><span class="kico">${I.feed}</span><div class="kl">อาหาร/ตัว</div><div class="kv"><span class="o-fd">–</span><i>g</i></div></div>
@@ -1103,6 +1109,8 @@ document.querySelector('.wrap').addEventListener('click',e=>{
   if(pz){const el=pz.closest('.card');if(el){openPadModal(houses()[+el.dataset.i]);}return;}
   const cb=e.target.closest('.capbtn');
   if(cb){const el=cb.closest('.card');if(el){capCard(el,houses()[+el.dataset.i]);}return;}
+  const kf=e.target.closest('.kfan');
+  if(kf){const el=kf.closest('.card');if(el){const det=el.querySelector('details.fpwrap');if(det){det.open=!det.open;kf.classList.toggle('open',det.open);if(det.open)setTimeout(function(){det.scrollIntoView({behavior:'smooth',block:'nearest'});},30);}}return;}
   const leg=e.target.closest('.fplegend');
   if(leg){leg.classList.toggle('faded');return;}
   const an=e.target.closest('.advnote');
