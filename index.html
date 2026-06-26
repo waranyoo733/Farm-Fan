@@ -529,6 +529,17 @@ const choke=a=>{const x=D(a);if(x<=6){const on=[0.5,0.6,0.7,0.7,0.8,0.8,0.6][x];
 const chokeOnU=c=>c.on>=1?(c.on+' นาที'):(Math.round(c.on*60)+' วินาที');
 const chokeText=c=>'ทำ '+chokeOnU(c)+' หยุด '+c.off+' นาที';
 const chokeShort=c=>(c.on>=1?c.on+'น.':Math.round(c.on*60)+'วิ.')+' / '+c.off+'น.';
+function fanCFMof(h){const side=h.fan*2.514/30.48,area=side*side,avg=h.pts.reduce((a,b)=>a+(+b||0),0)/9;return area*avg;}
+const fmtMinT=m=>m<=0?'0':(m<1?Math.round(m*60)+' วินาที':(Math.round(m*10)/10)+' นาที');
+// พัดลมขั้นต่ำ + เวลาทำงาน (สูตรหมอตั้ม): I = อากาศต้องการ ÷ ประสิทธิภาพพัดลม/ตัว · เดินโช๊คเป็นรอบ 5 นาที
+function minFan(h,nck){
+  const fc=fanCFMof(h),wkg=bw(h.age)/1000,q=cfmkg(h.age)*wkg*(+h.birds||0),I=fc>0?q/fc:0,TC=5;
+  let on,off,cont=false,duty;
+  if(nck>0&&I>=nck){cont=true;duty=1;on=TC;off=0;}
+  else if(nck>0){duty=I/nck;on=TC*duty;off=TC-on;if(on<0.3){on=0.3;off=TC-on;}}
+  else{duty=0;on=0;off=0;}
+  return {q:q,fanCFM:fc,I:I,nck:nck,duty:duty,on:on,off:off,cont:cont};
+}
 const lux=a=>{const x=D(a);return x<=1?40:x<=14?30:x<=21?20:10;};
 const lightHr=a=>{const x=D(a);return x<=1?24:x<=7?20:x<=14?18:x<=21?16:x<=28?10:12;};
 /* ===== แผนการทำงานพัดลม (ฤดูร้อน) — ถอดจาก Excel "แผนการระบายอากาศ หมอวรัญญู" คงลำดับเดิมของแต่ละฟาร์ม =====
@@ -579,13 +590,20 @@ function fanPlanHTML(h,farmName){
   const head='<div class="tl">แผนการทำงานพัดลม</div>';
   if(!pm)return '<div class="fpnobox">'+head+'<div class="fpnote">ยังไม่มีแผนสำหรับ '+(h.fans)+' ตัว — เลือกแผนด้านล่าง</div>'+sel+'</div>';
   const p=pm.p,st=fanStateAt(p,h.age),a=D(h.age);
+  const mf=minFan(h,p.choke.length);
   const autoN=p.choke.length+p.steps.reduce((s,x)=>s+x.fans.length,0);
   const todayAdd=p.manual.find(m=>m.age===a);
   const manList=st.man.length?'<span class="fpnums">'+st.man.map(n=>'<b>'+n+'</b>').join('')+'</span>':'<span class="muted2">ยังไม่ต้องเปิดมือ</span>';
   // 1) ใบสั่งเปิดมือวันนี้
   let act='<div class="fpact"><div class="fpact-h">📋 อายุ '+h.age+' วัน — สัตวบาลเปิดพัดลม "มือ" ตามนี้</div>'
     +'<div class="fpact-n">🟢 เปิด <b>'+st.man.length+'</b> ตัว: '+manList+'</div>';
-  if(p.choke.length)act+='<div class="fpact-ck">⚙ ตู้คุมเดินโช๊คอยู่: '+p.choke.map(n=>'<b>'+n+'</b>').join('')+'<div class="cktime">⏱ '+chokeText(choke(h.age))+' <span class="cknote">(วนเป็นจังหวะ · ไม่ต้องเปิดมือ)</span></div></div>';
+  if(p.choke.length){
+    const cyc=mf.cont?'เดินต่อเนื่อง (ไม่หยุด)':'ทำ '+fmtMinT(mf.on)+' หยุด '+fmtMinT(mf.off);
+    act+='<div class="fpact-ck">⚙ ตู้คุมเดินโช๊คอยู่: '+p.choke.map(n=>'<b>'+n+'</b>').join('')
+      +'<div class="cktime">⏱ '+cyc+' <span class="cknote">· พัดลมขั้นต่ำ '+(Math.round(mf.I*10)/10)+' ตัว · รอบ 5 นาที</span></div>'
+      +(mf.cont?'<div class="cknote" style="margin-top:4px">⚠ โช๊คเดินเต็มที่แล้ว — เริ่มเปิด Step/เพิ่มพัดลมตามอุณหภูมิ</div>':'')
+      +'</div>';
+  }
   if(todayAdd)act+='<div class="fptoday">★ วันนี้เปิดเพิ่มตัวที่ '+todayAdd.fans.join(' · ')+'</div>';
   act+=st.next?'<div class="fpnext">⏭ ครั้งหน้า: <b>อายุ '+st.next.age+' วัน</b> (อีก '+(st.next.age-a)+' วัน) เปิดเพิ่มตัวที่ '+st.next.fans.join(' · ')+'</div>':'<div class="fpnext done">✓ เปิดมือครบทุกตัวแล้ว</div>';
   act+='</div>';
@@ -597,7 +615,7 @@ function fanPlanHTML(h,farmName){
   // 3) ตู้คุมเอง — บันไดอุณหภูมิ
   const step2=st.steps.find(s=>s.n===2),later=st.steps.filter(s=>s.n>=3);
   let lad='<div class="fplad-h">⚙️ ส่วนนี้ตู้คอนโทรลคุมเอง ตามอุณหภูมิ (ไม่ต้องเปิดมือ)</div><div class="fplad">';
-  lad+=ladRow('cool','≤ '+st.tgt+'°','โช๊ค '+p.choke.join('·')+' '+chokeText(choke(h.age))+' (ระบายขั้นต่ำ)');
+  lad+=ladRow('cool','≤ '+st.tgt+'°','โช๊ค '+p.choke.join('·')+' '+(mf.cont?'เดินต่อเนื่อง':'ทำ '+fmtMinT(mf.on)+' หยุด '+fmtMinT(mf.off))+' (ระบายขั้นต่ำ)');
   lad+=ladRow('warm',st.chokeTemp+'°','โช๊ค '+p.choke.join('·')+' เดินตลอด'+(step2?' + เปิด '+step2.fans.join('·'):''));
   for(const s of later)lad+=ladRow('warm',s.temp+'°','เปิดเพิ่ม '+s.fans.join('·'));
   lad+=ladRow('hot',st.pumpTemp+'°','เปิดปั๊มน้ำ/แพด ลดความร้อน 💧');
