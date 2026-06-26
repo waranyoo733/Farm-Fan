@@ -227,7 +227,14 @@
   .backhome:hover{background:var(--green-l2)}
   .backhome:active{transform:scale(.96)}
   .aihero2{position:relative;width:100%;max-width:1120px;margin:4px auto 0;border-radius:20px;overflow:hidden;background:#E9F2EC;box-shadow:0 16px 44px rgba(16,90,60,.2);line-height:0}
-  .aihero2 .aiimg{display:block;width:100%;height:auto}
+  .aihero2 .aiimg{display:block;width:100%;height:auto;transition:filter .25s}
+  .aihero2.gr-hd .aiimg{filter:contrast(1.12) saturate(1.22) brightness(1.03)}
+  .aihero2.gr-nat .aiimg{filter:contrast(1.05) saturate(1.09) brightness(1.02)}
+  .aihero2.gr-cine .aiimg{filter:contrast(1.18) saturate(1.14) brightness(.99) hue-rotate(-3deg)}
+  .grsel{position:absolute;left:10px;top:10px;display:flex;gap:4px;z-index:6;background:rgba(7,36,30,.62);padding:4px;border-radius:10px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+  .grsel button{font-family:'Prompt',sans-serif;font-size:11.5px;font-weight:600;padding:5px 11px;border-radius:7px;border:none;background:transparent;color:#CFEFE7;cursor:pointer;transition:background .15s}
+  .grsel button.on{background:#22C55E;color:#fff}
+  .grsel button:hover:not(.on){background:rgba(255,255,255,.12)}
   .hot{position:absolute;transform:translate(-50%,-50%);background:transparent;border:none;border-radius:14px;cursor:pointer;padding:0;transition:background .12s,box-shadow .12s}
   .hot:hover{background:rgba(94,234,212,.16);box-shadow:0 0 0 2px rgba(94,234,212,.55)}
   .hot:active{background:rgba(94,234,212,.28)}
@@ -1119,13 +1126,17 @@ function homeGo(t){
   },50);
 }
 function renderHomeSVG(){var g=document.getElementById('grid');if(g&&tab==='home')g.innerHTML=homeHeroSVG();}
+function setGr(p){try{localStorage.setItem('ppf_gr',p);}catch(e){}var w=document.getElementById('homewrap');if(w)w.className='aihero2 gr-'+p;[].forEach.call(document.querySelectorAll('.grsel button'),function(b){b.classList.toggle('on',b.getAttribute('data-gr')===p);});}
 function homeHero(){
   const hot=(l,t,w,h,act,lb)=>`<button class="hot" style="left:${l}%;top:${t}%;width:${w}%;height:${h}%" onclick="${act}" data-lb="${lb}" aria-label="${lb}"></button>`;
-  return `<div style="padding:2px 0"><div id="homewrap" class="aihero2">
+  var gr='hd';try{gr=localStorage.getItem('ppf_gr')||'hd';}catch(e){}
+  const grbtn=(k,t)=>`<button data-gr="${k}" class="${gr===k?'on':''}" onclick="setGr('${k}')">${t}</button>`;
+  return `<div style="padding:2px 0"><div id="homewrap" class="aihero2 gr-${gr}">
   <img class="aiimg" src="home-render.jpg" alt="PPF Smart Farm" onerror="renderHomeSVG()">
-  ${hot(20,38.6,15,8.5,"goTab('vent')",'ระบายอากาศ')}
-  ${hot(20.1,47.7,15,8.5,"goTab('feed')",'อาหาร')}
-  ${hot(20,56.8,15,8.5,"goTab('analytics')",'วิเคราะห์')}
+  <div class="grsel">${grbtn('hd','HD สด')}${grbtn('nat','ธรรมชาติ')}${grbtn('cine','ซีเนม่า')}</div>
+  ${hot(20.5,37.3,16,8,"goTab('vent')",'ระบายอากาศ')}
+  ${hot(20,47,16,8,"goTab('feed')",'อาหาร')}
+  ${hot(21,54.6,16,8,"goTab('analytics')",'วิเคราะห์')}
   ${hot(49.4,31.2,10,14,"goTab('vent')",'อุณหภูมิเป้า')}
   ${hot(49.6,46.7,10,14,"goTab('vent')",'ปั๊มน้ำ/แพด')}
   ${hot(50.1,64,10,15,"homeGo('pad')",'เปิดผ้าม่าน')}
