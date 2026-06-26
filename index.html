@@ -226,6 +226,31 @@
   .backhome{flex:none;border:1px solid var(--green-br);background:var(--green-l);color:var(--green-d);font-family:inherit;font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;cursor:pointer;margin-right:4px}
   .backhome:hover{background:var(--green-l2)}
   .backhome:active{transform:scale(.96)}
+  .aihero{position:relative;container-type:inline-size;width:100%;max-width:1120px;margin:4px auto 0;aspect-ratio:1280/770;border-radius:20px;overflow:hidden;background:#E9F2EC;box-shadow:0 16px 44px rgba(16,90,60,.2)}
+  .aihero .aibg{position:absolute;inset:0;width:100%;height:100%}
+  .aicard{position:absolute;transform:translate(-50%,-50%);width:9cqw;min-width:64px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:.4cqw;padding:1.1cqw .5cqw;background:rgba(7,36,30,.74);border:1px solid rgba(52,211,153,.6);border-radius:1.4cqw;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);box-shadow:0 0 1.4cqw rgba(52,211,153,.32);cursor:pointer;color:#EAFBF4;font-family:inherit;transition:transform .15s,box-shadow .15s;z-index:2}
+  .aicard:hover{transform:translate(-50%,-50%) scale(1.07);box-shadow:0 0 2.2cqw rgba(52,211,153,.6)}
+  .aicard:active{transform:translate(-50%,-50%) scale(.98)}
+  .aicard svg{width:2.2cqw;height:2.2cqw;min-width:18px;min-height:18px;color:#5EEAD4}
+  .aicard .lb{font-size:clamp(9.5px,1.05cqw,13px);font-weight:600;line-height:1.12;text-align:center}
+  .aicard .vl{font-size:clamp(9.5px,1.1cqw,13.5px);font-weight:700;color:#7DF5E6}
+  .aimenu{position:absolute;left:2cqw;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:.8cqw;z-index:3}
+  .aipill{display:flex;align-items:center;gap:.7cqw;padding:.8cqw 1.2cqw;min-width:11cqw;background:rgba(7,36,30,.76);border:1px solid rgba(52,211,153,.5);border-radius:1cqw;color:#EAFBF4;font-family:inherit;font-size:clamp(10.5px,1.15cqw,15px);font-weight:600;cursor:pointer;box-shadow:0 0 1.1cqw rgba(52,211,153,.25);transition:all .15s;white-space:nowrap}
+  .aipill:hover{background:rgba(16,70,55,.88);box-shadow:0 0 1.8cqw rgba(52,211,153,.45)}
+  .aipill svg{width:1.7cqw;height:1.7cqw;min-width:16px;min-height:16px;color:#5EEAD4}
+  .aichip{position:absolute;transform:translate(-50%,-50%);width:6cqw;height:6cqw;min-width:48px;min-height:48px;border-radius:1.3cqw;background:linear-gradient(145deg,#34D399,#10B981);display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-weight:800;font-size:clamp(17px,2.2cqw,29px);color:#06251C;box-shadow:0 0 2.4cqw rgba(52,211,153,.7),0 0 5cqw rgba(52,211,153,.35);z-index:2}
+  .aicam{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:.5cqw;padding:.7cqw 1cqw;background:rgba(7,36,30,.74);border:1px solid rgba(52,211,153,.45);border-radius:1cqw;color:#CFEFE7;font-size:clamp(9.5px,1.05cqw,12.5px);font-weight:600;box-shadow:0 0 1cqw rgba(52,211,153,.22);z-index:2;white-space:nowrap}
+  .aicam svg{width:1.5cqw;height:1.5cqw;min-width:15px;min-height:15px;color:#5EEAD4}
+  .aititle{position:absolute;left:50%;top:5%;transform:translateX(-50%);display:flex;align-items:center;gap:.9cqw;padding:.8cqw 1.6cqw;background:rgba(255,255,255,.85);border:1px solid rgba(52,211,153,.4);border-radius:1.2cqw;-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px);box-shadow:0 4px 18px rgba(16,90,60,.16);white-space:nowrap;z-index:3}
+  .aititle .lg{display:flex;width:2.7cqw;height:2.7cqw;min-width:26px;min-height:26px;background:#16A34A;border-radius:.7cqw;align-items:center;justify-content:center;color:#fff}
+  .aititle .lg svg{width:1.7cqw;height:1.7cqw;min-width:16px;min-height:16px}
+  .aititle b{font-size:clamp(13px,1.5cqw,19px);color:#0F5132;font-weight:700;display:block;line-height:1.15}
+  .aititle small{font-size:clamp(9px,1cqw,12.5px);color:#3B7A5C}
+  .aienter{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);padding:1.1cqw 2.8cqw;background:linear-gradient(145deg,#22C55E,#15803D);color:#fff;border:none;border-radius:1.2cqw;font-family:inherit;font-size:clamp(13px,1.45cqw,17px);font-weight:700;cursor:pointer;box-shadow:0 0 2.4cqw rgba(34,197,94,.6),0 8px 20px rgba(16,90,60,.3);z-index:3;white-space:nowrap}
+  .aienter:hover{box-shadow:0 0 3.4cqw rgba(34,197,94,.85)}
+  .aienter:active{transform:translateX(-50%) scale(.97)}
+  .aiins{position:absolute;left:50%;bottom:14%;transform:translateX(-50%);display:flex;align-items:center;gap:.5cqw;max-width:62cqw;padding:.55cqw 1.2cqw;background:rgba(7,40,34,.72);border:1px solid rgba(52,211,153,.4);border-radius:1cqw;color:#A7E4D9;font-size:clamp(9px,1.05cqw,12.5px);font-weight:500;z-index:2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .aiins b{color:#7DF5E6;font-weight:700}
   #printarea{display:none}
   #printarea.show{display:block;position:fixed;inset:0;background:#fff;overflow:auto;z-index:200;padding:14px;color:#000}
   #printarea .ptools{position:sticky;top:-14px;background:#fff;display:flex;gap:10px;padding:6px 0 10px;margin-bottom:10px;border-bottom:1px solid #ddd}
@@ -1090,49 +1115,50 @@ function homeHero(){
   const vTemp=r0.tt.toFixed(1)+'°C',vPump=r0.pump.toFixed(1)+'°C',vLux=r0.lx+' lux',vFan=r0.ventMin+'–'+r0.ventMax+' ตัว',vOpen=(r0.openH*100).toFixed(0)+' ซม.',vFeed=r0.fd+' g';
   const al=[];hs.forEach(function(h,i){try{if(calc(h).padNeeded)al.push(i+1);}catch(e){}});
   const insight=al.length?('เล้า '+al.join(',')+' ลมเกินที่ไก่ทน — แนะนำเปิด Cooling pad'):('ทุกเล้าอยู่ในเกณฑ์ปกติ · เรียนรู้จากข้อมูล '+N+' เล้า');
-  return `<div style="max-width:730px;margin:6px auto 0">
-  <style>.snode{cursor:pointer}.snode:hover .ring2{stroke:#5EEAD4}.snode .ring2{transition:stroke .15s}.snode:active{opacity:.65}</style>
-  <div style="position:relative;width:100%;aspect-ratio:680/500;border-radius:18px;overflow:hidden;background:#08202A;box-shadow:0 12px 34px rgba(8,40,40,.3)">
-  <svg viewBox="0 0 680 500" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
-  <rect x="0" y="0" width="680" height="500" fill="#08202A"/>
-  <rect x="8" y="8" width="664" height="484" rx="13" fill="none" stroke="#123842" stroke-width="1"/>
-  <g stroke="#1C544F" stroke-width="1" fill="none" opacity="0.55"><polygon points="210,330 470,330 490,300 230,300" fill="#0C2730"/><polygon points="210,330 470,330 470,400 210,400" fill="#0E2C35"/><polygon points="470,330 510,300 510,370 470,400" fill="#0A2630"/><line x1="260" y1="330" x2="260" y2="400"/><line x1="310" y1="330" x2="310" y2="400"/><line x1="360" y1="330" x2="360" y2="400"/><line x1="410" y1="330" x2="410" y2="400"/><circle cx="490" cy="335" r="7"/><circle cx="490" cy="365" r="7"/></g>
-  <g stroke="#16504C" stroke-width="1.1" fill="none"><line x1="120" y1="115" x2="340" y2="220"/><line x1="70" y1="240" x2="340" y2="220"/><line x1="560" y1="110" x2="340" y2="220"/><line x1="612" y1="238" x2="340" y2="220"/><line x1="150" y1="385" x2="340" y2="220"/><line x1="555" y1="388" x2="340" y2="220"/></g>
-  <circle r="3" fill="#5EEAD4"><animateMotion dur="1.9s" repeatCount="indefinite" path="M120,115 L340,220"/><animate attributeName="opacity" values="0;1;1;0" dur="1.9s" repeatCount="indefinite"/></circle>
-  <circle r="3" fill="#5EEAD4"><animateMotion dur="2.1s" begin="0.3s" repeatCount="indefinite" path="M70,240 L340,220"/><animate attributeName="opacity" values="0;1;1;0" dur="2.1s" begin="0.3s" repeatCount="indefinite"/></circle>
-  <circle r="3" fill="#5EEAD4"><animateMotion dur="2.0s" begin="0.6s" repeatCount="indefinite" path="M560,110 L340,220"/><animate attributeName="opacity" values="0;1;1;0" dur="2.0s" begin="0.6s" repeatCount="indefinite"/></circle>
-  <circle r="3" fill="#5EEAD4"><animateMotion dur="1.8s" begin="0.9s" repeatCount="indefinite" path="M612,238 L340,220"/><animate attributeName="opacity" values="0;1;1;0" dur="1.8s" begin="0.9s" repeatCount="indefinite"/></circle>
-  <circle r="3" fill="#5EEAD4"><animateMotion dur="2.2s" begin="1.2s" repeatCount="indefinite" path="M150,385 L340,220"/><animate attributeName="opacity" values="0;1;1;0" dur="2.2s" begin="1.2s" repeatCount="indefinite"/></circle>
-  <circle r="3" fill="#5EEAD4"><animateMotion dur="1.95s" begin="1.5s" repeatCount="indefinite" path="M555,388 L340,220"/><animate attributeName="opacity" values="0;1;1;0" dur="1.95s" begin="1.5s" repeatCount="indefinite"/></circle>
-  <circle cx="340" cy="220" r="40" fill="none" stroke="#34D8C8" stroke-width="1.5" opacity="0.6"><animate attributeName="r" values="40;58;40" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.6;0;0.6" dur="3s" repeatCount="indefinite"/></circle>
-  <circle cx="340" cy="220" r="40" fill="none" stroke="#34D8C8" stroke-width="1.5" opacity="0.5"><animate attributeName="r" values="40;58;40" dur="3s" begin="1.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.5;0;0.5" dur="3s" begin="1.5s" repeatCount="indefinite"/></circle>
-  <polygon points="374,220 357,249 323,249 306,220 323,191 357,191" fill="#0C353B" stroke="#3FE0CE" stroke-width="2"/>
-  <g stroke="#2BA89C" stroke-width="1" opacity="0.8"><line x1="340" y1="191" x2="340" y2="178"/><line x1="306" y1="220" x2="294" y2="220"/><line x1="374" y1="220" x2="386" y2="220"/><line x1="323" y1="249" x2="316" y2="260"/><line x1="357" y1="249" x2="364" y2="260"/></g>
-  <text x="340" y="216" text-anchor="middle" style="font:700 19px sans-serif;fill:#7DF5E6">AI</text>
-  <text x="340" y="232" text-anchor="middle" style="font:500 8px sans-serif;fill:#4FBFB2">เล้า 1 · LIVE</text>
-  <g class="snode" onclick="homeGo('vent')"><circle class="ring2" cx="120" cy="115" r="32" fill="none" stroke="#1B5E62" stroke-width="1.2"/><circle cx="120" cy="115" r="28" fill="#0D2E34" stroke="#38D9C9" stroke-width="1.6"/><g transform="translate(109,104) scale(0.92)" fill="none" stroke="#A6F2E8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14.5V5a2 2 0 0 0-4 0v9.5a3.5 3.5 0 1 0 4 0z"/><path d="M12 9v6"/></g><text x="120" y="158" text-anchor="middle" style="font:500 12px sans-serif;fill:#BFEDE7">อุณหภูมิ</text><text x="120" y="174" text-anchor="middle" style="font:700 14px sans-serif;fill:#F4B3C2">${vTemp}</text></g>
-  <g class="snode" onclick="homeGo('vent')"><circle class="ring2" cx="70" cy="240" r="32" fill="none" stroke="#1B5E62" stroke-width="1.2"/><circle cx="70" cy="240" r="28" fill="#0D2E34" stroke="#38D9C9" stroke-width="1.6"/><g transform="translate(59,229) scale(0.92)" fill="none" stroke="#A6F2E8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5s5.5 5.8 5.5 9.5a5.5 5.5 0 0 1-11 0C6.5 9.3 12 3.5 12 3.5z"/></g><text x="70" y="283" text-anchor="middle" style="font:500 12px sans-serif;fill:#BFEDE7">ปั๊มน้ำ/แพด</text><text x="70" y="299" text-anchor="middle" style="font:700 14px sans-serif;fill:#9BD3F5">${vPump}</text></g>
-  <g class="snode" onclick="homeGo('vent')"><circle class="ring2" cx="560" cy="110" r="32" fill="none" stroke="#1B5E62" stroke-width="1.2"/><circle cx="560" cy="110" r="28" fill="#0D2E34" stroke="#38D9C9" stroke-width="1.6"/><g transform="translate(549,99) scale(0.92)" fill="none" stroke="#A6F2E8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.8"/><path d="M12 2.5v2.2M12 19.3v2.2M4.2 12H2M22 12h-2.2M5.8 5.8 4.3 4.3M19.7 19.7l-1.5-1.5M5.8 18.2l-1.5 1.5M19.7 4.3l-1.5 1.5"/></g><text x="560" y="153" text-anchor="middle" style="font:500 12px sans-serif;fill:#BFEDE7">ความเข้มแสง</text><text x="560" y="169" text-anchor="middle" style="font:700 14px sans-serif;fill:#F6D58A">${vLux}</text></g>
-  <g class="snode" onclick="homeGo('fan')"><circle class="ring2" cx="612" cy="238" r="32" fill="none" stroke="#1B5E62" stroke-width="1.2"/><circle cx="612" cy="238" r="28" fill="#0D2E34" stroke="#38D9C9" stroke-width="1.6"/><g transform="translate(601,227) scale(0.92)" fill="none" stroke="#A6F2E8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.827 16.379a6.082 6.082 0 0 1-8.618-7.002l5.412 1.45a6.082 6.082 0 0 1 7.002-8.618l-1.45 5.412a6.082 6.082 0 0 1 8.618 7.002l-5.412-1.45a6.082 6.082 0 0 1-7.002 8.618z"/><circle cx="12" cy="12" r="1.2"/></g><text x="612" y="281" text-anchor="middle" style="font:500 12px sans-serif;fill:#BFEDE7">พัดลม</text><text x="612" y="297" text-anchor="middle" style="font:700 14px sans-serif;fill:#9FE9DA">${vFan}</text></g>
-  <g class="snode" onclick="homeGo('pad')"><circle class="ring2" cx="150" cy="385" r="32" fill="none" stroke="#1B5E62" stroke-width="1.2"/><circle cx="150" cy="385" r="28" fill="#0D2E34" stroke="#38D9C9" stroke-width="1.6"/><g transform="translate(139,374) scale(0.92)" fill="none" stroke="#A6F2E8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2.5"/><path d="M4 9.3h16M4 14.6h16M9.3 4v16M14.6 4v16"/></g><text x="150" y="428" text-anchor="middle" style="font:500 12px sans-serif;fill:#BFEDE7">เปิดผ้าม่าน</text><text x="150" y="444" text-anchor="middle" style="font:700 14px sans-serif;fill:#A8E6A0">${vOpen}</text></g>
-  <g class="snode" onclick="homeGo('feed')"><circle class="ring2" cx="555" cy="388" r="32" fill="none" stroke="#1B5E62" stroke-width="1.2"/><circle cx="555" cy="388" r="28" fill="#0D2E34" stroke="#38D9C9" stroke-width="1.6"/><g transform="translate(544,377) scale(0.92)" fill="none" stroke="#A6F2E8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 11h19"/><path d="M4 11a8 8 0 0 0 16 0"/><path d="M8.5 11a3.5 3.5 0 0 1 7 0"/></g><text x="555" y="431" text-anchor="middle" style="font:500 12px sans-serif;fill:#BFEDE7">อาหาร/ตัว</text><text x="555" y="447" text-anchor="middle" style="font:700 14px sans-serif;fill:#C9B6F0">${vFeed}</text></g>
-  <rect x="222" y="22" width="236" height="30" rx="15" fill="#0C2E33" stroke="#1E6B68" stroke-width="1"/>
-  <rect x="237" y="32" width="11" height="10" rx="1.5" fill="none" stroke="#5EEAD4" stroke-width="1.4"/><path d="M240 30v-2M245 30v-2M240 44v2M245 44v2M235 35h-2M235 39h-2M250 35h2M250 39h2" stroke="#5EEAD4" stroke-width="1.2"/>
-  <text x="260" y="42" style="font:600 13px sans-serif;fill:#7DF5E6">PPF Smart AI Farm</text>
-  <circle cx="433" cy="37" r="3" fill="#3FE0A0"><animate attributeName="opacity" values="1;0.2;1" dur="1.2s" repeatCount="indefinite"/></circle><text x="441" y="41" style="font:500 10px sans-serif;fill:#5FB89F">LIVE</text>
-  <rect x="120" y="463" width="440" height="26" rx="13" fill="#0B2A2A" stroke="#1d5e4f" stroke-width="1"/>
-  <circle cx="140" cy="476" r="5" fill="none" stroke="#7DF5E6" stroke-width="1.4"/><path d="M140 473v3" stroke="#7DF5E6" stroke-width="1.4" stroke-linecap="round"/>
-  <text x="154" y="480" style="font:500 11.5px sans-serif;fill:#A7E4D9">AI วิเคราะห์: ${insight}</text>
-  </svg></div>
-  <div class="homemenu">
-  <button class="hm-btn" onclick="goTab('vent')">${I.fan}<span>ระบายอากาศ</span></button>
-  <button class="hm-btn" onclick="goTab('feed')">${I.feed}<span>อาหาร</span></button>
-  <button class="hm-btn" onclick="goTab('guide')">${I.guide}<span>คู่มือ</span></button>
-  <button class="hm-btn" onclick="goTab('set')">${I.set}<span>ตั้งค่า</span></button>
-  <button class="hm-btn" onclick="goTab('analytics')">${I.chart}<span>วิเคราะห์</span></button>
-  <button class="hm-btn" onclick="goTab('mortality')">${I.alert}<span>ไก่ตาย</span></button>
+  const CAM='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5A2 2 0 0 1 5 6.5h2l1.2-1.8a1 1 0 0 1 .83-.45h5.94a1 1 0 0 1 .83.45L17 6.5h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.5" r="3.2"/></svg>';
+  const BG=`<svg class="aibg" viewBox="0 0 1280 770" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="770" fill="#E9F2EC"/>
+  <rect x="0" y="0" width="1280" height="150" fill="#F3F8F5"/><rect x="430" y="40" width="420" height="20" rx="6" fill="#FBFEFD" stroke="#D9EAE0"/>
+  <g><rect x="0" y="120" width="172" height="470" fill="#DCEFE0"/><path d="M0,468 Q90,418 172,458 V590 H0 Z" fill="#A9D9B0"/><path d="M0,512 Q80,478 172,500 V590 H0 Z" fill="#7FC089"/><rect x="0" y="120" width="172" height="470" fill="none" stroke="#CFE3D6" stroke-width="3"/></g>
+  <g><rect x="1108" y="120" width="172" height="470" fill="#DCEFE0"/><path d="M1108,468 Q1198,418 1280,458 V590 H1108 Z" fill="#A9D9B0"/><path d="M1108,512 Q1190,478 1280,500 V590 H1108 Z" fill="#7FC089"/><rect x="1108" y="120" width="172" height="470" fill="none" stroke="#CFE3D6" stroke-width="3"/></g>
+  <rect x="0" y="560" width="1280" height="210" fill="#EAF1ED"/>
+  <g stroke="#D4E6DC" stroke-width="2"><line x1="172" y1="560" x2="40" y2="770"/><line x1="1108" y1="560" x2="1240" y2="770"/><line x1="0" y1="648" x2="1280" y2="648"/></g>
+  <polygon points="300,565 980,565 1042,690 238,690" fill="#2DA85C"/><polygon points="238,690 1042,690 1042,712 238,712" fill="#1E7A45"/><polygon points="300,565 980,565 970,581 310,581" fill="#3FBF6E" opacity="0.55"/>
+  <g stroke="#9FD3C2" stroke-width="2" fill="rgba(255,255,255,0.10)"><polygon points="400,300 880,300 880,560 400,560"/><polygon points="400,300 460,262 940,262 880,300" fill="rgba(255,255,255,0.06)"/><polygon points="880,300 940,262 940,522 880,560" fill="rgba(255,255,255,0.05)"/><polygon points="400,300 640,202 880,300" fill="rgba(255,255,255,0.08)"/><polygon points="640,202 700,164 940,262 880,300" fill="rgba(255,255,255,0.05)"/><line x1="400" y1="432" x2="880" y2="432"/><rect x="430" y="470" width="58" height="90" fill="rgba(255,255,255,0.13)"/></g>
+  <g fill="#2DA85C"><rect x="395" y="300" width="9" height="262" rx="3"/><rect x="876" y="300" width="9" height="262" rx="3"/><rect x="635" y="202" width="9" height="100" rx="3"/></g>
+  <g stroke="#E2D9C7" stroke-width="1.2"><ellipse cx="545" cy="515" rx="21" ry="14" fill="#FCFCF8"/><circle cx="563" cy="505" r="8" fill="#FCFCF8"/><path d="M559,498 q3,-7 6,0 q3,-7 5,0" fill="#E2483B" stroke="none"/><path d="M571,505 l8,2 l-8,2 z" fill="#F0A93B" stroke="none"/></g>
+  <g stroke="#E2D9C7" stroke-width="1.2"><ellipse cx="640" cy="522" rx="21" ry="14" fill="#FCFCF8"/><circle cx="658" cy="512" r="8" fill="#FCFCF8"/><path d="M654,505 q3,-7 6,0 q3,-7 5,0" fill="#E2483B" stroke="none"/><path d="M666,512 l8,2 l-8,2 z" fill="#F0A93B" stroke="none"/></g>
+  <g stroke="#E2D9C7" stroke-width="1.2"><ellipse cx="735" cy="515" rx="21" ry="14" fill="#FCFCF8"/><circle cx="753" cy="505" r="8" fill="#FCFCF8"/><path d="M749,498 q3,-7 6,0 q3,-7 5,0" fill="#E2483B" stroke="none"/><path d="M761,505 l8,2 l-8,2 z" fill="#F0A93B" stroke="none"/></g>
+  <g stroke="#E2D9C7" stroke-width="1.2"><ellipse cx="585" cy="388" rx="20" ry="13" fill="#FCFCF8"/><circle cx="602" cy="379" r="7.5" fill="#FCFCF8"/><path d="M598,373 q3,-6 5,0 q3,-6 5,0" fill="#E2483B" stroke="none"/><path d="M609,379 l7,2 l-7,2 z" fill="#F0A93B" stroke="none"/></g>
+  <g stroke="#E2D9C7" stroke-width="1.2"><ellipse cx="700" cy="392" rx="20" ry="13" fill="#FCFCF8"/><circle cx="717" cy="383" r="7.5" fill="#FCFCF8"/><path d="M713,377 q3,-6 5,0 q3,-6 5,0" fill="#E2483B" stroke="none"/><path d="M724,383 l7,2 l-7,2 z" fill="#F0A93B" stroke="none"/></g>
+  <g fill="#2DA85C" stroke="#1E7A45" stroke-width="1.5"><rect x="262" y="498" width="42" height="58" rx="4"/><polygon points="262,556 304,556 292,586 274,586"/></g>
+  <g fill="#2DA85C" stroke="#1E7A45" stroke-width="1.5"><rect x="976" y="498" width="42" height="58" rx="4"/><polygon points="976,556 1018,556 1006,586 988,586"/></g>
+  <g stroke="#34D399" stroke-width="1.5" fill="none" opacity="0.75"><path d="M640,562 V606 H770 V646"/><path d="M520,580 V616 H430"/><path d="M820,580 V616 H910"/></g>
+  <g fill="#34D399"><circle cx="770" cy="646" r="3.5"><animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite"/></circle><circle cx="430" cy="616" r="3.5"><animate attributeName="opacity" values="1;0.3;1" dur="2.2s" repeatCount="indefinite"/></circle><circle cx="910" cy="616" r="3.5"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></circle></g>
+  </svg>`;
+  const card=(l,t,act,ic,lb,vl,vlc)=>`<button class="aicard" style="left:${l}%;top:${t}%" onclick="${act}">${ic}<span class="lb">${lb}</span><span class="vl"${vlc?` style="color:${vlc}"`:''}>${vl}</span></button>`;
+  return `<div style="padding:2px 0"><div class="aihero">
+  ${BG}
+  <div class="aititle"><span class="lg">${I.home}</span><span><b>PPF Smart Farm</b><small>by หมอวรัญญู · ตั้งค่าเลี้ยงไก่เนื้อรายวัน</small></span></div>
+  <div class="aimenu">
+  <button class="aipill" onclick="goTab('vent')">${I.fan}<span>ระบายอากาศ</span></button>
+  <button class="aipill" onclick="goTab('feed')">${I.feed}<span>อาหาร</span></button>
+  <button class="aipill" onclick="goTab('analytics')">${I.chart}<span>วิเคราะห์</span></button>
+  <button class="aipill" onclick="goTab('guide')">${I.guide}<span>คู่มือ</span></button>
+  <button class="aipill" onclick="goTab('set')">${I.set}<span>ตั้งค่า</span></button>
   </div>
-  </div>`;
+  ${card(31,35,"goTab('vent')",I.temp,'อุณหภูมิเป้า',vTemp,'#F4B3C2')}
+  ${card(31,53,"goTab('vent')",I.drop,'ปั๊มน้ำ/แพด',vPump,'#9BD3F5')}
+  ${card(31,71,"homeGo('pad')",I.pad,'เปิดผ้าม่าน',vOpen,'#A8E6A0')}
+  ${card(50,30,"goTab('vent')",I.sun,'ความเข้มแสง',vLux,'#F6D58A')}
+  ${card(76,35,"homeGo('fan')",I.fan,'พัดลม',vFan,'#9FE9DA')}
+  ${card(76,53,"goTab('feed')",I.feed,'อาหาร/ตัว',vFeed,'#C9B6F0')}
+  ${card(76,71,"goTab('mortality')",I.alert,'ไก่ตาย','ดูแดชบอร์ด','#F0B5A8')}
+  <div class="aichip" style="left:63%;top:51%">AI</div>
+  <div class="aicam" style="left:88%;top:18%">${CAM}<span>AI camera</span></div>
+  <div class="aiins"><b>AI วิเคราะห์:</b> ${insight}</div>
+  <button class="aienter" onclick="goTab('vent')">เข้าสู่หน้าจัดการรายวัน →</button>
+  </div></div>`;
 }
 function render(){
   if(cf>=farms.length)cf=0;
