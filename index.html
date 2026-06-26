@@ -782,7 +782,7 @@ function syncAgesToToday(){let chg=false;farms.forEach(fm=>fm.houses.forEach(h=>
 function backfillDates(){let chg=false;farms.forEach(fm=>fm.houses.forEach(h=>{if((!h.placeDate)&&h.age>=1){h.placeDate=pdFromAge(h.age);chg=true;}}));return chg;}  // เติมวันลงไก่ให้เล้าที่มีอายุแต่ช่องวันที่ว่าง
 backfillDates();
 syncAgesToToday();
-try{const ui=JSON.parse(localStorage.getItem('ppf_ui')||'null');if(ui){if(TABS.some(t=>t.id===ui.tab))tab=ui.tab;if(Number.isInteger(ui.cf)&&ui.cf>=0&&ui.cf<farms.length)cf=ui.cf;}}catch(e){}
+try{const ui=JSON.parse(localStorage.getItem('ppf_ui')||'null');if(ui){if(Number.isInteger(ui.cf)&&ui.cf>=0&&ui.cf<farms.length)cf=ui.cf;}}catch(e){}/* เข้าเว็บทุกครั้งเปิดหน้าแรกเสมอ (ไม่กู้แท็บล่าสุด) */
 function normalize(r){
   r.forEach(fm=>fm.houses.forEach(h=>{if(typeof h.placeDate!=='string')h.placeDate='';if(typeof h.initStock!=='number')h.initStock=0;if(typeof h.wtActual!=='number')h.wtActual=0;if(!Array.isArray(h.recv)||h.recv.length!==42)h.recv=zeros();if(!Array.isArray(h.dead)||h.dead.length!==42)h.dead=zeros();
     for(const k in PAD){if(typeof h[k]!=='number')h[k]=PAD[k];}if(typeof h.padFans!=='number')h.padFans=Math.max(1,h.fans-2);if(typeof h.padFansAuto!=='boolean')h.padFansAuto=true;}));
@@ -1139,7 +1139,7 @@ function renderHomeSVG(){var g=document.getElementById('grid');if(g&&tab==='home
 function setGr(p){try{localStorage.setItem('ppf_gr',p);}catch(e){}var w=document.getElementById('homewrap');if(w)w.className='aihero2 gr-'+p;[].forEach.call(document.querySelectorAll('.grsel button'),function(b){b.classList.toggle('on',b.getAttribute('data-gr')===p);});}
 function homeHero(){
   const hot=(l,t,w,h,act,lb)=>`<button class="hot" style="left:${l}%;top:${t}%;width:${w}%;height:${h}%" onclick="${act}" aria-label="${lb}"></button>`;
-  return `<div style="padding:2px 0"><div id="homewrap" class="aihero2 gr-cine">
+  return `<div style="width:100vw;margin-left:calc(50% - 50vw)"><div id="homewrap" class="aihero2 gr-cine" style="max-width:none;border-radius:0;margin:0;box-shadow:none">
   <img class="aiimg" src="home-render.jpg" alt="PPF Smart Farm" onerror="renderHomeSVG()">
   <div class="aifx"><div class="sweep"></div><div class="aipulse"></div><div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div><div class="dot d4"></div></div>
   ${hot(20.5,37.3,16,8,"goTab('vent')",'ระบายอากาศ')}
