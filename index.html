@@ -1123,18 +1123,18 @@ function homeHero(){
   const hot=(l,t,w,h,act,lb)=>`<button class="hot" style="left:${l}%;top:${t}%;width:${w}%;height:${h}%" onclick="${act}" data-lb="${lb}" aria-label="${lb}"></button>`;
   return `<div style="padding:2px 0"><div id="homewrap" class="aihero2">
   <img class="aiimg" src="home-render.jpg" alt="PPF Smart Farm" onerror="renderHomeSVG()">
-  ${hot(20,38,17,9,"goTab('vent')",'ระบายอากาศ')}
-  ${hot(19,47,17,9,"goTab('feed')",'อาหาร')}
-  ${hot(20,56,17,9,"goTab('analytics')",'วิเคราะห์')}
-  ${hot(50,33,9,14,"goTab('vent')",'อุณหภูมิเป้า')}
-  ${hot(49,49,9,14,"goTab('vent')",'ปั๊มน้ำ/แพด')}
-  ${hot(50,67,9,15,"homeGo('pad')",'เปิดผ้าม่าน')}
-  ${hot(60,30,9,13,"goTab('vent')",'ความเข้มแสง')}
-  ${hot(80,33,9,14,"homeGo('fan')",'พัดลม')}
-  ${hot(80,49,9,14,"goTab('feed')",'อาหาร/ตัว')}
-  ${hot(80,67,9,15,"goTab('mortality')",'ไก่ตาย')}
-  ${hot(66,48,7,12,"goTab('vent')",'AI')}
-  ${hot(70,87,23,12,"goTab('vent')",'เข้าสู่หน้าจัดการรายวัน')}
+  ${hot(20,38.5,15,8.5,"goTab('vent')",'ระบายอากาศ')}
+  ${hot(20,47.6,15,8.5,"goTab('feed')",'อาหาร')}
+  ${hot(20,56.7,15,8.5,"goTab('analytics')",'วิเคราะห์')}
+  ${hot(49.5,30.5,10,15,"goTab('vent')",'อุณหภูมิเป้า')}
+  ${hot(49.5,46.7,10,15,"goTab('vent')",'ปั๊มน้ำ/แพด')}
+  ${hot(49.5,63.6,10,15,"homeGo('pad')",'เปิดผ้าม่าน')}
+  ${hot(62.6,27,10,14,"goTab('vent')",'ความเข้มแสง')}
+  ${hot(75,30,10,14,"homeGo('fan')",'พัดลม')}
+  ${hot(74,46,10,14,"goTab('feed')",'อาหาร/ตัว')}
+  ${hot(74,63,10,14,"goTab('mortality')",'ไก่ตาย')}
+  ${hot(63,46,8,12,"goTab('vent')",'AI')}
+  ${hot(68,88,22,11,"goTab('vent')",'เข้าสู่หน้าจัดการรายวัน')}
   </div></div>`;
 }
 function homeHeroSVG(){
