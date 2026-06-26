@@ -231,7 +231,8 @@
   .aicard{position:absolute;transform:translate(-50%,-50%);width:9cqw;min-width:64px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:.4cqw;padding:1.1cqw .5cqw;background:rgba(7,36,30,.74);border:1px solid rgba(52,211,153,.6);border-radius:1.4cqw;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);box-shadow:0 0 1.4cqw rgba(52,211,153,.32);cursor:pointer;color:#EAFBF4;font-family:inherit;transition:transform .15s,box-shadow .15s;z-index:2}
   .aicard:hover{transform:translate(-50%,-50%) scale(1.07);box-shadow:0 0 2.2cqw rgba(52,211,153,.6)}
   .aicard:active{transform:translate(-50%,-50%) scale(.98)}
-  .aicard svg{width:2.2cqw;height:2.2cqw;min-width:18px;min-height:18px;color:#5EEAD4}
+  .aicard .aiic{display:flex;align-items:center;justify-content:center;width:3.6cqw;height:3.6cqw;min-width:32px;min-height:32px;border-radius:50%;border:1.5px solid rgba(94,234,212,.65);background:rgba(18,64,55,.5);margin-bottom:.2cqw}
+  .aicard .aiic svg{width:2cqw;height:2cqw;min-width:17px;min-height:17px;color:#5EEAD4}
   .aicard .lb{font-size:clamp(9.5px,1.05cqw,13px);font-weight:600;line-height:1.12;text-align:center}
   .aicard .vl{font-size:clamp(9.5px,1.1cqw,13.5px);font-weight:700;color:#7DF5E6}
   .aimenu{position:absolute;left:2cqw;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:.8cqw;z-index:3}
@@ -1135,8 +1136,11 @@ function homeHero(){
   <g fill="#2DA85C" stroke="#1E7A45" stroke-width="1.5"><rect x="976" y="498" width="42" height="58" rx="4"/><polygon points="976,556 1018,556 1006,586 988,586"/></g>
   <g stroke="#34D399" stroke-width="1.5" fill="none" opacity="0.75"><path d="M640,562 V606 H770 V646"/><path d="M520,580 V616 H430"/><path d="M820,580 V616 H910"/></g>
   <g fill="#34D399"><circle cx="770" cy="646" r="3.5"><animate attributeName="opacity" values="1;0.3;1" dur="1.8s" repeatCount="indefinite"/></circle><circle cx="430" cy="616" r="3.5"><animate attributeName="opacity" values="1;0.3;1" dur="2.2s" repeatCount="indefinite"/></circle><circle cx="910" cy="616" r="3.5"><animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/></circle></g>
+  <g fill="none"><g stroke="#33D9B8" stroke-width="4" opacity="0.18"><path d="M806,393 V300 H640 V250"/><path d="M806,393 H905 V270 H955"/><path d="M806,393 H955"/><path d="M806,393 H905 V547 H955"/><path d="M806,393 H700 V270 H420"/><path d="M806,393 H420"/><path d="M806,393 H700 V547 H420"/></g><g stroke="#5EEAD4" stroke-width="1.5"><path d="M806,393 V300 H640 V250"/><path d="M806,393 H905 V270 H955"/><path d="M806,393 H955"/><path d="M806,393 H905 V547 H955"/><path d="M806,393 H700 V270 H420"/><path d="M806,393 H420"/><path d="M806,393 H700 V547 H420"/></g></g>
+  <g fill="#5EEAD4"><circle cx="640" cy="300" r="3"/><circle cx="700" cy="270" r="3"/><circle cx="700" cy="547" r="3"/><circle cx="905" cy="270" r="3"/><circle cx="905" cy="547" r="3"/></g>
+  <g fill="#AFFFEF"><circle r="3.4"><animateMotion dur="2s" repeatCount="indefinite" path="M806,393 H955"/></circle><circle r="3.4"><animateMotion dur="2.4s" begin="0.5s" repeatCount="indefinite" path="M806,393 H420"/></circle><circle r="3.4"><animateMotion dur="2.2s" begin="1s" repeatCount="indefinite" path="M806,393 H905 V270 H955"/></circle><circle r="3.4"><animateMotion dur="2.6s" begin="1.4s" repeatCount="indefinite" path="M806,393 V300 H640 V250"/></circle><circle r="3.4"><animateMotion dur="2.3s" begin="0.8s" repeatCount="indefinite" path="M806,393 H700 V547 H420"/></circle></g>
   </svg>`;
-  const card=(l,t,act,ic,lb,vl,vlc)=>`<button class="aicard" style="left:${l}%;top:${t}%" onclick="${act}">${ic}<span class="lb">${lb}</span><span class="vl"${vlc?` style="color:${vlc}"`:''}>${vl}</span></button>`;
+  const card=(l,t,act,ic,lb,vl,vlc)=>`<button class="aicard" style="left:${l}%;top:${t}%" onclick="${act}"><span class="aiic">${ic}</span><span class="lb">${lb}</span><span class="vl"${vlc?` style="color:${vlc}"`:''}>${vl}</span></button>`;
   return `<div style="padding:2px 0"><div class="aihero">
   ${BG}
   <div class="aititle"><span class="lg">${I.home}</span><span><b>PPF Smart Farm</b><small>by หมอวรัญญู · ตั้งค่าเลี้ยงไก่เนื้อรายวัน</small></span></div>
