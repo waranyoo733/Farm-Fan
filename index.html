@@ -123,7 +123,9 @@
   .t-light{border-left-color:#D9920E;color:#9A5E0A}
   .t-fan{background:#fff;border-color:var(--line)}
   .kpi6{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:15px;overflow:hidden;margin-bottom:6px}
-  .kpi6 .k{background:#fff;padding:12px 7px 11px;text-align:center;display:flex;flex-direction:column;align-items:center;min-height:82px}
+  .kpi6 .k{background:#fff;padding:12px 7px 11px;text-align:center;display:flex;flex-direction:column;align-items:center;min-height:82px;position:relative}
+  .padzoom{position:absolute;top:5px;right:5px;width:22px;height:22px;border:none;border-radius:50%;background:var(--green-l);color:var(--green-d);font-size:12px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .padzoom:active{transform:scale(.9)}
   .kpi6 .kl{font-size:12px;color:var(--muted);font-weight:500;line-height:1.2;margin-bottom:4px}
   .kpi6 .kv{font-size:24px;font-weight:700;color:var(--ink);line-height:1.02}
   .kpi6 .kv i{font-size:12.5px;font-weight:500;color:var(--muted);font-style:normal;margin-left:2px}
@@ -429,6 +431,14 @@
     <div id="fanmodalBody"></div>
   </div>
 </div>
+<div id="padmodal" class="modal">
+  <div class="modal-box fanmodal-box">
+    <div class="fanmodal-h"><b id="padmodalTitle"></b><button class="xbtn2" id="padClose" type="button">✕</button></div>
+    <div class="fanmodal-sub" id="padmodalSub"></div>
+    <div id="padmodalBody"></div>
+    <div class="modal-note" style="margin-top:12px">ระยะเปิด = สูง pad × (พัดลมที่ใช้ ÷ พัดลมทั้งหมด) · เปิดจาก<b>ด้านบนลงมา</b> ลมเย็นจะเลียดเพดานก่อนแล้วค่อยตกหาไก่ ไม่เป่าใส่ตัวตรง ๆ</div>
+  </div>
+</div>
 <script>
 const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2093,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278];
 const FEED=[0,14,18,21,24,27,31,34,38,42,47,51,56,61,66,71,76,82,87,93,98,104,109,115,120,125,130,135,140,145,150,154,159,163,167,171,175,178,182,185,188,192,194];
@@ -691,7 +701,7 @@ function ventCard(h,i){
       <div class="k"><div class="kl">อุณหภูมิเป้า</div><div class="kv temp"><span class="o-tt">–</span><i>°C</i></div><div class="ks">ตั้งหน้าตู้คอนโทรล</div></div>
       <div class="k"><div class="kl">ปั๊มน้ำ/แพด</div><div class="kv pump"><span class="o-pump">–</span><i>°C</i></div><div class="ks">เป้าหมาย + 3°</div></div>
       <div class="k"><div class="kl">พัดลม (ตัว)</div><div class="kv"><span class="o-min">–</span><i>–</i><span class="o-max">–</span></div><div class="ks o-minsub">จาก ${h.fans} ตัว</div></div>
-      <div class="k"><div class="kl">เปิดผ้าม่าน</div><div class="kv"><span class="o-openh">–</span><i>ซม.</i></div><div class="ks o-padsub">&nbsp;</div></div>
+      <div class="k"><button class="padzoom" type="button" aria-label="ดูภาพการเปิดผ้าม่าน">🔍</button><div class="kl">เปิดผ้าม่าน</div><div class="kv"><span class="o-openh">–</span><i>ซม.</i></div><div class="ks o-padsub">&nbsp;</div></div>
       <div class="k"><div class="kl">ความเข้มแสง</div><div class="kv"><span class="o-lux">–</span><i>lux</i></div><div class="ks">เปิดไฟ <span class="o-lhr">–</span> ชม./วัน</div></div>
       <div class="k"><div class="kl">อาหาร/ตัว</div><div class="kv"><span class="o-fd">–</span><i>g</i></div><div class="ks o-fdsub">&nbsp;</div></div>
       <div class="k kwide"><div class="kl">🌬️ ลมที่ไก่ต้องการ (อายุนี้)</div><div class="kv"><span class="o-wind">–</span><i>m/s</i></div><div class="ks"><span class="o-windft">–</span> ft/min · สูงสุดที่ไก่ทนได้ <span class="o-windmax">–</span> m/s</div></div>
@@ -1014,6 +1024,8 @@ document.querySelector('.wrap').addEventListener('input',e=>{
 document.querySelector('.wrap').addEventListener('click',e=>{
   const fw=e.target.closest('.fanwall');
   if(fw){const el=fw.closest('.card');if(el){const h=houses()[+el.dataset.i];const pm=planFor(h,farms[cf].name);if(pm)openFanModal(pm.p,h.age,h.name);}return;}
+  const pz=e.target.closest('.padzoom');
+  if(pz){const el=pz.closest('.card');if(el){openPadModal(houses()[+el.dataset.i]);}return;}
   const leg=e.target.closest('.fplegend');
   if(leg){leg.classList.toggle('faded');return;}
   const an=e.target.closest('.advnote');
@@ -1165,6 +1177,35 @@ function openFanModal(p,age,name){
 function closeFanModal(){document.getElementById('fanmodal').classList.remove('show');}
 document.getElementById('fanClose').addEventListener('click',closeFanModal);
 document.getElementById('fanmodal').addEventListener('click',e=>{if(e.target.id==='fanmodal')closeFanModal();});
+function padDiagramSVG(h,r){
+  var padH=+h.padH||1.8,openM=r.openH||0;if(openM>padH)openM=padH;if(openM<0)openM=0;
+  var top=110,bot=375,span=bot-top,splitY=Math.round(top+span*(padH>0?openM/padH:0));
+  var openCm=Math.round(openM*100),closeM=padH-openM;
+  var pad='<rect x="95" y="'+top+'" width="46" height="'+span+'" rx="3" fill="#E6F1FB" stroke="#378ADD" stroke-width="1.5"/>';
+  var corr='';for(var cx=106;cx<=130;cx+=12){corr+='<line x1="'+cx+'" y1="'+(top+2)+'" x2="'+cx+'" y2="'+(splitY-4)+'" stroke="#378ADD" stroke-width="1"/>';}
+  var curtain='';
+  if(splitY<bot-1){curtain='<rect x="92" y="'+splitY+'" width="52" height="'+(bot-splitY)+'" rx="3" fill="#E5E7EB" stroke="#9CA3AF" stroke-width="1.2"/><rect x="89" y="'+(splitY-8)+'" width="58" height="14" rx="7" fill="#D1D5DB" stroke="#9CA3AF" stroke-width="1"/>';}
+  var bandH=splitY-top,n=bandH>110?3:bandH>55?2:(bandH>8?1:0),ends=[[360,328],[322,344],[282,350]],arr='';
+  for(var i=0;i<n;i++){var sy=Math.round(top+bandH*(0.22+0.6*(n===1?0.5:i/(n-1)))),ex=ends[i][0],ey=ends[i][1];arr+='<path d="M58,'+sy+' C 160,'+sy+' 250,'+Math.round((sy+ey)/2)+' '+ex+','+ey+'" fill="none" stroke="#1D9E75" stroke-width="2.5" marker-end="url(#airA)"/>';}
+  var openMid=Math.round((top+splitY)/2),closeMid=Math.round((splitY+bot)/2);
+  var dimOpen='<line x1="74" y1="'+top+'" x2="74" y2="'+splitY+'" stroke="#0F6E56" stroke-width="2"/><line x1="70" y1="'+top+'" x2="90" y2="'+top+'" stroke="#0F6E56" stroke-width="1.5"/><line x1="70" y1="'+splitY+'" x2="90" y2="'+splitY+'" stroke="#0F6E56" stroke-width="1.5"/><text transform="rotate(-90 56 '+openMid+')" x="56" y="'+openMid+'" text-anchor="middle" style="font-size:13px;font-weight:700;fill:#0F6E56">เปิด '+openCm+' ซม.</text>';
+  var dimClose='';
+  if(splitY<bot-10){dimClose='<line x1="74" y1="'+splitY+'" x2="74" y2="'+bot+'" stroke="#9CA3AF" stroke-width="2"/><line x1="70" y1="'+splitY+'" x2="90" y2="'+splitY+'" stroke="#9CA3AF" stroke-width="1.5"/><line x1="70" y1="'+bot+'" x2="90" y2="'+bot+'" stroke="#9CA3AF" stroke-width="1.5"/><text transform="rotate(-90 56 '+closeMid+')" x="56" y="'+closeMid+'" text-anchor="middle" style="font-size:13px;font-weight:700;fill:#4B5563">ปิด '+closeM.toFixed(2)+' ม.</text>';}
+  var chicks='',cxs=[400,448,496];for(var k=0;k<3;k++){var bx=cxs[k];chicks+='<ellipse cx="'+bx+'" cy="362" rx="13" ry="9" fill="#FCEFD3" stroke="#CA8A04" stroke-width="1.2"/><circle cx="'+(bx+13)+'" cy="356" r="5" fill="#FCEFD3" stroke="#CA8A04" stroke-width="1.2"/>';}
+  chicks+='<text x="528" y="367" style="font-size:12px;fill:#6b7280">ไก่</text>';
+  var box='<rect x="468" y="116" width="172" height="58" rx="9" fill="#E1F5EE" stroke="#0F6E56" stroke-width="1"/><text x="482" y="139" style="font-size:13px;font-weight:700;fill:#04342C">รวม = '+padH+' ม.</text><text x="482" y="160" style="font-size:12px;fill:#0F6E56">เปิด '+(openCm/100).toFixed(2)+' + ปิด '+closeM.toFixed(2)+' ม.</text>';
+  return '<svg width="100%" viewBox="0 0 680 430" role="img" xmlns="http://www.w3.org/2000/svg"><defs><marker id="airA" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1D9E75"/></marker></defs><line x1="95" y1="92" x2="635" y2="92" stroke="#9CA3AF" stroke-width="1" stroke-dasharray="5 4"/><text x="630" y="86" text-anchor="end" style="font-size:12px;fill:#6b7280">ฝ้าเพดาน</text><line x1="70" y1="375" x2="635" y2="375" stroke="#6b7280" stroke-width="2"/><text x="630" y="392" text-anchor="end" style="font-size:12px;fill:#6b7280">พื้นเล้า</text>'+pad+corr+curtain+'<text x="118" y="396" text-anchor="middle" style="font-size:12px;fill:#185FA5">แพดเปียก</text>'+arr+'<text x="60" y="108" style="font-size:12px;fill:#0F6E56">ลมเย็นเข้า</text>'+(n>0?'<text x="372" y="300" style="font-size:12px;fill:#0F6E56">ไหลลงหาไก่</text>':'')+dimOpen+dimClose+chicks+box+'</svg>';
+}
+function openPadModal(h){
+  var r=calc(h);
+  document.getElementById('padmodalTitle').textContent='เปิดผ้าม่านหน้าแพด · '+h.name;
+  document.getElementById('padmodalSub').textContent='เปิดจากด้านบนลงมา '+Math.round((r.openH||0)*100)+' ซม. · ใช้พัดลม '+r.used+'/'+h.fans+' ตัว · แพดสูง '+(+h.padH||1.8)+' ม.';
+  document.getElementById('padmodalBody').innerHTML=padDiagramSVG(h,r);
+  document.getElementById('padmodal').classList.add('show');
+}
+function closePadModal(){document.getElementById('padmodal').classList.remove('show');}
+document.getElementById('padClose').addEventListener('click',closePadModal);
+document.getElementById('padmodal').addEventListener('click',e=>{if(e.target.id==='padmodal')closePadModal();});
 document.getElementById('faceFile').addEventListener('change',e=>{const fs=e.target.files;importFaceSheets(fs);e.target.value='';});
 renderChips();renderTabs();render();
 (function(){var i=document.querySelector('header .logo img');if(i){var l=document.createElement('link');l.rel='icon';l.type='image/png';l.href=i.src;document.head.appendChild(l);}})();
