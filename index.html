@@ -228,6 +228,18 @@
   .backhome:active{transform:scale(.96)}
   .aihero2{position:relative;width:100%;max-width:1120px;margin:4px auto 0;border-radius:20px;overflow:hidden;background:#E9F2EC;box-shadow:0 16px 44px rgba(16,90,60,.2);line-height:0}
   .aihero2 .aiimg{display:block;width:100%;height:auto;transition:filter .25s}
+  .aifx{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden;border-radius:20px}
+  .aifx .sweep{position:absolute;top:-20%;height:140%;width:34%;left:-40%;background:linear-gradient(100deg,transparent,rgba(190,255,240,.10),transparent);transform:skewX(-12deg);animation:aisweep 8s ease-in-out infinite}
+  @keyframes aisweep{0%{left:-40%}60%,100%{left:136%}}
+  .aifx .aipulse{position:absolute;left:63%;top:48%;width:14%;height:24%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(52,211,153,.30),transparent 62%);animation:aipulse 2.6s ease-in-out infinite}
+  @keyframes aipulse{0%,100%{opacity:.4;transform:translate(-50%,-50%) scale(.92)}50%{opacity:.85;transform:translate(-50%,-50%) scale(1.1)}}
+  .aifx .dot{position:absolute;top:47.5%;width:.9%;height:1.4%;border-radius:50%;background:#AFFFEF;box-shadow:0 0 7px #5EEAD4}
+  .aifx .d1{animation:aiflowR 2.3s linear infinite}
+  .aifx .d2{animation:aiflowR 2.3s linear infinite 1.15s}
+  .aifx .d3{animation:aiflowL 2.6s linear infinite .5s}
+  .aifx .d4{animation:aiflowL 2.6s linear infinite 1.8s}
+  @keyframes aiflowR{0%{left:62%;opacity:0}12%{opacity:1}88%{opacity:1}100%{left:77%;opacity:0}}
+  @keyframes aiflowL{0%{left:64%;opacity:0}12%{opacity:1}88%{opacity:1}100%{left:49%;opacity:0}}
   .aihero2.gr-hd .aiimg{filter:contrast(1.12) saturate(1.22) brightness(1.03)}
   .aihero2.gr-nat .aiimg{filter:contrast(1.05) saturate(1.09) brightness(1.02)}
   .aihero2.gr-cine .aiimg{filter:contrast(1.18) saturate(1.14) brightness(.99) hue-rotate(-3deg)}
@@ -1129,6 +1141,7 @@ function homeHero(){
   const hot=(l,t,w,h,act,lb)=>`<button class="hot" style="left:${l}%;top:${t}%;width:${w}%;height:${h}%" onclick="${act}" aria-label="${lb}"></button>`;
   return `<div style="padding:2px 0"><div id="homewrap" class="aihero2 gr-cine">
   <img class="aiimg" src="home-render.jpg" alt="PPF Smart Farm" onerror="renderHomeSVG()">
+  <div class="aifx"><div class="sweep"></div><div class="aipulse"></div><div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div><div class="dot d4"></div></div>
   ${hot(20.5,37.3,16,8,"goTab('vent')",'ระบายอากาศ')}
   ${hot(20,47,16,8,"goTab('feed')",'อาหาร')}
   ${hot(21,54.6,16,8,"goTab('analytics')",'วิเคราะห์')}
