@@ -238,8 +238,6 @@
   .hot{position:absolute;transform:translate(-50%,-50%);background:transparent;border:none;border-radius:14px;cursor:pointer;padding:0;transition:background .12s,box-shadow .12s}
   .hot:hover{background:rgba(94,234,212,.16);box-shadow:0 0 0 2px rgba(94,234,212,.55)}
   .hot:active{background:rgba(94,234,212,.28)}
-  .hot::after{content:attr(data-lb);position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);background:rgba(6,40,33,.94);color:#EAFBF4;font-family:'Prompt',sans-serif;font-size:13px;font-weight:600;line-height:1;padding:6px 12px;border-radius:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;box-shadow:0 6px 18px rgba(0,0,0,.32);border:1px solid rgba(52,211,153,.55);z-index:5}
-  .hot:hover::after{opacity:1}
   .aihero{position:relative;container-type:inline-size;width:100%;max-width:1120px;margin:4px auto 0;aspect-ratio:1280/770;border-radius:20px;overflow:hidden;background:#E9F2EC;box-shadow:0 16px 44px rgba(16,90,60,.2)}
   .aihero .aibg{position:absolute;inset:0;width:100%;height:100%}
   .aicard{position:absolute;transform:translate(-50%,-50%);width:9cqw;min-width:64px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:.4cqw;padding:1.1cqw .5cqw;background:rgba(7,36,30,.74);border:1px solid rgba(52,211,153,.6);border-radius:1.4cqw;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);box-shadow:0 0 1.4cqw rgba(52,211,153,.32);cursor:pointer;color:#EAFBF4;font-family:inherit;transition:transform .15s,box-shadow .15s;z-index:2}
@@ -1128,12 +1126,9 @@ function homeGo(t){
 function renderHomeSVG(){var g=document.getElementById('grid');if(g&&tab==='home')g.innerHTML=homeHeroSVG();}
 function setGr(p){try{localStorage.setItem('ppf_gr',p);}catch(e){}var w=document.getElementById('homewrap');if(w)w.className='aihero2 gr-'+p;[].forEach.call(document.querySelectorAll('.grsel button'),function(b){b.classList.toggle('on',b.getAttribute('data-gr')===p);});}
 function homeHero(){
-  const hot=(l,t,w,h,act,lb)=>`<button class="hot" style="left:${l}%;top:${t}%;width:${w}%;height:${h}%" onclick="${act}" data-lb="${lb}" aria-label="${lb}"></button>`;
-  var gr='hd';try{gr=localStorage.getItem('ppf_gr')||'hd';}catch(e){}
-  const grbtn=(k,t)=>`<button data-gr="${k}" class="${gr===k?'on':''}" onclick="setGr('${k}')">${t}</button>`;
-  return `<div style="padding:2px 0"><div id="homewrap" class="aihero2 gr-${gr}">
+  const hot=(l,t,w,h,act,lb)=>`<button class="hot" style="left:${l}%;top:${t}%;width:${w}%;height:${h}%" onclick="${act}" aria-label="${lb}"></button>`;
+  return `<div style="padding:2px 0"><div id="homewrap" class="aihero2 gr-cine">
   <img class="aiimg" src="home-render.jpg" alt="PPF Smart Farm" onerror="renderHomeSVG()">
-  <div class="grsel">${grbtn('hd','HD สด')}${grbtn('nat','ธรรมชาติ')}${grbtn('cine','ซีเนม่า')}</div>
   ${hot(20.5,37.3,16,8,"goTab('vent')",'ระบายอากาศ')}
   ${hot(20,47,16,8,"goTab('feed')",'อาหาร')}
   ${hot(21,54.6,16,8,"goTab('analytics')",'วิเคราะห์')}
