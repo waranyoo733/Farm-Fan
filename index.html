@@ -252,6 +252,22 @@
   .aihero2 .hot:hover{border-color:rgba(160,255,240,.95);background:rgba(94,234,212,.15);box-shadow:0 0 24px rgba(94,234,212,.6),inset 0 0 16px rgba(94,234,212,.22);transform:translate(-50%,-50%) scale(1.06)}
   .aihero2 .hot:active{transform:translate(-50%,-50%) scale(.97)}
   @keyframes hotpulse{0%,100%{border-color:rgba(94,234,212,.14);box-shadow:0 0 0 rgba(94,234,212,0)}50%{border-color:rgba(94,234,212,.4);box-shadow:0 0 10px rgba(94,234,212,.22)}}
+  .homenav{display:none}
+  @media(max-width:759px){
+    .aihero2 .hot{display:none}
+    .homenav{display:block;width:100%;box-sizing:border-box;padding:15px 14px 104px}
+    .hnav-main{display:flex;align-items:center;gap:13px;width:100%;border:none;border-radius:18px;padding:16px 18px;margin:0 0 13px;background:linear-gradient(135deg,#16A34A,#15803D);color:#fff;box-shadow:0 8px 22px rgba(16,120,70,.28);cursor:pointer;text-align:left;font-family:inherit}
+    .hnav-main svg{width:34px;height:34px;flex:none;stroke:#fff}
+    .hnav-main>div{flex:1;min-width:0}
+    .hnav-main b{font-size:18px;font-weight:700;display:block;line-height:1.25}
+    .hnav-main small{font-size:12.5px;opacity:.92;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .hnav-main em{font-size:26px;font-style:normal;flex:none;line-height:1}
+    .hnav-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+    .hnav{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-height:98px;border:1.5px solid var(--green-br);border-radius:16px;background:#fff;color:var(--green-d);cursor:pointer;font-family:inherit;padding:14px 8px;box-shadow:0 2px 8px rgba(16,120,70,.07);transition:transform .1s,background .12s;-webkit-tap-highlight-color:transparent}
+    .hnav:active{transform:scale(.96);background:var(--green-l2)}
+    .hnav svg{width:33px;height:33px;flex:none}
+    .hnav span{font-size:15.5px;font-weight:600}
+  }
   .aihero{position:relative;container-type:inline-size;width:100%;max-width:1120px;margin:4px auto 0;aspect-ratio:1280/770;border-radius:20px;overflow:hidden;background:#E9F2EC;box-shadow:0 16px 44px rgba(16,90,60,.2)}
   .aihero .aibg{position:absolute;inset:0;width:100%;height:100%}
   .aicard{position:absolute;transform:translate(-50%,-50%);width:9cqw;min-width:64px;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:.4cqw;padding:1.1cqw .5cqw;background:rgba(7,36,30,.74);border:1px solid rgba(52,211,153,.6);border-radius:1.4cqw;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);box-shadow:0 0 1.4cqw rgba(52,211,153,.32);cursor:pointer;color:#EAFBF4;font-family:inherit;transition:transform .15s,box-shadow .15s;z-index:2}
@@ -1138,7 +1154,7 @@ function homeGo(t){
   },50);
 }
 function renderHomeSVG(){var g=document.getElementById('grid');if(g&&tab==='home')g.innerHTML=homeHeroSVG();}
-function fitHome(){var w=document.getElementById('homewrap');if(!w||tab!=='home')return;var wrap=w.querySelector('.aiimgwrap'),img=w.querySelector('.aiimg');if(!wrap)return;wrap.style.width='100%';w.style.height='';var ar=(img&&img.naturalWidth)?img.naturalWidth/img.naturalHeight:1024/656;var cw=w.getBoundingClientRect().width,imgH=cw/ar;var top=w.getBoundingClientRect().top,avail=window.innerHeight-top-2;w.style.height=(avail>imgH?avail:imgH)+'px';}
+function fitHome(){var w=document.getElementById('homewrap');if(!w||tab!=='home')return;var wrap=w.querySelector('.aiimgwrap'),img=w.querySelector('.aiimg');if(!wrap)return;wrap.style.width='100%';w.style.height='';var ar=(img&&img.naturalWidth)?img.naturalWidth/img.naturalHeight:1024/656;var cw=w.getBoundingClientRect().width,imgH=cw/ar;if(window.innerWidth<760){w.style.height=Math.round(imgH)+'px';return;}var top=w.getBoundingClientRect().top,avail=window.innerHeight-top-2;w.style.height=(avail>imgH?avail:imgH)+'px';}
 window.addEventListener('resize',fitHome);
 function setGr(p){try{localStorage.setItem('ppf_gr',p);}catch(e){}var w=document.getElementById('homewrap');if(w)w.className='aihero2 gr-'+p;[].forEach.call(document.querySelectorAll('.grsel button'),function(b){b.classList.toggle('on',b.getAttribute('data-gr')===p);});}
 function homeHero(){
@@ -1158,7 +1174,18 @@ function homeHero(){
   ${hot(74.3,59.7,10,13,"goTab('mortality')",'ไก่ตาย')}
   ${hot(63,45,8,12,"goTab('vent')",'AI')}
   ${hot(72,89,26,12,"goTab('vent')",'เข้าสู่หน้าจัดการรายวัน')}
-  </div></div></div>`;
+  </div></div>
+  <div class="homenav">
+    <button class="hnav-main" onclick="goTab('vent')">${I.fan}<div><b>เข้าสู่หน้าจัดการรายวัน</b><small>อุณหภูมิ · พัดลม · ผ้าม่าน · อาหาร</small></div><em>→</em></button>
+    <div class="hnav-grid">
+      <button class="hnav" onclick="goTab('vent')">${I.fan}<span>ระบายอากาศ</span></button>
+      <button class="hnav" onclick="goTab('feed')">${I.feed}<span>อาหาร</span></button>
+      <button class="hnav" onclick="goTab('analytics')">${I.chart}<span>วิเคราะห์</span></button>
+      <button class="hnav" onclick="goTab('mortality')">${I.alert}<span>ไก่ตาย</span></button>
+      <button class="hnav" onclick="goTab('guide')">${I.guide}<span>คู่มือ</span></button>
+      <button class="hnav" onclick="goTab('set')">${I.set}<span>ตั้งค่า</span></button>
+    </div>
+  </div></div>`;
 }
 function homeHeroSVG(){
   const hs=houses(),N=hs.length,h0=hs[0],r0=calc(h0);
