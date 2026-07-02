@@ -1177,10 +1177,22 @@ function applyLock(){
 }
 function tryUnlock(){
   if(canEdit){canEdit=false;applyLock();return;}
-  const p=prompt('🔒 ใส่รหัสเพื่อแก้ไขข้อมูล (ป้องกันการแก้ไขโดยไม่ตั้งใจ)');
-  if(p===null)return;
-  if(p===EDIT_PIN){canEdit=true;applyLock();}
-  else alert('รหัสไม่ถูกต้อง');
+  if(syncCfg&&syncCfg.wcode){canEdit=true;applyLock();return;}          // มีรหัสแก้ไขในเครื่องแล้ว → ปลดล็อกได้เลย
+  const p=prompt('🔒 ใส่รหัสสำหรับแก้ไขข้อมูล');
+  if(p===null||p==='')return;
+  if(!syncCfg){ if(p===EDIT_PIN){canEdit=true;applyLock();}else alert('รหัสไม่ถูกต้อง'); return; }  // เผื่อไม่ได้เชื่อมคลาวด์
+  syncStat('กำลังตรวจรหัส…');
+  // ตรวจรหัสกับเซิร์ฟเวอร์แบบปลอดภัย: ดึงข้อมูลปัจจุบันจากคลาวด์ แล้วเขียนกลับด้วยข้อมูล+เวลาเดิม (ไม่ทับข้อมูลใคร)
+  fetch(syncCfg.url+'?code='+encodeURIComponent(syncCfg.code)+'&t='+Date.now())
+   .then(r=>r.json()).then(cur=>{
+     const data=(cur&&cur.data&&cur.data.length>2)?cur.data:JSON.stringify(farms), ts=(cur&&+cur.updatedAt)||syncTs();
+     return fetch(syncCfg.url,{method:'POST',body:JSON.stringify({code:p,data:data,updatedAt:ts})}).then(r=>r.json());
+   })
+   .then(j=>{
+     if(j&&j.ok){ syncCfg.wcode=p; try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){} canEdit=true; applyLock(); syncStat('🔓 ปลดล็อกแก้ไขแล้ว','ok'); }
+     else { alert('รหัสสำหรับแก้ไขไม่ถูกต้อง'); syncStat('รหัสผิด','err'); }
+   })
+   .catch(()=>{alert('เชื่อมต่อไม่ได้ ลองใหม่'); syncStat('เชื่อมต่อไม่ได้','err');});
 }
 let copySrc=-1;
 const COPY_KEYS=['W','L','H','fan','fans','padFront','padLeft','padRight','padBlock','padH'];
@@ -1413,9 +1425,15 @@ function syncSetTs(t){try{localStorage.setItem(TS_KEY,String(t));}catch(e){}}
 function syncStat(msg,cls){const e=document.getElementById('syncStat');if(e){e.textContent=msg;e.className='syncstat'+(cls?(' '+cls):'');}}
 function syncNowStr(){const d=new Date();return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
 function syncTouch(){ if(syncApplying||!syncCfg)return; syncSetTs(Date.now()); clearTimeout(syncTimer); syncTimer=setTimeout(syncPush,800); }
-function syncPush(){ if(!syncCfg)return; syncStat('กำลังส่งขึ้นชีท…');
-  fetch(syncCfg.url,{method:'POST',body:JSON.stringify({code:syncCfg.code,data:JSON.stringify(farms),updatedAt:syncTs()})})
-   .then(r=>r.json()).then(j=>{ if(j&&j.ok)syncStat('ซิงค์แล้ว '+syncNowStr(),'ok'); else syncStat('ส่งไม่ได้: '+((j&&j.error)||'รหัสผิด?'),'err'); })
+function syncPush(){ if(!syncCfg)return;
+  if(!syncCfg.wcode){ syncStat('👁️ โหมดดูอย่างเดียว — กดกุญแจใส่รหัสเพื่อแก้ไข'); return; }   // ไม่มีรหัสเขียน → ไม่ push (กันเครื่องคนอื่นทับ)
+  syncStat('กำลังส่งขึ้นชีท…');
+  fetch(syncCfg.url,{method:'POST',body:JSON.stringify({code:syncCfg.wcode,data:JSON.stringify(farms),updatedAt:syncTs()})})
+   .then(r=>r.json()).then(j=>{
+     if(j&&j.ok){ syncStat('ซิงค์แล้ว '+syncNowStr(),'ok'); }
+     else if(j&&/write code|bad code/i.test(j.error||'')){ syncCfg.wcode=null; try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){} canEdit=false; applyLock(); syncStat('รหัสแก้ไขไม่ถูกต้อง','err'); alert('🔒 รหัสสำหรับแก้ไขไม่ถูกต้องหรือถูกเปลี่ยน\nกรุณากดกุญแจ แล้วใส่รหัสแก้ไขใหม่'); }
+     else syncStat('ส่งไม่ได้: '+((j&&j.error)||'?'),'err');
+   })
    .catch(()=>syncStat('ส่งไม่ได้ (เน็ต/ลิงก์?)','err')); }
 function syncPull(opts){ if(!syncCfg)return; opts=opts||{}; syncStat('กำลังดึงจากชีท…');
   fetch(syncCfg.url+'?code='+encodeURIComponent(syncCfg.code)+'&t='+Date.now())
