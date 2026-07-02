@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="vendor/xlsx.full.min.js" onerror="this.onerror=null;this.src='https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js'"></script>
+<script src="vendor/chart.umd.min.js" onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js'"></script>
 <style>
   :root{--ink:#3A1620;--mute:#9A5563;--line:#FFEAE2;--line2:#FFE0D6;--red:#E5326B;--amber:#D97706;--green:#16a34a;--card:#fff;--brand:#E5326B}
   *{box-sizing:border-box}
@@ -156,7 +156,7 @@
       <div class="sec"><span>รายเล้า · <b id="houseTitle"></b></span><select id="selFarm2"></select></div>
       <div style="overflow-x:auto"><table id="houses" style="min-width:860px"></table></div>
       <div id="wkwt" class="note"></div>
-      <div class="note">เช้า/เย็น ต/ค = ไก่ตาย/ไก่คัด · นน.จริง + %อาหารกิน + เพศ = ดึงจากชีตสรุปในไฟล์ · FCR จริง = อาหารสะสม(คละเพศ) ÷ นน.จริง · FCR มฐ. = ÷ นน.มาตรฐาน</div>
+      <div class="note">เช้า/เย็น ต/ค = ไก่ตาย/ไก่คัด · นน.จริง + %อาหารกิน + เพศ = ดึงจากชีตสรุปในไฟล์ · FCR (นน.จริง) = อาหารสะสม"ตามโปรแกรม" ÷ นน.จริง (ยังไม่ใช่อาหารที่กินจริง) · FCR มฐ. = อาหารโปรแกรม ÷ นน.มาตรฐาน</div>
     </div>
 
     <div class="card pad" id="alertCard" style="display:none">
@@ -191,8 +191,17 @@
 </div>
 
 <script>
-const LS='ppf_mortality_v1';
-let DATA=null, chF=null, chT=null, chR=null, chK=null, chE=null;
+const LS='ppf_mortality_v1', LS_TS='ppf_mortality_ts';
+let DATA=null, chF=null, chT=null, chR=null, chK=null, chE=null, dataSavedAt=0;
+// ป้ายวันที่/อายุข้อมูล + เตือนถ้าข้อมูลเก่า (กันแคปรายงานเก่าในนามวันนี้)
+function dataAgeInfo(){
+  if(!dataSavedAt)return{txt:'ไม่ทราบวันที่ข้อมูล',stale:true};
+  const d=new Date(dataSavedAt);
+  const p=n=>('0'+n).slice(-2);
+  const txt='ข้อมูล ณ '+d.toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'})+' '+p(d.getHours())+':'+p(d.getMinutes());
+  const stale=(Date.now()-dataSavedAt)>24*3600*1000;   // เกิน 24 ชม.
+  return{txt,stale,d};
+}
 const FCOL=['#3B82F6','#22C55E','#F97316','#EC4899','#A855F7','#06B6D4','#EAB308','#14B8A6','#EF4444','#8B5CF6','#0EA5E9','#F43F5E','#84CC16','#D946EF'];
 // แถบพื้นหลัง (track) หลังแท่งแนวนอน — สไตล์ BI แบบภาพอ้างอิง
 function roundRectPath(ctx,x,y,w,h,r){r=Math.min(r,h/2,Math.abs(w)/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
@@ -321,8 +330,8 @@ function buildExec(){
   let TB=0,TL=0,TT=0,totHouses=0;
   const farmRows=DATA.map(f=>{let b=0,l=0,t=0;f.houses.forEach(h=>{const s=houseStats(h);b+=h.birds;l+=s.loss+s.cull;t+=s.today;});totHouses+=f.houses.length;TB+=b;TL+=l;TT+=t;return{name:f.name,houses:f.houses.length,birds:b,loss:l,today:t,cumPct:b>0?l/b*100:0};});
   const totPct=TB>0?TL/TB*100:0, alive=TB-TL, st=statusOf(totPct), single=DATA.length===1;
-  const today=new Date().toLocaleDateString('th-TH',{year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('execSub').textContent=(single?DATA[0].name:DATA.length+' ฟาร์ม')+' · '+totHouses+' เล้า · รายงาน ณ '+today;
+  const _ai=dataAgeInfo();
+  document.getElementById('execSub').textContent=(single?DATA[0].name:DATA.length+' ฟาร์ม')+' · '+totHouses+' เล้า · '+_ai.txt+(_ai.stale?' ⚠️ (ข้อมูลเก่ากว่า 24 ชม.)':'');
   const eS=document.getElementById('execStatus');eS.textContent='ภาพรวม: '+st.t;eS.style.color=st.c;
   document.getElementById('execKpis').innerHTML=[
     ['ลงไก่ทั้งหมด',n(TB),(single?DATA[0].name:DATA.length+' ฟาร์ม')+' · '+totHouses+' เล้า'],
@@ -359,7 +368,8 @@ function mergeFarms(newFarms){
   const map={}; (DATA||[]).forEach(f=>map[f.name]=f);
   newFarms.forEach(f=>{if(f)map[f.name]=f;});
   DATA=Object.values(map);
-  try{localStorage.setItem(LS,JSON.stringify(DATA));}catch(e){}
+  dataSavedAt=Date.now();
+  try{localStorage.setItem(LS,JSON.stringify(DATA));localStorage.setItem(LS_TS,String(dataSavedAt));}catch(e){}
 }
 function render(){
   const _cr=document.getElementById('clearRow');
@@ -380,7 +390,10 @@ function render(){
   document.getElementById('k-today').textContent='ตายวันนี้ '+n(TT)+' ตัว';
   document.getElementById('k-pct').textContent=totPct.toFixed(2)+'%';
   document.getElementById('k-alive').textContent=n(TB-(TL+TC));
-  document.getElementById('sub').textContent='PPF · '+(DATA.length===1?DATA[0].name:DATA.length+' ฟาร์ม')+' · '+totHouses+' เล้า · ประจำวันนี้';
+  const _ai=dataAgeInfo();
+  const _sub=document.getElementById('sub');
+  _sub.textContent='PPF · '+(DATA.length===1?DATA[0].name:DATA.length+' ฟาร์ม')+' · '+totHouses+' เล้า · '+(_ai.stale?'⚠️ ':'')+_ai.txt+(_ai.stale?' (เก่ากว่า 24 ชม. — โยนไฟล์ใหม่ให้เป็นปัจจุบัน)':'');
+  _sub.style.color=_ai.stale?'#B91C1C':'';
   const st=statusOf(totPct), badge=document.getElementById('statusBadge');
   badge.style.display=''; badge.textContent='ภาพรวม: '+st.t; badge.style.color=st.c;
   const eb=document.getElementById('execBtn'); if(eb)eb.style.display='';
@@ -492,7 +505,7 @@ function drawRate(fi){
 function drawHouses(fi){
   const f=DATA[fi]; if(!f)return;
   const ht=document.getElementById('houseTitle');if(ht)ht.textContent=f.name;
-  let h='<tr><th>เล้า</th><th>เพศ</th><th>ลงไก่</th><th>อายุ</th><th>คงเหลือ</th><th>เช้า ต/ค</th><th>เย็น ต/ค</th><th>ตายวันนี้</th><th>%วันนี้</th><th>ตายสะสม</th><th>%สะสม</th><th>นน.จริง(ก.)</th><th>FCR จริง</th><th>FCR มฐ.</th><th>%อาหารกิน</th></tr>';
+  let h='<tr><th>เล้า</th><th>เพศ</th><th>ลงไก่</th><th>อายุ</th><th>คงเหลือ</th><th>เช้า ต/ค</th><th>เย็น ต/ค</th><th>ตายวันนี้</th><th>%วันนี้</th><th>ตายสะสม</th><th>%สะสม</th><th>นน.จริง(ก.)</th><th>FCR (นน.จริง)</th><th>FCR มฐ.</th><th>%อาหารกิน</th></tr>';
   f.houses.forEach(ho=>{const s=houseStats(ho),d=ho.detail;const cls=s.cumPct>=2?'red':s.cumPct>=1?'amber':'green';
     const wtKg=d&&d.wtKg?(d.wtKg<10?d.wtKg:d.wtKg/1000):0, wtG=wtKg?Math.round(wtKg*1000):0, fcrA=wtG>0?s.cumStd/wtG:0;
     const sex=d?(/ผู้/.test(d.sex)?'ผู้':/เมีย/.test(d.sex)?'เมีย':/คละ/.test(d.sex)?'คละ':'–'):'–';
@@ -549,7 +562,7 @@ document.getElementById('pivot').addEventListener('click',e=>{
 });
 document.getElementById('clearAll').addEventListener('click',()=>{if(confirm('ล้างข้อมูลทั้งหมดในแดชบอร์ด?\n(ไฟล์ต้นฉบับไม่ถูกลบ — โยนไฟล์ใหม่ได้)')){DATA=null;try{localStorage.removeItem(LS);}catch(e){}document.getElementById('files').innerHTML='';render();}});
 
-try{const saved=JSON.parse(localStorage.getItem(LS));if(saved&&saved.length){DATA=saved;render();}}catch(e){}
+try{const saved=JSON.parse(localStorage.getItem(LS));if(saved&&saved.length){DATA=saved;dataSavedAt=+localStorage.getItem(LS_TS)||0;render();}}catch(e){}
 window.__parseWB=parseWB; window.__getData=()=>DATA;
 </script>
 </body>

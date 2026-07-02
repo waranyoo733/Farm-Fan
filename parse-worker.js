@@ -1,7 +1,7 @@
 /* Web Worker: อ่าน+แปลงไฟล์ใบหน้าเล้า .xlsx นอก main thread (กันหน้าค้าง)
    mode 'mortality' → คืนทั้งฟาร์ม (dead/cull + detail จากชีตสรุป)
    mode 'face'      → คืนรายเล้า (num/birds/dead/age) สำหรับนำเข้าในแอปหลัก */
-importScripts('https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js');
+try{importScripts('vendor/xlsx.full.min.js');}catch(e){importScripts('https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js');}  // local ก่อน (ออฟไลน์ได้) · ถ้าไม่มีค่อย fallback CDN
 var RD={type:'array',cellFormula:false,cellHTML:false,cellText:false,cellNF:false,cellStyles:false,sheetStubs:false};
 function num(c){return c&&c.t!=='e'&&c.v!=null&&!isNaN(+c.v)?+c.v:0;}  // c.t==='e' = เซลล์ error (#VALUE! ฯลฯ) → ข้าม
 function zeros(){return new Array(42).fill(0);}

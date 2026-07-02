@@ -1,0 +1,15 @@
+{
+  "name": "PPF Smart Farm",
+  "short_name": "PPF Farm",
+  "description": "เครื่องมือเลี้ยงไก่เนื้อรายวัน — ระบายอากาศ พัดลม อาหาร FCR ไก่ตาย",
+  "lang": "th",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f7a46",
+  "theme_color": "#0f7a46",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

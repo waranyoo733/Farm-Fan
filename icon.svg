@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#0f7a46"/>
+  <g fill="none" stroke="#ffffff" stroke-width="26" stroke-linecap="round">
+    <circle cx="256" cy="256" r="150"/>
+    <path d="M256 256 C256 150 300 120 340 150 C300 180 300 230 256 256 Z" fill="#ffffff" stroke="none"/>
+    <path d="M256 256 C362 256 392 300 362 340 C332 300 282 300 256 256 Z" fill="#ffffff" stroke="none"/>
+    <path d="M256 256 C256 362 212 392 172 362 C212 332 212 282 256 256 Z" fill="#ffffff" stroke="none"/>
+    <path d="M256 256 C150 256 120 212 150 172 C180 212 230 212 256 256 Z" fill="#ffffff" stroke="none"/>
+    <circle cx="256" cy="256" r="30" fill="#ffffff" stroke="none"/>
+  </g>
+  <text x="256" y="470" font-family="Arial, sans-serif" font-size="70" font-weight="700" fill="#ffffff" text-anchor="middle">PPF</text>
+</svg>

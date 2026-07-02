@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PPF Smart Farm | by หมอวรัญญู</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f7a46">
+<link rel="icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PPF Farm">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -761,7 +768,10 @@ function parseFace(wb){
   });
   return out.sort(function(a,b){return a.num-b.num;});
 }
-function ensureXLSX(cb){if(window.XLSX)return cb();const s=document.createElement('script');s.src='https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';s.onload=cb;s.onerror=function(){alert('โหลดตัวอ่าน Excel ไม่ได้ (เช็คเน็ต)');};document.head.appendChild(s);}
+function ensureXLSX(cb){if(window.XLSX)return cb();
+  const load=function(src,onerr){const s=document.createElement('script');s.src=src;s.onload=cb;s.onerror=onerr;document.head.appendChild(s);};
+  load('vendor/xlsx.full.min.js',function(){load('https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js',function(){alert('โหลดตัวอ่าน Excel ไม่ได้ (เช็คเน็ต)');});});   // local ก่อน → fallback CDN
+}
 function pdFromAge(age){const t=new Date();t.setHours(0,0,0,0);const d=new Date(t.getTime()-(Math.max(1,age)-1)*86400000);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 let pWorker=null;
 function getWorker(){if(pWorker)return pWorker;pWorker=new Worker('parse-worker.js');return pWorker;}
@@ -1606,7 +1616,8 @@ function capCard(el,h){
     }).catch(function(){if(cap)cap.disabled=false;alert('แคปไม่สำเร็จ ลองใหม่อีกครั้ง');});
   }
   if(window.html2canvas)return go();
-  var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';s.onload=go;s.onerror=function(){alert('โหลดตัวแคปไม่ได้ (เช็คเน็ต)');};document.head.appendChild(s);
+  var mk=function(src,onerr){var s=document.createElement('script');s.src=src;s.onload=go;s.onerror=onerr;document.head.appendChild(s);};
+  mk('vendor/html2canvas.min.js',function(){mk('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',function(){alert('โหลดตัวแคปไม่ได้ (เช็คเน็ต)');});});
 }
 function closePadModal(){document.getElementById('padmodal').classList.remove('show');}
 document.getElementById('padClose').addEventListener('click',closePadModal);
@@ -1620,6 +1631,7 @@ setInterval(syncTick,3000);                                                     
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){autoAge();syncTick();} });   // กลับมาเปิดแอป → เด้งอายุ + ซิงค์ทันที
 function autoAge(){ if(syncApplying||isTyping())return; if(syncAgesToToday()){ save(); render(); } }   // เด้งอายุไก่เป็นวันจริงเองตามวันลงไก่ (ไม่ต้องกด "วันนี้")
 window.addEventListener('focus',autoAge);                                                      // กลับมาที่หน้าต่าง → เด้งอายุ
+if('serviceWorker' in navigator){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }   // PWA: ใช้ออฟไลน์ + ติดตั้งหน้าจอโฮมได้
 setInterval(autoAge,60000);                                                                    // กันเปิดค้างข้ามวัน → เช็คทุก 1 นาที
 </script>
 </body>
