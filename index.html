@@ -1403,10 +1403,11 @@ document.querySelector('.wrap').addEventListener('click',e=>{
   houses().splice(+d,1);save();renderChips();render();
 });
 /* ===== ซิงค์ Google Sheet (ปิดไว้จนกว่าจะใส่ลิงก์) ===== */
-const SYNC_DEFAULT_URL='https://script.google.com/macros/s/AKfycbzPC12_d_QPr8-pldaSFEXeOLT8wGwsVlkwEEQ0DjtRtC5mWicGtepTzaLQe69f2f92PQ/exec';
+const SYNC_DEFAULT_URL='https://script.google.com/macros/s/AKfycbzQoQ8AtIHq4S6HB29B4JzfWQpURs8sLGlpPHd9NUcEhjE3UUiPngjm6ijAF1jN3YJS/exec';
 const SYNC_KEY='ppf_sync', TS_KEY='ppf_updatedAt';
 let syncCfg=null, syncTimer=null, syncApplying=false;
 try{syncCfg=JSON.parse(localStorage.getItem(SYNC_KEY)||'null');}catch(e){}
+if(syncCfg&&syncCfg.url!==SYNC_DEFAULT_URL){syncCfg.url=SYNC_DEFAULT_URL;try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){}}  // ย้ายเครื่องเก่าไป backend ใหม่อัตโนมัติ
 function syncTs(){return +localStorage.getItem(TS_KEY)||0;}
 function syncSetTs(t){try{localStorage.setItem(TS_KEY,String(t));}catch(e){}}
 function syncStat(msg,cls){const e=document.getElementById('syncStat');if(e){e.textContent=msg;e.className='syncstat'+(cls?(' '+cls):'');}}
