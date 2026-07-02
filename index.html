@@ -1130,7 +1130,7 @@ function refreshVent(el){
   const mc=el.querySelector('.manchip');
   if(mc)mc.style.display=(h.padFansAuto===false)?'inline-flex':'none';
   setT(el,'.o-fd',r.fd);
-  setT(el,'.o-fdsub','กินรวม '+Math.round(r.fhouse).toLocaleString()+' กก. ('+(r.fhouse/1000).toFixed(2)+' ตัน)/วัน · '+r.alive.toLocaleString()+' ตัว');
+  setT(el,'.o-fdsub','กินรวม '+Math.round(r.fhouse).toLocaleString()+' กก. ('+(r.fhouse/1000).toFixed(2)+' ตัน)/วัน · '+r.alive.toLocaleString()+' ตัว · คิดเป็น '+r.fpct.toFixed(1)+'% ของ นน.ตัว (STD)');
   setT(el,'.o-wind',r.windTarget.toFixed(2));setT(el,'.o-windft',Math.round(r.windTarget*196.85));setT(el,'.o-windmax',r.comfort.toFixed(1));
   const ev=el.querySelector('.o-evap');
   if(ev){
