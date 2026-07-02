@@ -968,7 +968,8 @@ function ventCard(h,i){
       <div>• <b>สูงสุด</b> = ลมที่ต้องการ ÷ ประสิทธิภาพพัดลม (${Math.round(r.fanCFM).toLocaleString()} cfm/ตัว) ปัดขึ้น ไม่เกิน ${h.fans} ตัว</div>
       <div>• <b>ขั้นต่ำ</b> = ไม่ต่ำกว่า สูงสุด − ${GAP} (อากาศหนาว) · วัน 1–7 สูงสุด ≤ 3</div>
       <div>• <b>ลมเป้าหมายอายุนี้</b> = ${r.windTarget.toFixed(2)} m/s (${Math.round(r.windTarget*196.85)} ft/min) · สูงสุดทนได้ ${r.comfort.toFixed(1)} m/s — UGA Poultry Extension ตามอายุ</div>
-      <div>• <b>อาหาร</b> ${r.fd} g/ตัว/วัน · ทั้งเล้า ${Math.round(r.fhouse).toLocaleString()} kg/วัน</div>
+      <div>• <b>อาหาร</b> ${r.fd} g/ตัว/วัน = <b>${r.fpct.toFixed(1)}%</b> ของ นน.ตัว STD ${r.wt.toLocaleString()} g · ทั้งเล้า ${Math.round(r.fhouse).toLocaleString()} kg/วัน (คิดจากไก่คงเหลือ ${r.alive.toLocaleString()} ตัว)</div>
+      <div>• <b>ตาราง STD ที่ใช้</b> — อาหาร (วัน1=14g → วัน42=194g): ชีต "โปรแกรมการเดินอาหาร+แสง" · น้ำหนักตัว (วัน0=42g → วัน42=3,278g): ตารางน้ำหนักมาตรฐาน ชีต "พัดลมขั้นต่ำ" — จากไฟล์โปรแกรมการจัดการไก่เนื้อของบริษัท ชุดเดียวกันทุกฟาร์ม (วัน31 ต้นฉบับพิมพ์ 2,034g แอปปรับเป็น 2,093g)</div>
       <div>• <b>FCR เป้าหมายวันนี้</b> = อาหารสะสม ${r.cumStd} g ÷ น้ำหนัก ${r.wt} g = <b>${r.fcrT?r.fcrT.toFixed(3):'–'}</b> (รายละเอียดในแท็บอาหาร)</div>
     </div></details>
     <div class="advnote faded"><div class="advnote-cap">💡 คำแนะนำ <span class="advnote-hint">(แตะเพื่อดูชัด)</span></div>
@@ -1089,11 +1090,12 @@ function buildManual(){
     html+=`<div class="spec">ขนาดเล้า ${h.W} × ${h.L} ม. สูงเฉลี่ย ${h.H} ม. · พัดลม ${h.fans} ตัว (ขนาด ${h.fan}") · ไก่ ${h.birds.toLocaleString()} ตัว · Cooling pad หน้า ${h.padFront}+ซ้าย ${h.padLeft}+ขวา ${h.padRight} ม. สูง ${h.padH} ม.</div>`;
     let rows='',cumStd=0;
     for(let d=1;d<=42;d++){
-      const r=calc(Object.assign({},h,{age:d}));cumStd+=FEED[d];const fcr=BW[d]>0?cumStd/BW[d]:0;
-      rows+=`<tr><td class="ag2">${d}</td><td>${r.tt.toFixed(1)}</td><td>${r.pump.toFixed(1)}</td><td>${r.lx}</td><td>${r.lhr}</td><td>${r.ventMin}</td><td>${r.ventMax}</td><td>${chokeShort(r.choke)}</td><td>${r.fd}</td><td>${Math.round(r.fhouse).toLocaleString()}</td><td>${fcr.toFixed(2)}</td></tr>`;
+      const r=calc(Object.assign({},h,{age:d}));cumStd+=FEED[d];const fcr=BW[d]>0?cumStd/BW[d]:0;const fpc=BW[d]>0?FEED[d]/BW[d]*100:0;
+      rows+=`<tr><td class="ag2">${d}</td><td>${r.tt.toFixed(1)}</td><td>${r.pump.toFixed(1)}</td><td>${r.lx}</td><td>${r.lhr}</td><td>${r.ventMin}</td><td>${r.ventMax}</td><td>${chokeShort(r.choke)}</td><td>${r.fd}</td><td>${fpc.toFixed(1)}</td><td>${Math.round(r.fhouse).toLocaleString()}</td><td>${fcr.toFixed(2)}</td></tr>`;
     }
-    html+=`<table><thead><tr><th>วัน</th><th>อุณหภูมิ °C</th><th>ปั๊มน้ำ °C</th><th>แสง lux</th><th>ไฟ ชม.</th><th>พัดลม ขั้นต่ำ</th><th>พัดลม สูงสุด</th><th>โช้ค ทำ/หยุด</th><th>อาหาร g/ตัว</th><th>อาหาร kg/เล้า</th><th>FCR เป้า</th></tr></thead><tbody>${rows}</tbody></table>`;
+    html+=`<table><thead><tr><th>วัน</th><th>อุณหภูมิ °C</th><th>ปั๊มน้ำ °C</th><th>แสง lux</th><th>ไฟ ชม.</th><th>พัดลม ขั้นต่ำ</th><th>พัดลม สูงสุด</th><th>โช้ค ทำ/หยุด</th><th>อาหาร g/ตัว</th><th>% นน.ตัว</th><th>อาหาร kg/เล้า</th><th>FCR เป้า</th></tr></thead><tbody>${rows}</tbody></table>`;
   });
+  html+=`<div class="spec">หมายเหตุ: อาหาร g/ตัว/วัน และน้ำหนักมาตรฐาน อ้างอิงตารางโปรแกรมการเลี้ยงของบริษัท (ชีต "โปรแกรมการเดินอาหาร" + ตารางน้ำหนักมาตรฐานในชีต "พัดลมขั้นต่ำ" — ชุดเดียวกันทุกฟาร์ม) · % นน.ตัว = อาหาร STD ÷ น้ำหนักมาตรฐานวันเดียวกัน × 100 · น้ำหนักวัน 31 ต้นฉบับพิมพ์ 2,034 g แอปปรับเป็น 2,093 g (ค่ากึ่งกลางวัน 30/32)</div>`;
   const feed=[['0–7 วัน','โรยอาหารบนกระดาษ + วางถาด/จานระดับพื้น ให้ลูกไก่เห็นและเข้าถึงง่าย'],['8–14 วัน','ยกจานขึ้น ขอบจานระดับอก–หลังลูกไก่ ค่อย ๆ เลิกโรยกระดาษ'],['15–28 วัน','ยกขอบล่างจานให้อยู่ระดับหลังไก่ ปรับสูงตามไก่โตทุกวัน'],['29–จับ','ยกจานสูงตามตัวไก่ ขอบจานระดับหลัง คุมอาหารในจานพอดี ไม่ล้น']];
   const water=[['0–7 วัน','ระดับตา–ปากลูกไก่ ก้มเล็กน้อย กดง่าย แรงดันน้ำต่ำ','ระดับตา'],['8–14 วัน','ยกให้ไก่เริ่มเงยคอกด','~35°'],['15–28 วัน','ยกสูงขึ้น ไก่เงยคอชัดเจน เพิ่มแรงดัน','~45°'],['29–จับ','นิปเปิ้ลเหนือหัวเล็กน้อย ไก่เงยคอตั้ง เพิ่มแรงดันสูงสุด','~75–85°']];
   html+=`<h2>การปรับระดับไลน์อาหาร</h2><table><thead><tr><th style="width:90px">อายุ</th><th>การปรับ</th></tr></thead><tbody>${feed.map(r=>`<tr><td class="ag2">${r[0]}</td><td class="l">${r[1]}</td></tr>`).join('')}</tbody></table>`;
