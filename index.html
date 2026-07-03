@@ -1553,12 +1553,16 @@ document.getElementById('himodal').addEventListener('click',e=>{if(e.target.id==
 function fanStepGroup(p){const m={};p.choke.forEach(n=>m[n]={grp:'ck'});p.steps.forEach(s=>s.fans.forEach(n=>m[n]={grp:'s'+s.n}));p.manual.forEach(mm=>mm.fans.forEach(n=>m[n]={grp:'man',age:mm.age}));return m;}
 function fmDots(arr,grp){return arr.map((n,i)=>(i>0?'<span class="bpair">·</span>':'')+'<span class="bdot g-'+grp+'">'+n+'</span>').join('');}
 function openFanModal(p,age,name){
-  const g=fanStepGroup(p);
   const stt=fanStateAt(p,age);
-  const run={};stt.man.forEach(n=>run[n]=1);p.choke.forEach(n=>run[n]=1);
+  // ระบายสีตามสถานะจริง ณ อายุนี้: เปิดมือแล้ว(เขียว) > โช๊ค(ชมพู) > ออโต้ Step ที่ยังไม่ถึงวันเปิดมือ(สีตาม Step) > ยังไม่เปิด(เทา)
+  const manNow=new Set(stt.man), chk=new Set(p.choke), stepOf={};
+  p.steps.forEach(s=>s.fans.forEach(n=>{if(stepOf[n]==null)stepOf[n]='s'+s.n;}));
   let wall='',runCount=0;
-  for(let n=1;n<=p.nf;n++){const gi=g[n],grp=gi?gi.grp:'off';
-    const on=run[n]?(' on'+(grp==='ck'?' slow':'')):'';if(run[n])runCount++;
+  for(let n=1;n<=p.nf;n++){
+    let grp='off',on='';
+    if(manNow.has(n)){grp='man';on=' on';runCount++;}
+    else if(chk.has(n)){grp='ck';on=' on slow';runCount++;}
+    else if(stepOf[n]){grp=stepOf[n];}
     wall+='<div class="hf hf-'+grp+on+'">'+fanIconSVG()+'<span class="hfnum">'+n+'</span></div>';}
   const strip='<div class="hstrip"><div class="hs-cell hs-air">💨<br>ลมเข้า</div><div class="hs-cell hs-pad">แพด/<br>ผ้าม่าน</div><div class="hs-cell hs-mid"><div style="font-size:15px">🐔 🐔 🐔</div><div class="hs-arrows">→ → →</div><div>ลมผ่านตัวไก่</div></div><div class="hs-cell hs-fw">ผนัง<br>พัดลม</div><div class="hs-cell hs-air">💨<br>ดูดออก</div></div>';
   const leg='<div class="hwleg"><span><i style="background:#16a34a"></i>เปิดมือ (หมุน)</span><span><i style="background:#ec6ca0"></i>โช๊ค (หมุนจังหวะ)</span><span><i style="background:#f59e0b"></i>ออโต้ (รอตู้สั่ง)</span><span><i style="background:#b9c2bd"></i>ยังไม่เปิด</span></div>';
