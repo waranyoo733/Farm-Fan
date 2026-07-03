@@ -602,7 +602,7 @@
 <script>
 const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2094,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278];
 const FEED=[0,14,18,21,24,27,31,34,38,42,47,51,56,61,66,71,76,82,87,93,98,104,109,115,120,125,130,135,140,145,150,154,159,163,167,171,175,178,182,185,188,192,194];
-// %อาหาร ตามตารางมาตรฐาน As-Hatched = อาหารสะสม(ก.) ÷ 300 (เช่น วัน16=2.33, วัน42=15.95) — ตรงตารางที่หมอใช้
+// %อาหาร ตามตาราง STD (As-Hatched) = อาหารสะสมต่อตัว(ก.) ÷ ถุงอาหาร 30 กก./กระสอบ (÷30000×100 = ÷300) · วัน16=2.33, วัน42=15.95
 const FPCT=[0.00,0.04,0.10,0.17,0.25,0.34,0.44,0.56,0.69,0.83,0.99,1.17,1.37,1.58,1.81,2.06,2.33,2.62,2.93,3.25,3.60,3.97,4.36,4.77,5.21,5.65,6.12,6.62,7.12,7.65,8.19,8.76,9.34,9.94,10.54,11.17,11.82,12.47,13.14,13.83,14.52,15.23,15.95];
 const D=a=>Math.max(0,Math.min(42,Math.round(a)));
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -970,7 +970,7 @@ function ventCard(h,i){
       <div>• <b>สูงสุด</b> = ลมที่ต้องการ ÷ ประสิทธิภาพพัดลม (${Math.round(r.fanCFM).toLocaleString()} cfm/ตัว) ปัดขึ้น ไม่เกิน ${h.fans} ตัว</div>
       <div>• <b>ขั้นต่ำ</b> = ไม่ต่ำกว่า สูงสุด − ${GAP} (อากาศหนาว) · วัน 1–7 สูงสุด ≤ 3</div>
       <div>• <b>ลมเป้าหมายอายุนี้</b> = ${r.windTarget.toFixed(2)} m/s (${Math.round(r.windTarget*196.85)} ft/min) · สูงสุดทนได้ ${r.comfort.toFixed(1)} m/s — UGA Poultry Extension ตามอายุ</div>
-      <div>• <b>อาหาร</b> ${r.fd} g/ตัว/วัน · <b>%อาหารสะสม ${r.fpct.toFixed(2)}%</b> (ตาราง STD = อาหารสะสม ÷ 300) · ทั้งเล้า ${Math.round(r.fhouse).toLocaleString()} kg/วัน (คิดจากไก่คงเหลือ ${r.alive.toLocaleString()} ตัว)</div>
+      <div>• <b>อาหาร</b> ${r.fd} g/ตัว/วัน · <b>%อาหารสะสม ${r.fpct.toFixed(2)}%</b> (ตาราง STD = อาหารสะสมต่อตัว ÷ ถุงอาหาร 30 กก.) · ทั้งเล้า ${Math.round(r.fhouse).toLocaleString()} kg/วัน (คิดจากไก่คงเหลือ ${r.alive.toLocaleString()} ตัว)</div>
       <div>• <b>ตาราง STD ที่ใช้</b> — อาหาร (วัน1=14g → วัน42=194g): ชีต "โปรแกรมการเดินอาหาร+แสง" · น้ำหนักตัว (วัน0=42g → วัน42=3,278g): ตารางน้ำหนักมาตรฐาน ชีต "พัดลมขั้นต่ำ" — จากไฟล์โปรแกรมการจัดการไก่เนื้อของบริษัท ชุดเดียวกันทุกฟาร์ม (วัน31 ต้นฉบับพิมพ์ 2,034g แอปปรับเป็น 2,093g)</div>
       <div>• <b>FCR เป้าหมายวันนี้</b> = อาหารสะสม ${r.cumStd} g ÷ น้ำหนัก ${r.wt} g = <b>${r.fcrT?r.fcrT.toFixed(3):'–'}</b> (รายละเอียดในแท็บอาหาร)</div>
     </div></details>
@@ -1134,7 +1134,7 @@ function refreshVent(el){
   const mc=el.querySelector('.manchip');
   if(mc)mc.style.display=(h.padFansAuto===false)?'inline-flex':'none';
   setT(el,'.o-fd',r.fd);
-  setT(el,'.o-fdsub','กินรวม '+Math.round(r.fhouse).toLocaleString()+' กก. ('+(r.fhouse/1000).toFixed(2)+' ตัน)/วัน · '+r.alive.toLocaleString()+' ตัว · %อาหารสะสม (STD) '+r.fpct.toFixed(2)+'%');
+  setT(el,'.o-fdsub','กินรวม '+Math.round(r.fhouse).toLocaleString()+' กก. ('+(r.fhouse/1000).toFixed(2)+' ตัน)/วัน · '+r.alive.toLocaleString()+' ตัว · %อาหารสะสม (STD) '+r.fpct.toFixed(2)+'% (÷ ถุง 30 กก.)');
   setT(el,'.o-wind',r.windTarget.toFixed(2));setT(el,'.o-windft',Math.round(r.windTarget*196.85));setT(el,'.o-windmax',r.comfort.toFixed(1));
   const ev=el.querySelector('.o-evap');
   if(ev){
