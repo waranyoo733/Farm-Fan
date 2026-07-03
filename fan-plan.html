@@ -39,7 +39,7 @@ input[type=range]{flex:1;min-width:180px;accent-color:var(--brand)}
 .kpi .t{font-size:11.5px;color:var(--muted)}
 .kpi .v{font-size:21px;font-weight:700;margin-top:2px}
 .kpi .s{font-size:11px;color:var(--muted);margin-top:2px}
-.k-fan{background:#e9f7ee}.k-cur{background:#eef4fb}.k-wind{background:#f2eefb}.k-feed{background:#fdf3e7}
+.k-fan{background:#e9f7ee}.k-cur{background:#eef4fb}.k-wind{background:#f2eefb}.k-feed{background:#fdf3e7}.k-fcr{background:#fbeef2}
 .secH{font-size:15px;font-weight:600;margin:16px 0 8px;display:flex;align-items:center;gap:7px}
 .order{background:#f0faf3;border:1.5px solid #bfe6cc;border-radius:14px;padding:12px;margin-top:12px}
 .order .oh{font-weight:600;font-size:14.5px;margin-bottom:8px}
@@ -85,20 +85,22 @@ a.back{color:#cfe9dd;font-size:12.5px;text-decoration:none}
 <div class="wrap">
   <div class="chips" id="chips"></div>
   <div id="content"></div>
-  <div class="foot">สูตร: ลมที่ไก่ต้องการ = cfm/kg (3 วัน0–13 · 4 วัน14–27 · 5 วัน28–42) × น้ำหนัก STD × จำนวนไก่ · ผ้าม่านหน้าแพด = สูงแพด × (พัดลมที่เปิด ÷ พัดลมทั้งหมด) · แรงลม = ลมรวม(m³/h) ÷ 3600 ÷ (กว้าง × สูงหน้าตัด)<br>สีตามรหัสในไฟล์แผนของหมอ: <span style="color:#00B050">■ เขียว = เปิดมือ</span> · <span style="color:#D99694">■ ชมพู = โช้ค (Cycle)</span> · <span style="color:#404040">■ ดำ = ออโต้ตู้คุม</span> · น้ำหนัก STD วัน31 = 2,094 ก. (แก้แล้ว) · เบอร์พัดลมถอดจากไฟล์แผนการระบายอากาศ + รูปผังรุ่งเรือง (หมอยืนยัน 3 ก.ค. 2569)</div>
+  <div class="foot">สูตร: ลมที่ไก่ต้องการ = cfm/kg (3 วัน0–13 · 4 วัน14–27 · 5 วัน28–42) × น้ำหนัก STD × จำนวนไก่ · ผ้าม่านหน้าแพด = สูงแพด × (พัดลมที่เปิด ÷ พัดลมทั้งหมด) · แรงลม = ลมรวม(m³/h) ÷ 3600 ÷ (กว้าง × สูงหน้าตัด) · เส้นผ่าศูนย์กลางพัดลม นิ้ว × 2.54 = ซม. · FCR = อาหารสะสม ÷ น้ำหนักตัว (วันจับ 42 = 1.68)<br>สีตามรหัสในไฟล์แผนของหมอ: <span style="color:#00B050">■ เขียว = เปิดมือ</span> · <span style="color:#D99694">■ ชมพู = โช้ค (Cycle)</span> · <span style="color:#404040">■ ดำ = ออโต้ตู้คุม</span> · น้ำหนัก STD วัน31 = 2,094 ก. · cap พัดลมชัยนาทคำนวณด้วย 2.54 (6-7 = 27,359 · 1-5 = 27,976) · เบอร์พัดลมถอดจากไฟล์แผนการระบายอากาศ + รูปผังรุ่งเรือง (หมอยืนยัน 3 ก.ค. 2569)</div>
 </div>
 <script>
 const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2094,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278];
 const FEED=[0,14,18,21,24,27,31,34,38,42,47,51,56,61,66,71,76,82,87,93,98,104,109,115,120,125,130,135,140,145,150,154,159,163,167,171,175,178,182,185,188,192,194];
+// FCR สะสมมาตรฐาน (As-Hatched Performance) — วัน42 = 1.68
+const FCR=[0,0.23,0.42,0.57,0.68,0.77,0.84,0.90,0.96,1.01,1.05,1.10,1.13,1.15,1.17,1.18,1.19,1.21,1.22,1.24,1.25,1.26,1.28,1.30,1.32,1.34,1.36,1.38,1.40,1.42,1.44,1.46,1.48,1.50,1.51,1.53,1.55,1.57,1.59,1.61,1.63,1.65,1.68];
 const cfmkg=d=>d<=13?3:(d<=27?4:5);
 // ev: {d, add:[], off:[]} — off = สลับปิด (แผนรุ่งเรือง)
 const FARMS=[
  {k:'srihera',name:'ศรีเหรา',W:40,L:128,fans:26,cap:28400,birds:64000,choke:[2,25],autos:[[4,23],[5,22],[7,20]],ev:[[7,[13]],[11,[3,24]],[16,[1,9,14,18,26]],[20,[15]],[21,[11]],[22,[6,19,21]],[25,[8,17]],[26,[12]],[27,[16]],[28,[7,20]],[29,[10]],[30,[5,22]],[31,[4]],[32,[23]],[33,[2,25]]]},
- {k:'chai67',name:'ชัยนาท 6-7',W:34,L:120,fans:24,cap:26802,birds:49000,choke:[7,18],autos:[[5,20],[3,22]],ev:[[8,[2,23]],[12,[9,16]],[22,[11,14]],[25,[6,19]],[29,[4,21]],[33,[1,24]],[36,[8,17]],[39,[10,12,13,15]]]},
+ {k:'chai67',name:'ชัยนาท 6-7',W:34,L:120,fans:24,cap:27359,birds:49000,choke:[7,18],autos:[[5,20],[3,22]],ev:[[8,[2,23]],[12,[9,16]],[22,[11,14]],[25,[6,19]],[29,[4,21]],[33,[1,24]],[36,[8,17]],[39,[10,12,13,15]]]},
  {k:'rr36',name:'รุ่งเรือง 3-6',W:32,L:120,fans:21,cap:24800,birds:45000,choke:[2,20],autos:[[4,18],[6,16],[8,14]],ev:[[8,[11]],[13,[1,21],[11]],[15,[11]],[17,[7,15],[11]],[19,[5,11,17],[7,15]],[21,[9,13],[11]],[23,[7,11,15],[9,13]],[25,[9,13],[11]],[27,[3]],[29,[11]],[30,[10,12],[11]],[31,[8,11,14],[10,12]],[32,[10,12],[11]],[33,[11]]],src:'จากรูปผัง (หมอยืนยัน) · พัดลมเบอร์ 19 ไม่อยู่ในแผน (สำรอง)'},
  {k:'phum',name:'พุ่มวงศ์/หมอตั้ม',W:28,L:120,fans:22,cap:24000,birds:38000,choke:[2,21],autos:[[4,19],[6,17],[8,15]],ev:[[8,[11]],[14,[1,22]],[16,[14]],[17,[9]],[20,[10,18]],[22,[3,5,7,16,20]],[27,[13]],[29,[8,12,15]],[32,[6,17]],[33,[4,19]]]},
  {k:'ying',name:'ยิ่งรวย',W:28,L:120,fans:22,cap:24000,birds:38500,choke:[2,21],autos:[[4,19],[6,17],[8,15]],ev:[[8,[11]],[14,[1,22]],[16,[14]],[17,[9]],[20,[10,18]],[22,[3,5,7,16,20]],[27,[13]],[29,[8,12,15]],[32,[6,17]],[33,[4,19]]],src:'ใช้ผังเดียวกับพุ่มวงศ์ (หมอยืนยัน)'},
- {k:'chai15',name:'ชัยนาท 1-5',W:28,L:120,fans:18,cap:27406,birds:39500,choke:[4,15],autos:[[6,13],[2,17]],ev:[[8,[8,11]],[15,[3,16]],[22,[1,18]],[29,[5,14]],[33,[7,12]],[36,[9,10]]]},
+ {k:'chai15',name:'ชัยนาท 1-5',W:28,L:120,fans:18,cap:27976,birds:39500,choke:[4,15],autos:[[6,13],[2,17]],ev:[[8,[8,11]],[15,[3,16]],[22,[1,18]],[29,[5,14]],[33,[7,12]],[36,[9,10]]]},
  {k:'thana',name:'ธนวัฒน์',W:28,L:120,fans:18,cap:28400,birds:35000,choke:[2,17],autos:[[4,15],[6,13],[8,11]],ev:[[10,[9]],[15,[1,18]],[19,[10]],[21,[7,12]],[23,[5]],[25,[14]],[26,[3]],[27,[16]],[30,[8]],[31,[11]],[33,[6]],[34,[13]],[36,[2,4,15,17]]]},
  {k:'teng',name:'เต็งหนึ่ง (Rotem)',W:28,L:84,fans:20,cap:26400,birds:26500,choke:[6,15],autos:[[4,17],[9,12],[2,19]],ev:[[7,[10]],[12,[3,18]],[17,[8,13]],[22,[11]],[24,[5,7,14,16]],[32,[1,20]]]},
  {k:'mos',name:'มอส (มั้งกี้ 7-11)',W:25,L:120,fans:14,cap:24800,birds:34500,choke:[2,13],autos:[[4,11],[6,9]],ev:[[10,[7]],[14,[1,14]],[18,[8]],[21,[3,12]],[23,[5,10]],[26,[9]],[27,[6]],[29,[11]],[31,[4]],[33,[2,13]]]},
@@ -124,8 +126,8 @@ function calc(f,d,padH,secH){
   const open=Math.max(1,Math.min(Math.ceil(raw),f.fans));
   const cur=padH*100*open/f.fans;
   const wind=open*f.cap/0.5886/3600/(f.W*secH);
-  const fd=FEED[d], fp=fd/BW[d]*100, fh=fd*f.birds/1000;
-  return {need,raw,open,cur,wind,fd,fp,fh,full:Math.ceil(raw)>f.fans};
+  const fd=FEED[d], fp=fd/BW[d]*100, fh=fd*f.birds/1000, fcr=FCR[d];
+  return {need,raw,open,cur,wind,fd,fp,fh,fcr,full:Math.ceil(raw)>f.fans};
 }
 function bubbles(arr,cls){return arr.length?arr.map(n=>'<span class="bub '+cls+'">'+n+'</span>').join(''):'<span style="color:var(--muted);font-size:12.5px">—</span>';}
 function render(){
@@ -157,7 +159,7 @@ function render(){
     const x=calc(f,d,padH,secH);
     const m=manualAt(f,d);
     const cls=(d===day?'cur':(d%7===0?'wk':''));
-    rows+='<tr class="'+cls+'" onclick="setDay('+d+')" style="cursor:pointer"><td>'+d+'</td><td>'+(BW[d]/1000).toFixed(2)+'</td><td>'+x.open+(x.full?' ⚠':'')+'</td><td style="text-align:left">'+(m.length?m.join(', '):'—')+'</td><td>'+x.cur.toFixed(0)+'</td><td>'+x.wind.toFixed(2)+'</td><td>'+x.fd+'</td><td>'+x.fp.toFixed(1)+'%</td><td>'+Math.round(x.fh).toLocaleString()+'</td></tr>';
+    rows+='<tr class="'+cls+'" onclick="setDay('+d+')" style="cursor:pointer"><td>'+d+'</td><td>'+(BW[d]/1000).toFixed(2)+'</td><td>'+x.open+(x.full?' ⚠':'')+'</td><td style="text-align:left">'+(m.length?m.join(', '):'—')+'</td><td>'+x.cur.toFixed(0)+'</td><td>'+x.wind.toFixed(2)+'</td><td>'+x.fd+'</td><td>'+x.fp.toFixed(1)+'%</td><td>'+Math.round(x.fh).toLocaleString()+'</td><td>'+x.fcr.toFixed(2)+'</td></tr>';
   }
   document.getElementById('content').innerHTML=`
   <div class="card">
@@ -168,6 +170,7 @@ function render(){
       <div class="kpi k-cur"><div class="t">เปิดผ้าม่านหน้าแพด</div><div class="v">${c.cur.toFixed(0)} ซม.</div><div class="s">สูงแพด ${padH} ม. × (${c.open}÷${f.fans})</div></div>
       <div class="kpi k-wind"><div class="t">แรงลมในเล้า</div><div class="v">${c.wind.toFixed(2)} m/s</div><div class="s">หน้าตัด ${f.W}×${secH} ม.</div></div>
       <div class="kpi k-feed"><div class="t">อาหารวันนี้</div><div class="v">${c.fd} g/ตัว</div><div class="s">${c.fp.toFixed(1)}% ของ นน.ตัว · ทั้งเล้า ${Math.round(c.fh).toLocaleString()} kg</div></div>
+      <div class="kpi k-fcr"><div class="t">FCR เป้าหมาย (สะสม)</div><div class="v">${c.fcr.toFixed(2)}</div><div class="s">อาหารสะสม ÷ น้ำหนักตัว · วันจับ 42 = 1.68</div></div>
     </div>
     <div class="inps">ปรับได้: สูงแพด (ม.) <input id="padh" type="number" step="0.1" value="${padH}" onchange="render()"> · สูงหน้าตัดลม (ม.) <input id="sech" type="number" step="0.1" value="${secH}" onchange="render()"> <span>(ใช้ชิ่งลม = 1.8)</span></div>
     <div class="order">
@@ -182,7 +185,7 @@ function render(){
     <div class="tl">${tl}</div>
     <div class="secH">📊 ตารางรวมทั้งรุ่น (แตะแถวเพื่อเลือกวัน)</div>
     <div class="tblwrap"><table>
-      <thead><tr><th>วัน</th><th>นน. STD (kg)</th><th>พัดลม (ตัว)</th><th>เบอร์เปิดมือ</th><th>ผ้าม่าน (ซม.)</th><th>ลม (m/s)</th><th>อาหาร g/ตัว</th><th>% นน.</th><th>อาหาร kg/เล้า</th></tr></thead>
+      <thead><tr><th>วัน</th><th>นน. STD (kg)</th><th>พัดลม (ตัว)</th><th>เบอร์เปิดมือ</th><th>ผ้าม่าน (ซม.)</th><th>ลม (m/s)</th><th>อาหาร g/ตัว</th><th>% นน.</th><th>อาหาร kg/เล้า</th><th>FCR เป้า</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
     <div class="note">⚠ = ความต้องการลมเกินพัดลมที่ติดตั้ง — เปิดครบทุกตัวและพึ่ง cooling pad · จำนวน "พัดลมที่ควรเปิด" มาจากการคำนวณความต้องการลมของไก่ ส่วน "เบอร์เปิดมือ" มาจากแผนของหมอ (โช้ค+ออโต้ทำงานผ่านตู้คุมเพิ่มเติมจากเปิดมือ) · อาหาร kg/เล้า คิดจากไก่ลงเต็มจำนวน ถ้าต้องการหักไก่ตายรายวันใช้แอปหลัก</div>
