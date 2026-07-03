@@ -604,6 +604,9 @@ const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,86
 const FEED=[0,14,18,21,24,27,31,34,38,42,47,51,56,61,66,71,76,82,87,93,98,104,109,115,120,125,130,135,140,145,150,154,159,163,167,171,175,178,182,185,188,192,194];
 // %อาหาร ตามตาราง STD (As-Hatched) = อาหารสะสมต่อตัว(ก.) ÷ ถุงอาหาร 30 กก./กระสอบ (÷30000×100 = ÷300) · วัน16=2.33, วัน42=15.95
 const FPCT=[0.00,0.04,0.10,0.17,0.25,0.34,0.44,0.56,0.69,0.83,0.99,1.17,1.37,1.58,1.81,2.06,2.33,2.62,2.93,3.25,3.60,3.97,4.36,4.77,5.21,5.65,6.12,6.62,7.12,7.65,8.19,8.76,9.34,9.94,10.54,11.17,11.82,12.47,13.14,13.83,14.52,15.23,15.95];
+// FCR & อาหารสะสม ตามตาราง STD (As-Hatched Performance) — วัน42: FCR 1.68, อาหารสะสม 4,786 g (หมอยืนยันใช้ 1.68)
+const FCR_STD=[0,0.23,0.42,0.57,0.68,0.77,0.84,0.90,0.96,1.01,1.05,1.10,1.13,1.15,1.17,1.18,1.19,1.21,1.22,1.24,1.25,1.26,1.28,1.30,1.32,1.34,1.36,1.38,1.40,1.42,1.44,1.46,1.48,1.50,1.51,1.53,1.55,1.57,1.59,1.61,1.63,1.65,1.68];
+const CUMF_STD=[0,13,30,51,74,101,132,167,206,250,298,352,410,474,542,617,698,785,878,976,1081,1192,1309,1432,1562,1696,1837,1985,2137,2295,2458,2627,2801,2981,3163,3352,3545,3742,3943,4148,4357,4570,4786];
 const D=a=>Math.max(0,Math.min(42,Math.round(a)));
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const bw=a=>BW[D(a)],feedG=d=>FEED[D(d)];
@@ -916,7 +919,7 @@ function calc(h){
   const alive=aliveAt(h,h.age);
   const fd=feedG(h.age),fpct=FPCT[D(h.age)],fhouse=fd*alive/1000;
   let cumStd=0;for(let d=1;d<=h.age;d++)cumStd+=FEED[d];
-  const fcrT=(h.age>=1&&bw(h.age)>0)?cumStd/bw(h.age):0;
+  const fcrT=(h.age>=1)?FCR_STD[D(h.age)]:0;
   return{fanCFM,reqAir,reqFt,ventMin,ventMax,velMax,comfort,windTarget:targetWind(h.age),padNeeded,ck,wt:bw(h.age),tt:targetT(h.age),pump:pumpT(h.age),
     used,ratio,openH,openA,blocks,padVel,alive,fd,fpct,fhouse,cumStd,fcrT,choke:choke(h.age),lx:lux(h.age),lhr:lightHr(h.age)};
 }
@@ -971,8 +974,8 @@ function ventCard(h,i){
       <div>• <b>ขั้นต่ำ</b> = ไม่ต่ำกว่า สูงสุด − ${GAP} (อากาศหนาว) · วัน 1–7 สูงสุด ≤ 3</div>
       <div>• <b>ลมเป้าหมายอายุนี้</b> = ${r.windTarget.toFixed(2)} m/s (${Math.round(r.windTarget*196.85)} ft/min) · สูงสุดทนได้ ${r.comfort.toFixed(1)} m/s — UGA Poultry Extension ตามอายุ</div>
       <div>• <b>อาหาร</b> ${r.fd} g/ตัว/วัน · <b>%อาหารสะสม ${r.fpct.toFixed(2)}%</b> (ตาราง STD = อาหารสะสมต่อตัว ÷ ถุงอาหาร 30 กก.) · ทั้งเล้า ${Math.round(r.fhouse).toLocaleString()} kg/วัน (คิดจากไก่คงเหลือ ${r.alive.toLocaleString()} ตัว)</div>
-      <div>• <b>ตาราง STD ที่ใช้</b> — อาหาร (วัน1=14g → วัน42=194g): ชีต "โปรแกรมการเดินอาหาร+แสง" · น้ำหนักตัว (วัน0=42g → วัน42=3,278g): ตารางน้ำหนักมาตรฐาน ชีต "พัดลมขั้นต่ำ" — จากไฟล์โปรแกรมการจัดการไก่เนื้อของบริษัท ชุดเดียวกันทุกฟาร์ม (วัน31 ต้นฉบับพิมพ์ 2,034g แอปปรับเป็น 2,093g)</div>
-      <div>• <b>FCR เป้าหมายวันนี้</b> = อาหารสะสม ${r.cumStd} g ÷ น้ำหนัก ${r.wt} g = <b>${r.fcrT?r.fcrT.toFixed(3):'–'}</b> (รายละเอียดในแท็บอาหาร)</div>
+      <div>• <b>ตาราง STD ที่ใช้</b> — อาหาร (วัน1=14g → วัน42=194g): ชีต "โปรแกรมการเดินอาหาร+แสง" · น้ำหนักตัว (วัน0=42g → วัน42=3,278g): ตารางน้ำหนักมาตรฐาน ชีต "พัดลมขั้นต่ำ" — จากไฟล์โปรแกรมการจัดการไก่เนื้อของบริษัท ชุดเดียวกันทุกฟาร์ม (วัน31 ต้นฉบับพิมพ์ 2,034g แอปปรับเป็น 2,094g ตามที่หมอยืนยัน) · FCR เป้าใช้ตาราง STD As-Hatched (วันจับ 42 = 1.68)</div>
+      <div>• <b>FCR เป้าหมายวันนี้</b> = <b>${r.fcrT?r.fcrT.toFixed(2):'–'}</b> (ตามตาราง STD As-Hatched · วันจับ 42 = 1.68) (รายละเอียดในแท็บอาหาร)</div>
     </div></details>
     <div class="advnote faded"><div class="advnote-cap">💡 คำแนะนำ <span class="advnote-hint">(แตะเพื่อดูชัด)</span></div>
     ${adv}
@@ -1014,7 +1017,7 @@ function guideCard(){
    ['6','ความเร็วลม & เปิดแพด','ความเร็วลม = (พัดลม × ประสิทธิภาพ) ÷ (กว้าง × สูงเฉลี่ย)','ถ้าลมเกินที่ไก่ทนได้ → เปิด Cooling pad','เพิ่มลมเกินทำให้ไก่เครียด ใช้แพดลดอุณหภูมิอากาศแทน ลมเท่าเดิมแต่เย็นลง'],
    ['7','เปิดผ้าม่าน Cooling pad','ระยะเปิด = สูง pad × (พัดลมที่ใช้ ÷ พัดลมทั้งหมด) · ก้อน = พื้นที่ช่องเปิด ÷ (0.3 × สูง pad)','เปิดมากเมื่อใช้พัดลมมาก · 1 ก้อน = กว้าง 0.3 ม. × สูง pad','ให้ช่องลมผ่านแพดพอดีกับพัดลม ไม่อั้น (ลดความดันลบเกิน)'],
    ['8','อาหารรายวัน','% น้ำหนักตัว = อาหาร(g) ÷ น้ำหนัก(g) × 100 · ทั้งเล้า = อาหาร × ตัว ÷ 1000','ลูกไก่กิน ~17–25% ของน้ำหนัก ค่อยลดเหลือ ~6% เมื่อโต','เทียบกับน้ำหนักช่วยประเมินว่าไก่กินตามเกณฑ์ไหม (กินน้อย = ป่วย/เครียด)'],
-   ['9','อาหารคงเหลือ','คงเหลือ = สต๊อก + รับเข้า − กินสะสม','ติดตามต่อหลังเพื่อสั่งอาหารทัน','กันอาหารหมดกลางรุ่น · รวมทั้งรุ่น ÷ น้ำหนักจับ = FCR (เป้า ~1.35)']
+   ['9','อาหารคงเหลือ','คงเหลือ = สต๊อก + รับเข้า − กินสะสม','ติดตามต่อหลังเพื่อสั่งอาหารทัน','กันอาหารหมดกลางรุ่น · รวมทั้งรุ่น ÷ น้ำหนักจับ = FCR (เป้าตาราง STD วันจับ ~1.68)']
   ];
   let h='<div class="guide">';
   h+=`<button class="btn primary" id="printManual" style="width:100%;margin-bottom:14px;padding:14px;font-size:16px;border-radius:14px;justify-content:center">${I.print} พิมพ์คู่มือฟาร์ม "${esc(farms[cf].name)}" (ออกเป็น PDF)</button>`;
@@ -1163,14 +1166,14 @@ function recompFeed(el){
   }
   setT(el,'.o-fcum',Math.round(cum).toLocaleString());setT(el,'.o-ftot',Math.round(total).toLocaleString());setT(el,'.o-fnow',Math.round(nowBal).toLocaleString());
   setT(el,'.o-alive',aliveNow.toLocaleString());setT(el,'.o-deadsum',cumDead(h,h.age).toLocaleString());
-  const stdW=BW[D(h.age)];
-  setT(el,'.o-fcrT',h.age>=1?fcrNow.toFixed(3):'–');
-  setT(el,'.o-fcrTn',h.age>=1?('อาหารสะสม '+cumStdNow+' g ÷ นน.มาตรฐาน '+stdW+' g'):'');
+  const fcrStdNow=FCR_STD[D(h.age)],cumfStdNow=CUMF_STD[D(h.age)];
+  setT(el,'.o-fcrT',h.age>=1?fcrStdNow.toFixed(2):'–');
+  setT(el,'.o-fcrTn',h.age>=1?('ตามตาราง STD (As-Hatched) · วันจับ 42 = 1.68'):'');
   const wtA=+h.wtActual||0,av=el.querySelector('.o-fcrA'),an=el.querySelector('.o-fcrAn');
   if(wtA>0&&h.age>=1){
-    const fcrA=cumStdNow/wtA,diff=fcrA-fcrNow;
-    if(av){av.textContent=fcrA.toFixed(3);av.style.color=diff<=0.0005?'var(--green-d)':'var(--red)';}
-    if(an){an.textContent=(diff<=0.0005?'ดีกว่าเป้า ':'แย่กว่าเป้า +')+Math.abs(diff).toFixed(3)+' · อาหาร '+cumStdNow+' g ÷ นน.จริง '+wtA+' g';an.style.color=diff<=0.0005?'var(--green-d)':'var(--red)';}
+    const fcrA=cumfStdNow/wtA,diff=fcrA-fcrStdNow;
+    if(av){av.textContent=fcrA.toFixed(2);av.style.color=diff<=0.0005?'var(--green-d)':'var(--red)';}
+    if(an){an.textContent=(diff<=0.0005?'ดีกว่าเป้า ':'แย่กว่าเป้า +')+Math.abs(diff).toFixed(2)+' · อาหารสะสม(STD) '+cumfStdNow+' g ÷ นน.จริง '+wtA+' g';an.style.color=diff<=0.0005?'var(--green-d)':'var(--red)';}
   }else{
     if(av){av.textContent='–';av.style.color='var(--muted)';}
     if(an){an.textContent='ใส่น้ำหนักจริงเพื่อคำนวณ';an.style.color='var(--muted)';}
