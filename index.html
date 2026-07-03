@@ -602,6 +602,8 @@
 <script>
 const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2094,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278];
 const FEED=[0,14,18,21,24,27,31,34,38,42,47,51,56,61,66,71,76,82,87,93,98,104,109,115,120,125,130,135,140,145,150,154,159,163,167,171,175,178,182,185,188,192,194];
+// %อาหาร ตามตารางมาตรฐาน As-Hatched = อาหารสะสม(ก.) ÷ 300 (เช่น วัน16=2.33, วัน42=15.95) — ตรงตารางที่หมอใช้
+const FPCT=[0.00,0.04,0.10,0.17,0.25,0.34,0.44,0.56,0.69,0.83,0.99,1.17,1.37,1.58,1.81,2.06,2.33,2.62,2.93,3.25,3.60,3.97,4.36,4.77,5.21,5.65,6.12,6.62,7.12,7.65,8.19,8.76,9.34,9.94,10.54,11.17,11.82,12.47,13.14,13.83,14.52,15.23,15.95];
 const D=a=>Math.max(0,Math.min(42,Math.round(a)));
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const bw=a=>BW[D(a)],feedG=d=>FEED[D(d)];
@@ -912,7 +914,7 @@ function calc(h){
   const padArea=totW*(+h.padH||0);
   const padVel=padArea>0?(h.fans*fm)/padArea:0;
   const alive=aliveAt(h,h.age);
-  const fd=feedG(h.age),fpct=bw(h.age)>0?fd/bw(h.age)*100:0,fhouse=fd*alive/1000;
+  const fd=feedG(h.age),fpct=FPCT[D(h.age)],fhouse=fd*alive/1000;
   let cumStd=0;for(let d=1;d<=h.age;d++)cumStd+=FEED[d];
   const fcrT=(h.age>=1&&bw(h.age)>0)?cumStd/bw(h.age):0;
   return{fanCFM,reqAir,reqFt,ventMin,ventMax,velMax,comfort,windTarget:targetWind(h.age),padNeeded,ck,wt:bw(h.age),tt:targetT(h.age),pump:pumpT(h.age),
@@ -968,7 +970,7 @@ function ventCard(h,i){
       <div>• <b>สูงสุด</b> = ลมที่ต้องการ ÷ ประสิทธิภาพพัดลม (${Math.round(r.fanCFM).toLocaleString()} cfm/ตัว) ปัดขึ้น ไม่เกิน ${h.fans} ตัว</div>
       <div>• <b>ขั้นต่ำ</b> = ไม่ต่ำกว่า สูงสุด − ${GAP} (อากาศหนาว) · วัน 1–7 สูงสุด ≤ 3</div>
       <div>• <b>ลมเป้าหมายอายุนี้</b> = ${r.windTarget.toFixed(2)} m/s (${Math.round(r.windTarget*196.85)} ft/min) · สูงสุดทนได้ ${r.comfort.toFixed(1)} m/s — UGA Poultry Extension ตามอายุ</div>
-      <div>• <b>อาหาร</b> ${r.fd} g/ตัว/วัน = <b>${r.fpct.toFixed(1)}%</b> ของ นน.ตัว STD ${r.wt.toLocaleString()} g · ทั้งเล้า ${Math.round(r.fhouse).toLocaleString()} kg/วัน (คิดจากไก่คงเหลือ ${r.alive.toLocaleString()} ตัว)</div>
+      <div>• <b>อาหาร</b> ${r.fd} g/ตัว/วัน · <b>%อาหารสะสม ${r.fpct.toFixed(2)}%</b> (ตาราง STD = อาหารสะสม ÷ 300) · ทั้งเล้า ${Math.round(r.fhouse).toLocaleString()} kg/วัน (คิดจากไก่คงเหลือ ${r.alive.toLocaleString()} ตัว)</div>
       <div>• <b>ตาราง STD ที่ใช้</b> — อาหาร (วัน1=14g → วัน42=194g): ชีต "โปรแกรมการเดินอาหาร+แสง" · น้ำหนักตัว (วัน0=42g → วัน42=3,278g): ตารางน้ำหนักมาตรฐาน ชีต "พัดลมขั้นต่ำ" — จากไฟล์โปรแกรมการจัดการไก่เนื้อของบริษัท ชุดเดียวกันทุกฟาร์ม (วัน31 ต้นฉบับพิมพ์ 2,034g แอปปรับเป็น 2,093g)</div>
       <div>• <b>FCR เป้าหมายวันนี้</b> = อาหารสะสม ${r.cumStd} g ÷ น้ำหนัก ${r.wt} g = <b>${r.fcrT?r.fcrT.toFixed(3):'–'}</b> (รายละเอียดในแท็บอาหาร)</div>
     </div></details>
@@ -1090,10 +1092,10 @@ function buildManual(){
     html+=`<div class="spec">ขนาดเล้า ${h.W} × ${h.L} ม. สูงเฉลี่ย ${h.H} ม. · พัดลม ${h.fans} ตัว (ขนาด ${h.fan}") · ไก่ ${h.birds.toLocaleString()} ตัว · Cooling pad หน้า ${h.padFront}+ซ้าย ${h.padLeft}+ขวา ${h.padRight} ม. สูง ${h.padH} ม.</div>`;
     let rows='',cumStd=0;
     for(let d=1;d<=42;d++){
-      const r=calc(Object.assign({},h,{age:d}));cumStd+=FEED[d];const fcr=BW[d]>0?cumStd/BW[d]:0;const fpc=BW[d]>0?FEED[d]/BW[d]*100:0;
-      rows+=`<tr><td class="ag2">${d}</td><td>${r.tt.toFixed(1)}</td><td>${r.pump.toFixed(1)}</td><td>${r.lx}</td><td>${r.lhr}</td><td>${r.ventMin}</td><td>${r.ventMax}</td><td>${chokeShort(r.choke)}</td><td>${r.fd}</td><td>${fpc.toFixed(1)}</td><td>${Math.round(r.fhouse).toLocaleString()}</td><td>${fcr.toFixed(2)}</td></tr>`;
+      const r=calc(Object.assign({},h,{age:d}));const fpc=FPCT[d];
+      rows+=`<tr><td class="ag2">${d}</td><td>${r.tt.toFixed(1)}</td><td>${r.pump.toFixed(1)}</td><td>${r.lx}</td><td>${r.lhr}</td><td>${r.ventMin}</td><td>${r.ventMax}</td><td>${chokeShort(r.choke)}</td><td>${r.fd}</td><td>${fpc.toFixed(2)}</td><td>${Math.round(r.fhouse).toLocaleString()}</td><td>${(r.fcrT||0).toFixed(2)}</td></tr>`;
     }
-    html+=`<table><thead><tr><th>วัน</th><th>อุณหภูมิ °C</th><th>ปั๊มน้ำ °C</th><th>แสง lux</th><th>ไฟ ชม.</th><th>พัดลม ขั้นต่ำ</th><th>พัดลม สูงสุด</th><th>โช้ค ทำ/หยุด</th><th>อาหาร g/ตัว</th><th>% นน.ตัว</th><th>อาหาร kg/เล้า</th><th>FCR เป้า</th></tr></thead><tbody>${rows}</tbody></table>`;
+    html+=`<table><thead><tr><th>วัน</th><th>อุณหภูมิ °C</th><th>ปั๊มน้ำ °C</th><th>แสง lux</th><th>ไฟ ชม.</th><th>พัดลม ขั้นต่ำ</th><th>พัดลม สูงสุด</th><th>โช้ค ทำ/หยุด</th><th>อาหาร g/ตัว</th><th>%อาหาร STD</th><th>อาหาร kg/เล้า</th><th>FCR เป้า</th></tr></thead><tbody>${rows}</tbody></table>`;
   });
   html+=`<div class="spec">หมายเหตุ: อาหาร g/ตัว/วัน และน้ำหนักมาตรฐาน อ้างอิงตารางโปรแกรมการเลี้ยงของบริษัท (ชีต "โปรแกรมการเดินอาหาร" + ตารางน้ำหนักมาตรฐานในชีต "พัดลมขั้นต่ำ" — ชุดเดียวกันทุกฟาร์ม) · % นน.ตัว = อาหาร STD ÷ น้ำหนักมาตรฐานวันเดียวกัน × 100 · น้ำหนักวัน 31 ต้นฉบับพิมพ์ 2,034 g แอปปรับเป็น 2,093 g (ค่ากึ่งกลางวัน 30/32)</div>`;
   const feed=[['0–7 วัน','โรยอาหารบนกระดาษ + วางถาด/จานระดับพื้น ให้ลูกไก่เห็นและเข้าถึงง่าย'],['8–14 วัน','ยกจานขึ้น ขอบจานระดับอก–หลังลูกไก่ ค่อย ๆ เลิกโรยกระดาษ'],['15–28 วัน','ยกขอบล่างจานให้อยู่ระดับหลังไก่ ปรับสูงตามไก่โตทุกวัน'],['29–จับ','ยกจานสูงตามตัวไก่ ขอบจานระดับหลัง คุมอาหารในจานพอดี ไม่ล้น']];
@@ -1132,7 +1134,7 @@ function refreshVent(el){
   const mc=el.querySelector('.manchip');
   if(mc)mc.style.display=(h.padFansAuto===false)?'inline-flex':'none';
   setT(el,'.o-fd',r.fd);
-  setT(el,'.o-fdsub','กินรวม '+Math.round(r.fhouse).toLocaleString()+' กก. ('+(r.fhouse/1000).toFixed(2)+' ตัน)/วัน · '+r.alive.toLocaleString()+' ตัว · คิดเป็น '+r.fpct.toFixed(1)+'% ของ นน.ตัว (STD)');
+  setT(el,'.o-fdsub','กินรวม '+Math.round(r.fhouse).toLocaleString()+' กก. ('+(r.fhouse/1000).toFixed(2)+' ตัน)/วัน · '+r.alive.toLocaleString()+' ตัว · %อาหารสะสม (STD) '+r.fpct.toFixed(2)+'%');
   setT(el,'.o-wind',r.windTarget.toFixed(2));setT(el,'.o-windft',Math.round(r.windTarget*196.85));setT(el,'.o-windmax',r.comfort.toFixed(1));
   const ev=el.querySelector('.o-evap');
   if(ev){
