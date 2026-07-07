@@ -640,14 +640,23 @@ const lightHr=a=>{const x=D(a);return x<=1?24:x<=7?20:x<=14?18:x<=21?16:x<=28?10
 /* ===== แผนการทำงานพัดลม (ฤดูร้อน) — ถอดจาก Excel "แผนการระบายอากาศ หมอวรัญญู" คงลำดับเดิมของแต่ละฟาร์ม =====
    choke = พัดลมโช๊ค (วิ่ง Cycle ตอน≤เป้า / ต่อเนื่องที่เป้า+1) · steps[].n = Step Auto (เปิดที่เป้า+(n-1)°C) · manual[] = เปิดมือตามอายุ (สะสม) */
 const FANPLANS={"chai34":{"farms":["ชัยนาท"],"size":"34×120","nf":24,"choke":[7,18],"steps":[{"n":2,"fans":[]},{"n":3,"fans":[5,20]},{"n":4,"fans":[3,22]}],"manual":[{"age":8,"fans":[2,23]},{"age":12,"fans":[9,16]},{"age":22,"fans":[11,14]},{"age":25,"fans":[6,19]},{"age":29,"fans":[4,21]},{"age":33,"fans":[1,24]},{"age":36,"fans":[8,17]},{"age":39,"fans":[10,12,13,15]}]},"chai28":{"farms":["ชัยนาท"],"size":"28×120","nf":18,"choke":[4,15],"steps":[{"n":2,"fans":[]},{"n":3,"fans":[6,13]},{"n":4,"fans":[2,17]}],"manual":[{"age":8,"fans":[8,11]},{"age":15,"fans":[3,16]},{"age":22,"fans":[1,18]},{"age":29,"fans":[5,14]},{"age":33,"fans":[7,12]},{"age":36,"fans":[9,10]}]},"thana":{"farms":["ธนวัฒน์"],"size":"28×120","nf":18,"choke":[2,17],"steps":[{"n":2,"fans":[4,15]},{"n":3,"fans":[6,13]},{"n":4,"fans":[8,11]}],"manual":[{"age":10,"fans":[9]},{"age":15,"fans":[1,18]},{"age":19,"fans":[10]},{"age":21,"fans":[7,12]},{"age":23,"fans":[5]},{"age":25,"fans":[14]},{"age":26,"fans":[3]},{"age":27,"fans":[16]},{"age":30,"fans":[8]},{"age":31,"fans":[11]},{"age":33,"fans":[6]},{"age":34,"fans":[13]},{"age":36,"fans":[2,4,15,17]}]},"phum":{"farms":["พุ่มวงษ์","พุ่มวงศ์","ยิ่งรวย"],"size":"28×120","nf":22,"choke":[2,21],"steps":[{"n":2,"fans":[4,19]},{"n":3,"fans":[6,17]},{"n":4,"fans":[8,15]}],"manual":[{"age":8,"fans":[11]},{"age":14,"fans":[1,22]},{"age":16,"fans":[14]},{"age":17,"fans":[9]},{"age":20,"fans":[10,18]},{"age":22,"fans":[3,5,7,16,20]},{"age":27,"fans":[13]},{"age":29,"fans":[8,12,15]},{"age":32,"fans":[6,17]},{"age":33,"fans":[4,19]}]},"money":{"farms":["มันนี่","สาธิต"],"size":"21×120","nf":16,"choke":[2,15],"steps":[{"n":2,"fans":[4,13]},{"n":3,"fans":[6,11]},{"n":4,"fans":[7,10]}],"manual":[{"age":12,"fans":[8]},{"age":15,"fans":[1,16]},{"age":21,"fans":[5,12]},{"age":24,"fans":[3,14]},{"age":28,"fans":[9]},{"age":30,"fans":[10]},{"age":32,"fans":[7]},{"age":34,"fans":[6]},{"age":35,"fans":[11]},{"age":37,"fans":[2,4,13,15]}]},"mk12":{"farms":["มั้งกี้1","มอส"],"size":"16×100","nf":12,"choke":[5],"steps":[{"n":2,"fans":[2,11]},{"n":3,"fans":[7]}],"manual":[{"age":13,"fans":[6]},{"age":16,"fans":[1,12]},{"age":22,"fans":[4,8]},{"age":26,"fans":[10]},{"age":29,"fans":[3]},{"age":31,"fans":[9]},{"age":34,"fans":[7]},{"age":36,"fans":[2,11]},{"age":38,"fans":[5]}]},"mk10":{"farms":["มั้งกี้2","มอส"],"size":"16×100","nf":10,"choke":[4],"steps":[{"n":2,"fans":[1,10]},{"n":3,"fans":[6]}],"manual":[{"age":13,"fans":[5]},{"age":22,"fans":[3,7]},{"age":26,"fans":[9]},{"age":29,"fans":[2]},{"age":31,"fans":[8]},{"age":34,"fans":[6]},{"age":36,"fans":[1,4,10]}]},"mos25":{"farms":["มอส","มั้งกี้3"],"size":"25×120","nf":14,"choke":[2,13],"steps":[{"n":2,"fans":[4,11]},{"n":3,"fans":[6,9]}],"manual":[{"age":10,"fans":[7]},{"age":14,"fans":[1,14]},{"age":18,"fans":[8]},{"age":21,"fans":[3,12]},{"age":23,"fans":[5,10]},{"age":26,"fans":[9]},{"age":27,"fans":[6]},{"age":29,"fans":[11]},{"age":31,"fans":[4]},{"age":33,"fans":[2,13]}]},"sriha":{"farms":["ศรีเหรา"],"size":"40×128","nf":26,"choke":[2,25],"steps":[{"n":2,"fans":[4,23]},{"n":3,"fans":[5,22]},{"n":4,"fans":[7,20]}],"manual":[{"age":7,"fans":[13]},{"age":11,"fans":[3,24]},{"age":16,"fans":[1,9,14,18,26]},{"age":20,"fans":[15]},{"age":21,"fans":[11]},{"age":22,"fans":[6,19,21]},{"age":25,"fans":[8,17]},{"age":26,"fans":[12]},{"age":27,"fans":[16]},{"age":29,"fans":[10]},{"age":30,"fans":[5,22]},{"age":31,"fans":[4]},{"age":32,"fans":[23]},{"age":33,"fans":[2,25]}]},"teng":{"farms":["เต็งหนึ่ง"],"size":"28×84","nf":20,"choke":[6,15],"steps":[{"n":2,"fans":[4,17]},{"n":3,"fans":[9,12]},{"n":4,"fans":[2,19]}],"manual":[{"age":7,"fans":[10]},{"age":12,"fans":[3,18]},{"age":17,"fans":[8,13]},{"age":22,"fans":[11]},{"age":24,"fans":[5,7,14,16]},{"age":32,"fans":[1,20]}]},"test8":{"farms":["ทดสอบ"],"size":"ทดสอบ 8 ตัว","nf":8,"choke":[4],"steps":[{"n":2,"fans":[5]},{"n":3,"fans":[3,6]}],"manual":[{"age":14,"fans":[2,7]},{"age":24,"fans":[1,8]}]},"rr36":{"farms":["รุ่งเรือง3-6","หนึ่งรุ่งเรือง"],"size":"32×120","nf":21,"choke":[2,20],"steps":[{"n":2,"fans":[4,18]},{"n":3,"fans":[6,16]},{"n":4,"fans":[8,14]}],"manual":[{"age":8,"fans":[11]},{"age":13,"fans":[1,21],"off":[11]},{"age":15,"fans":[11]},{"age":17,"fans":[7,15],"off":[11]},{"age":19,"fans":[5,11,17],"off":[7,15]},{"age":21,"fans":[9,13],"off":[11]},{"age":23,"fans":[7,11,15],"off":[9,13]},{"age":25,"fans":[9,13],"off":[11]},{"age":27,"fans":[3]},{"age":29,"fans":[11]},{"age":30,"fans":[10,12],"off":[11]},{"age":31,"fans":[8,11,14],"off":[10,12]},{"age":32,"fans":[10,12],"off":[11]},{"age":33,"fans":[11]}]},"rr2":{"farms":["รุ่งเรือง2","หนึ่งรุ่งเรือง"],"size":"16×100","nf":11,"choke":[],"steps":[],"manual":[{"age":13,"fans":[6]},{"age":18,"fans":[1,11],"off":[6]},{"age":21,"fans":[6]},{"age":22,"fans":[3]},{"age":25,"fans":[9]},{"age":28,"fans":[4,8],"off":[6]},{"age":30,"fans":[6]},{"age":33,"fans":[7]},{"age":35,"fans":[10]},{"age":37,"fans":[2,5]}]},"rr1":{"farms":["รุ่งเรือง1","หนึ่งรุ่งเรือง"],"size":"14×72","nf":8,"choke":[4],"steps":[],"manual":[{"age":15,"fans":[5]},{"age":22,"fans":[1,8],"off":[5]},{"age":24,"fans":[5]},{"age":28,"fans":[3]},{"age":33,"fans":[6]},{"age":37,"fans":[4]},{"age":38,"fans":[2,7]}]}};
-function planFor(h,farmName){
-  if(h&&h.planKey&&FANPLANS[h.planKey])return{key:h.planKey,p:FANPLANS[h.planKey]};
+function resolvePlan(h,farmName){
+  // เลือกแผนพัดลมให้ถูกอัตโนมัติ: 1) ที่หมอเลือกเอง 2) ชื่อฟาร์ม+ขนาดเล้า 3) ชื่อฟาร์ม+จำนวนพัดลม 4) ชื่อฟาร์มตัวเดียว
+  if(h&&h.planKey&&FANPLANS[h.planKey])return{key:h.planKey,p:FANPLANS[h.planKey],byName:true};
   const fn=(farmName||'').replace(/ฟาร์ม|\s/g,'');
-  const cand=Object.entries(FANPLANS).filter(([k,p])=>p.nf===(h&&h.fans));
-  let m=cand.find(([k,p])=>p.farms.some(f=>fn&&(fn.indexOf(f)>=0||f.indexOf(fn)>=0)));
-  if(!m)m=cand[0];
-  return m?{key:m[0],p:m[1]}:null;
+  const ent=Object.entries(FANPLANS);
+  const named=ent.filter(([k,p])=>p.farms.some(f=>fn&&(fn.indexOf(f)>=0||f.indexOf(fn)>=0)));
+  const sz=h?(Math.round(h.W)+'×'+Math.round(h.L)):'';
+  if(named.length){                                    // จับด้วยชื่อฟาร์มก่อนเสมอ (กันจับข้ามฟาร์ม เช่น ศรีเหรา→ชัยนาท)
+    const m=named.find(([k,p])=>p.size===sz)           // ตรงชื่อ + ขนาดเล้า
+         || named.find(([k,p])=>p.nf===(h&&h.fans))    // ตรงชื่อ + จำนวนพัดลม
+         || named[0];                                  // ชื่อฟาร์มตรงตัวเดียว/ตัวแรก
+    return{key:m[0],p:m[1],byName:true};
+  }
+  const m=ent.filter(([k,p])=>p.nf===(h&&h.fans))[0];  // ไม่รู้จักชื่อ → เดาตามจำนวนพัดลม (ไม่มั่นใจ ไม่ซ่อมค่า)
+  return m?{key:m[0],p:m[1],byName:false}:null;
 }
+function planFor(h,farmName){const r=resolvePlan(h,farmName);return r?{key:r.key,p:r.p}:null;}
 function manualUpTo(p,a){const out=new Set();for(const s of p.manual)if(s.age<=a){(s.fans||[]).forEach(f=>out.add(f));(s.off||[]).forEach(f=>out.delete(f));}return[...out].sort((x,y)=>x-y);}
 function fanStateAt(p,age){
   const a=D(age),tgt=targetT(a);
@@ -834,6 +843,15 @@ function normalize(r){
     h.W=nclamp(nnum(h.W,24),0.1,300); h.L=nclamp(nnum(h.L,120),0.1,2000); h.H=nclamp(nnum(h.H,2),0.1,20);
     h.fan=nclamp(nnum(h.fan,52),1,200); h.fans=nclamp(Math.round(nnum(h.fans,18)),1,300);
     h.birds=nclamp(Math.round(nnum(h.birds,0)),0,1e7); h.age=nclamp(Math.round(nnum(h.age,1)),0,60);
+    try{ const _fn=(fm.name||'').replace(/ฟาร์ม|\s/g,'');                           // ซ่อมจำนวนพัดลมให้ตรงฐานข้อมูลแผนของฟาร์มอัตโนมัติ (เช่น ศรีเหรา 18→26)
+      const _named=Object.values(FANPLANS).filter(p=>p.farms.some(f=>_fn&&(_fn.indexOf(f)>=0||f.indexOf(_fn)>=0)));
+      if(_named.length){
+        const _sz=Math.round(h.W)+'×'+Math.round(h.L);
+        const _bySize=_named.find(p=>p.size===_sz);                                  // ขนาดเล้าตรง = สัญญาณแรงสุด → ยึดตามนั้น
+        if(_bySize){ if(h.fans!==_bySize.nf)h.fans=nclamp(Math.round(_bySize.nf),1,300); }
+        else if(!_named.some(p=>p.nf===h.fans)){ const _pr=resolvePlan(h,fm.name); if(_pr&&_pr.byName)h.fans=nclamp(Math.round(_pr.p.nf),1,300); }
+      }
+    }catch(_){}
     h.initStock=nclamp(Math.round(nnum(h.initStock,0)),0,1e7); h.wtActual=nclamp(nnum(h.wtActual,0),0,10000);
     if(!Array.isArray(h.pts)||h.pts.length!==9)h.pts=[1124,1263,1398,1307,871,1289,1539,1364,1150]; else h.pts=h.pts.map(x=>nclamp(nnum(x,0),0,100000));
     if(!Array.isArray(h.recv)||h.recv.length!==42)h.recv=zeros(); else h.recv=h.recv.map(x=>nclamp(nnum(x,0),0,1e7));
