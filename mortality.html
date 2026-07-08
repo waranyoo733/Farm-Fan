@@ -128,6 +128,7 @@
   select{background:#0C1522;color:var(--ink);border-color:var(--line2)}
   .execwrap{background:rgba(4,8,14,.72)}
   .execcard{background:var(--card);box-shadow:0 24px 70px rgba(0,0,0,.6)}
+  .execwatch{background:rgba(251,113,133,.08);color:var(--ink)}
 </style>
 </head>
 <body>
@@ -375,7 +376,7 @@ function buildExec(){
   document.getElementById('execChartTitle').textContent=single?('ยอดตายตามเล้า · '+DATA[0].name):'ยอดตายตามฟาร์ม';
   document.getElementById('execChartBox').style.height=Math.max(180,items.length*26+28)+'px';
   if(chE)chE.destroy();
-  chE=new Chart(document.getElementById('chExec'),{type:'bar',plugins:[trackBg],data:{labels:items.map(x=>x.label),datasets:[{data:items.map(x=>x.val),_rate:items.map(x=>x.rate),backgroundColor:items.map((x,i)=>FCOL[i%FCOL.length]),borderRadius:6,borderSkipped:false,barPercentage:0.6,categoryPercentage:0.86}]},options:{indexAxis:'y',animation:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{beginAtZero:true,grace:'6%',grid:{color:'#F1F2F4',drawTicks:false},border:{display:false},ticks:{font:{family:'Prompt',size:10},color:'#9A5563',callback:v=>v>=1000?(v/1000)+'k':v}},y:{grid:{display:false},border:{display:false},ticks:{font:{family:'Prompt',size:12},color:'#3A1620'}}},maintainAspectRatio:false}});
+  chE=new Chart(document.getElementById('chExec'),{type:'bar',plugins:[trackBg],data:{labels:items.map(x=>x.label),datasets:[{data:items.map(x=>x.val),_rate:items.map(x=>x.rate),backgroundColor:items.map((x,i)=>FCOL[i%FCOL.length]),borderRadius:6,borderSkipped:false,barPercentage:0.6,categoryPercentage:0.86}]},options:{indexAxis:'y',animation:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{beginAtZero:true,grace:'6%',grid:{color:'rgba(255,255,255,.08)',drawTicks:false},border:{display:false},ticks:{font:{family:'Prompt',size:10},color:'#94A6C4',callback:v=>v>=1000?(v/1000)+'k':v}},y:{grid:{display:false},border:{display:false},ticks:{font:{family:'Prompt',size:12},color:'#C4D2E8'}}},maintainAspectRatio:false}});
   if(single){
     const f=DATA[0];document.getElementById('execTblTitle').textContent='สรุปรายเล้า';
     let h='<tr><th>เล้า</th><th>ลงไก่</th><th>อายุ</th><th>ตายวันนี้</th><th>ตายสะสม</th><th>%สะสม</th><th>สถานะ</th></tr>';
