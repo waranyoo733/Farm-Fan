@@ -2009,6 +2009,69 @@ function ccAlerts(hs){
   const sw={high:'Critical',med:'Medium',low:'Low'};
   return al.slice(0,7).map(function(x){return '<div class="cc-rec sev-'+(x.s==='high'?'high':'med')+'"><span class="ri">'+(I[x.ic]||'')+'</span><div class="rb"><div class="rt">'+x.t+'</div><div class="rd">'+x.loc+' · '+x.note+'</div></div><span class="rp rp-'+(x.s==='high'?'high':'med')+'">'+sw[x.s]+'</span></div>';}).join('');
 }
+/* ===== AI CENTER — consolidated insights (relocated from dashboard) =====
+   Same trigger conditions as the old ccRecommendations/ccAlerts (padNeeded,
+   over-age, mortality, low weight, missing place date, farm-wide guidance) —
+   merged so each issue shows once. No calc/threshold/data changed. */
+function aiInsights(hs){
+  var out=[];
+  hs.forEach(function(h){try{
+    var r=calc(h),nm=esc(h.name),mort=h.birds>0?cumDead(h,h.age)/h.birds*100:0;
+    if(r.padNeeded)out.push({sev:'crit',ic:'drop',t:'เปิด Cooling Pad — '+nm,d:'ความเร็วลม '+r.velMax.toFixed(2)+' m/s เกินที่ไก่ทน ('+r.comfort.toFixed(1)+' m/s) → เปิดแพดลดความร้อน'});
+    if(h.age>42)out.push({sev:'crit',ic:'cal',t:'เลยกำหนดจับ — '+nm,d:'อายุ '+h.age+' วัน · ตรวจสอบรอบเลี้ยง/วันจับ'});
+    if(mort>5)out.push({sev:'crit',ic:'alert',t:'อัตราตายสะสมสูง — '+nm,d:mort.toFixed(1)+'% · ควรตรวจสุขภาพฝูงด่วน'});
+    else if(mort>3)out.push({sev:'warn',ic:'alert',t:'อัตราตายสะสม — '+nm,d:mort.toFixed(1)+'% · เฝ้าระวัง'});
+    if(h.wtActual>0&&h.wtActual<bw(h.age)*0.95)out.push({sev:'warn',ic:'chart',t:'น้ำหนักต่ำกว่าเป้า — '+nm,d:'จริง '+(h.wtActual/1000).toFixed(2)+' kg · เป้า '+(bw(h.age)/1000).toFixed(2)+' kg — ตรวจอาหาร/น้ำ/อุณหภูมิ'});
+    if(!h.placeDate)out.push({sev:'warn',ic:'cal',t:'ยังไม่ตั้งวันลงไก่ — '+nm,d:'ตั้งวันลงไก่เพื่อคำนวณอายุอัตโนมัติ'});
+  }catch(e){}});
+  try{var h=hs[Math.min(ccHouse,hs.length-1)]||hs[0],r=calc(h);
+    out.push({sev:'info',ic:'wind',t:'ลมเป้าหมายอายุนี้ ~'+r.windTarget.toFixed(2)+' m/s',d:'('+Math.round(r.windTarget*196.85)+' ft/min) · สูงสุดที่ไก่ทน '+r.comfort.toFixed(1)+' m/s'+(h.age<=7?' · ไก่เล็กเน้นระบายก๊าซ ห้ามลมปะทะตัว':'')});
+    out.push({sev:'info',ic:'fan',t:'พัดลมขั้นต่ำอายุนี้ '+r.ventMin+'–'+r.ventMax+' ตัว',d:'อุณหภูมิเป้า '+r.tt.toFixed(1)+'°C · ปั๊ม/แพด '+r.pump.toFixed(1)+'°C · แสง '+r.lx+' lux '+r.lhr+' ชม.'});
+  }catch(e){}
+  return out;
+}
+function aiSevCounts(ins){return {crit:ins.filter(function(x){return x.sev==='crit';}).length,warn:ins.filter(function(x){return x.sev==='warn';}).length,info:ins.filter(function(x){return x.sev==='info';}).length};}
+function aiItemHTML(x){var sc={crit:'sev-high',warn:'sev-med',info:''},rc={crit:'rp-high',warn:'rp-med',info:'rp-info'},rl={crit:'Critical',warn:'Warning',info:'Info'};
+  return '<div class="cc-rec '+sc[x.sev]+'"><span class="ri">'+(I[x.ic]||'')+'</span><div class="rb"><div class="rt">'+x.t+'</div><div class="rd">'+x.d+'</div></div><span class="rp '+rc[x.sev]+'">'+rl[x.sev]+'</span></div>';}
+function ccAiCard(hs){
+  var c=aiSevCounts(aiInsights(hs));
+  function row(color,label,n){return '<div style="display:flex;align-items:center;gap:11px;padding:10px 13px;border-radius:12px;background:var(--cc-glass);border:1px solid var(--cc-line2)"><span style="width:9px;height:9px;border-radius:99px;background:'+color+';flex:none;box-shadow:0 0 8px '+color+'"></span><span style="flex:1;font-size:13px;color:var(--cc-sub)">'+label+'</span><b style="font-size:18px;color:'+color+';font-variant-numeric:tabular-nums">'+n+'</b></div>';}
+  return '<div class="cc-panel cc-glass cc-fade" style="animation-delay:.2s">'
+    +'<div class="cc-ph"><div class="pt">'+(I.bulb||'')+' AI CENTER</div><span class="badge">สรุป</span></div>'
+    +'<div style="display:flex;flex-direction:column;gap:9px">'
+      +row('var(--cc-red)','ต้องแก้ด่วน · Critical',c.crit)
+      +row('var(--cc-amber)','เฝ้าระวัง · Warning',c.warn)
+      +row('var(--cc-cyan)','คำแนะนำ · Info',c.info)
+    +'</div>'
+    +'<button class="cc-navb" style="width:100%;justify-content:center;margin-top:13px" onclick="goTab(\'ai\')">'+(I.bulb||'')+' เปิด AI Center ทั้งหมด →</button>'
+  +'</div>';
+}
+function aiCenter(){
+  var hs=houses();
+  if(!hs.length)return '<div class="cc"><div class="cc-empty" style="margin-top:90px;font-size:15px">'+(I.home||'')+'<div style="margin-top:10px">ยังไม่มีโรงเรือนในฟาร์มนี้</div><button class="cc-navb" style="margin-top:16px" onclick="goTab(\'set\')">'+(I.set||'')+' ไปเพิ่มโรงเรือน</button></div></div>';
+  var ins=aiInsights(hs),c=aiSevCounts(ins),act=ins.filter(function(x){return x.sev!=='info';}),info=ins.filter(function(x){return x.sev==='info';});
+  return '<div class="cc"><div style="max-width:1000px;margin:0 auto">'
+    +'<button class="cc-back cc-fade" onclick="goTab(\'home\')" style="margin-bottom:16px">'+(I.home||'')+' กลับแดชบอร์ด</button>'
+    +'<div class="cc-panel cc-glass cc-fade">'
+      +'<div class="cc-ph"><div class="pt">'+(I.bulb||'')+' AI CENTER</div><span class="badge">'+esc(farms[cf].name)+' · '+hs.length+' โรงเรือน</span></div>'
+      +'<div style="font-size:13px;color:var(--cc-dim);line-height:1.6">ศูนย์รวมคำแนะนำ AI และการแจ้งเตือน — วิเคราะห์จากข้อมูลจริงของทุกเล้าในฟาร์ม</div>'
+    +'</div>'
+    +'<div class="cc-perf cc-fade" style="animation-delay:.05s;margin-top:16px">'
+      +'<div class="cc-pf cc-glass"><div class="l">'+(I.alert||'')+'ต้องแก้ด่วน</div><div class="v" style="color:var(--cc-red)">'+c.crit+'</div><div class="d">Critical</div></div>'
+      +'<div class="cc-pf cc-glass"><div class="l">'+(I.alert||'')+'เฝ้าระวัง</div><div class="v" style="color:var(--cc-amber)">'+c.warn+'</div><div class="d">Warning</div></div>'
+      +'<div class="cc-pf cc-glass"><div class="l">'+(I.bulb||'')+'คำแนะนำ</div><div class="v" style="color:var(--cc-cyan)">'+c.info+'</div><div class="d">Info</div></div>'
+      +'<div class="cc-pf cc-glass"><div class="l">'+(I.home||'')+'โรงเรือน</div><div class="v">'+hs.length+'</div><div class="d">กำลังตรวจ</div></div>'
+    +'</div>'
+    +'<div class="cc-panel cc-glass cc-fade" style="animation-delay:.1s;margin-top:16px">'
+      +'<div class="cc-ph"><div class="pt"><span class="dotlive"></span>ต้องดำเนินการ</div><span class="badge">'+act.length+' รายการ</span></div>'
+      +(act.length?act.map(aiItemHTML).join(''):'<div class="cc-empty">'+(I.check||'')+'<div>ทุกเล้าอยู่ในเกณฑ์ปกติ — ไม่มีรายการเร่งด่วน</div></div>')
+    +'</div>'
+    +'<div class="cc-panel cc-glass cc-fade" style="animation-delay:.15s;margin-top:16px">'
+      +'<div class="cc-ph"><div class="pt">'+(I.bulb||'')+' คำแนะนำ &amp; ข้อมูล</div><span class="badge">'+info.length+' รายการ</span></div>'
+      +(info.length?info.map(aiItemHTML).join(''):'<div class="cc-empty">'+(I.check||'')+'<div>—</div></div>')
+    +'</div>'
+  +'</div></div>';
+}
 function commandCenter(){
   ccClamp();
   const farm=farms[cf], hs=houses();
@@ -2076,14 +2139,7 @@ function commandCenter(){
       +'<div class="cc-navbtns" style="margin-top:14px">'+hchips+'</div>'
     +'</div>'
     +'<div style="display:flex;flex-direction:column;gap:16px">'
-      +'<div class="cc-panel cc-glass cc-fade" style="animation-delay:.2s">'
-        +'<div class="cc-ph"><div class="pt">'+(I.bulb||'')+' AI RECOMMENDATION</div><span class="badge">จากข้อมูลจริง</span></div>'
-        +ccRecommendations(hs)
-      +'</div>'
-      +'<div class="cc-panel cc-glass cc-fade" style="animation-delay:.25s">'
-        +'<div class="cc-ph"><div class="pt">'+(I.alert||'')+' ALERT CENTER</div><span class="badge" id="ccAlertN"></span></div>'
-        +ccAlerts(hs)
-      +'</div>'
+      +ccAiCard(hs)
     +'</div>'
   +'</div>'
   // ===== PERFORMANCE ROW =====
@@ -2270,6 +2326,7 @@ function sbItems(){return [
   {go:'cal',key:'cal',ic:'cal',lb:'ปฏิทินรอบเลี้ยง'},
   {go:'feed',key:'feed',ic:'feed',lb:'อาหาร'},
   {t:'cat',lb:'ข้อมูล & วิเคราะห์'},
+  {go:'ai',key:'ai',ic:'bulb',lb:'AI Center'},
   {go:'analytics',key:'analytics',ic:'chart',lb:'วิเคราะห์'},
   {go:'mortality',key:'mortality',ic:'alert',lb:'ไก่ตาย'},
   {go:'home',key:'__twin',ic:'zoom',lb:'Digital Twin'},
@@ -2278,7 +2335,6 @@ function sbItems(){return [
   {go:'set',key:'set',ic:'set',lb:'ตั้งค่า'},
   {t:'cat',lb:'เร็ว ๆ นี้'},
   {soon:1,ic:'temp',lb:'เซนเซอร์สด'},
-  {soon:1,ic:'bulb',lb:'AI Center'},
   {soon:1,ic:'mgmt',lb:'บำรุงรักษา'},
   {soon:1,ic:'print',lb:'รายงาน'}
 ];}
@@ -2301,12 +2357,13 @@ function render(){
   try{localStorage.setItem('ppf_ui',JSON.stringify({tab:tab,cf:cf}));}catch(e){}
   const t=TABS.find(x=>x.id===tab);
   const IFRAME_TABS={analytics:{src:'analytics.html',title:'แดชบอร์ดวิเคราะห์'},mortality:{src:'mortality.html',title:'แดชบอร์ดไก่ตายรายวัน'},fanplan:{src:'fan-plan.html',title:'แผนเปิดพัดลมรายฟาร์ม'}};
-  const ift=IFRAME_TABS[tab],isFrame=!!ift,isHome=(tab==='home');
-  ['chips','lockbar'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=(isFrame||isHome)?'none':'';});
-  {const _wp=document.querySelector('.wrap');if(_wp)_wp.style.padding=isHome?'0':'';document.body.style.paddingBottom=isHome?'0':'';}
-  const _tt=document.querySelector('.tabtitle');if(_tt)_tt.style.display=(isFrame||isHome)?'none':'';
+  const ift=IFRAME_TABS[tab],isFrame=!!ift,isHome=(tab==='home'),isAi=(tab==='ai');
+  ['chips','lockbar'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=(isFrame||isHome||isAi)?'none':'';});
+  {const _wp=document.querySelector('.wrap');if(_wp)_wp.style.padding=(isHome||isAi)?'0':'';document.body.style.paddingBottom=(isHome||isAi)?'0':'';}
+  const _tt=document.querySelector('.tabtitle');if(_tt)_tt.style.display=(isFrame||isHome||isAi)?'none':'';
   if(isHome){const _tb=document.getElementById('toolbar');if(_tb)_tb.innerHTML='';const _g=document.getElementById('grid');_g.style.gridTemplateColumns='1fr';_g.innerHTML=commandCenter();applyLock();ccClockPaint();ccAnimateNumbers();if(ccTwinMode==='3d')ccRenderTwin();if(!ccClkTimer)ccClkTimer=setInterval(ccClockPaint,1000);return;}
   if(typeof cc3dDispose==='function')cc3dDispose();
+  if(isAi){const _tb=document.getElementById('toolbar');if(_tb)_tb.innerHTML='';const _g=document.getElementById('grid');_g.style.gridTemplateColumns='1fr';_g.innerHTML=aiCenter();applyLock();return;}
   if(isFrame){const _tb=document.getElementById('toolbar');if(_tb)_tb.innerHTML='';const _g=document.getElementById('grid');_g.style.gridTemplateColumns='1fr';const cur=_g.querySelector('iframe#appFrame');if(!cur||cur.getAttribute('data-src')!==ift.src)_g.innerHTML='<div style="position:relative"><div class="cc-ifskel" id="ifSkel"><div class="r" style="width:38%;height:26px"></div><div class="rr"><span></span><span></span><span></span><span></span></div><div class="r" style="height:230px;margin-top:6px"></div><div class="r" style="width:80%"></div><div class="r" style="width:62%"></div></div><iframe id="appFrame" data-src="'+ift.src+'" src="'+ift.src+'" title="'+ift.title+'" onload="var s=document.getElementById(\'ifSkel\');if(s)s.style.opacity=0,setTimeout(function(){if(s)s.remove();},350);" style="width:100%;height:calc(100vh - 140px);min-height:480px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:#0F1828;box-shadow:0 8px 22px rgba(0,0,0,.4)"></iframe></div>';return;}
   document.getElementById('tabIc').innerHTML=I[t.icon];
   document.getElementById('tabName').textContent=t.label;
