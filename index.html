@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="PPF Farm">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     /* ===== Dark IoT theme (Phase 2) — same var names, dark values ===== */
@@ -28,7 +28,7 @@
     --radius-lg:20px; --radius-md:16px;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Prompt',sans-serif;font-size:17px;line-height:1.55;-webkit-text-size-adjust:100%;padding-bottom:24px}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Prompt',sans-serif;font-size:17px;font-weight:500;line-height:1.55;-webkit-text-size-adjust:100%;padding-bottom:24px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   header{background:linear-gradient(120deg,var(--bg) 55%,var(--gold-l) 160%);color:var(--green-dd);padding:15px 18px;display:flex;align-items:center;gap:13px;border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--line)}
   .logo{width:64px;height:64px;display:flex;align-items:center;justify-content:center;flex:none}
   .logo img{width:100%;height:100%;object-fit:contain;display:block}
@@ -449,14 +449,14 @@
   .fplegend{display:flex;flex-wrap:wrap;align-items:center;gap:8px 11px;font-size:12px;color:var(--muted);margin:13px 0 2px;border-top:1px dashed var(--line);padding-top:11px;cursor:pointer;transition:opacity .2s;-webkit-user-select:none;user-select:none}
   .fplegend .lgitem{display:flex;align-items:center;gap:5px;transition:opacity .2s}
   .fplegend .fpleg-cap{font-weight:700;color:var(--green-d);margin-right:2px}
-  .fplegend .fpleg-hint{font-weight:400;color:var(--muted);font-size:11px}
+  .fplegend .fpleg-hint{font-weight:500;color:var(--muted);font-size:11.5px}
   .fplegend.faded .lgitem{opacity:.28}
   .fplegend:not(.faded) .fpleg-hint{display:none}
   .fplegend .lg{width:13px;height:13px;border-radius:4px;display:inline-block;flex:none}
   .lg.man{background:var(--green)}.lg.ck{background:#ec6ca0}.lg.au{background:#3b82c4}.lg.off{background:#dde1e7}
   .advnote{margin-top:13px;border-top:1px dashed var(--line);padding-top:11px;cursor:pointer;-webkit-user-select:none;user-select:none}
   .advnote .advnote-cap{font-size:12.5px;font-weight:700;color:var(--green-d);margin-bottom:9px}
-  .advnote .advnote-hint{font-weight:400;color:var(--muted);font-size:11px}
+  .advnote .advnote-hint{font-weight:500;color:var(--muted);font-size:11.5px}
   .advnote:not(.faded) .advnote-hint{display:none}
   .advnote .advice{margin-top:0;margin-bottom:9px;transition:opacity .2s}
   .advnote .advice:last-child{margin-bottom:0}
@@ -945,6 +945,78 @@
     header{padding-left:66px!important}
     .sb-backdrop.open{display:block;position:fixed;inset:0;z-index:118;background:rgba(4,8,14,.6);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
   }
+
+  /* ============================================================
+     ENTERPRISE TYPOGRAPHY REFRESH — visual pass only
+     Font: Inter (Latin/numerals) + IBM Plex Sans Thai (Thai).
+     Calmer slate text palette · strategic weight (400/500/600,
+     bold reserved for key values) · more breathing room · softer
+     borders (depth from shadow). Appended last so it wins at equal
+     specificity. NO layout, logic, formula, dimension or data change.
+     ============================================================ */
+  /* -- Thai display face: LINE Seed Sans TH (self-hosted, offline-first).
+        © LY Corporation · SIL Open Font License 1.1. Weight ranges map the
+        3 shipped weights onto the 400/500/600/700 scale used below. -- */
+  @font-face{font-family:'LINE Seed Sans TH';font-style:normal;font-weight:300 500;font-display:swap;src:url('vendor/line-seed/LINESeedSansTH-Regular.woff2') format('woff2')}
+  @font-face{font-family:'LINE Seed Sans TH';font-style:normal;font-weight:600 700;font-display:swap;src:url('vendor/line-seed/LINESeedSansTH-Bold.woff2') format('woff2')}
+  @font-face{font-family:'LINE Seed Sans TH';font-style:normal;font-weight:800 900;font-display:swap;src:url('vendor/line-seed/LINESeedSansTH-ExtraBold.woff2') format('woff2')}
+  /* -- Global slate text palette (calmer, less blue) -- */
+  :root{
+    --ink:#F8FAFC;          /* primary   */
+    --secondary:#CBD5E1;    /* secondary */
+    --muted:#94A3B8;        /* muted     */
+    --disabled:#64748B;     /* disabled  */
+  }
+  /* -- Font + rendering everywhere -- */
+  body{font-family:'Inter','LINE Seed Sans TH','IBM Plex Sans Thai',system-ui,-apple-system,sans-serif;letter-spacing:.1px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  .cc,.cc *{font-family:'Inter','LINE Seed Sans TH','IBM Plex Sans Thai',system-ui,-apple-system,sans-serif}
+  /* tabular numerals so figures line up column-to-column */
+  .cc-kpi .kv,.cc-pf .v,.cc-cyitem .v,.cc-tstat .v,.cc-clock b,.cc-ring b{font-variant-numeric:tabular-nums}
+
+  /* -- Command Center: calmer tokens, softer edges -- */
+  .cc{
+    --cc-ink:#F8FAFC; --cc-sub:#CBD5E1; --cc-dim:#94A3B8;
+    --cc-line:rgba(255,255,255,.065); --cc-line2:rgba(255,255,255,.04);
+    --cc-surf:rgba(21,31,51,.50); --cc-surf2:rgba(24,35,58,.32);
+    --cc-elev:0 14px 38px rgba(0,0,0,.44),0 2px 6px rgba(0,0,0,.28);
+  }
+
+  /* -- Strategic weight: dial back the pervasive 800s to 600 -- */
+  .cc-cyitem .v,.cc-ph .pt,.cc-tstat .v,.cc-pf .v,.cc-kpi .kv,.cc-ring b,
+  .cc-health .hs,.cc-clock b,.cc-rec .rt{font-weight:600}
+  .cc-brand b{font-weight:700;letter-spacing:0}
+  .cc-kpi .kv,.cc-pf .v,.cc-cyitem .v{letter-spacing:-.2px}
+
+  /* -- Labels: quieter, sentence-case (no shouting ALL-CAPS) -- */
+  .cc-kpi .kt,.cc-cyitem .l,.cc-tstat .l,.cc-pf .l,.cc-health .hl,
+  .cc-brand small,.cc-ph .badge,.cc-tstat .l,.cc-twin-legend,.cc-prog .pt{
+    text-transform:none;letter-spacing:.2px}
+  .cc-kpi .kt,.cc-pf .l{font-weight:500;color:var(--cc-dim)}
+  .cc-cyitem .l,.cc-tstat .l,.cc-health .hl{font-weight:500;color:var(--cc-dim)}
+  .cc-sel{font-weight:500} .cc-sel small{font-weight:400}
+
+  /* -- Room to breathe (spec: cards should not feel cramped) -- */
+  .cc-kpis{gap:16px;margin-bottom:22px}
+  .cc-kpi{padding:18px 18px}
+  .cc-kpi .kt{margin-bottom:12px}
+  .cc-main{gap:20px;margin-bottom:22px}
+  .cc-panel{padding:20px 20px}
+  .cc-ph{margin-bottom:16px}
+  .cc-cycle{padding:16px 22px;margin-bottom:22px}
+  .cc-perf{gap:16px}
+  .cc-pf{padding:18px}
+
+  /* -- AI Recommendation: less dense, secondary body text -- */
+  .cc-rec{padding:15px 16px;margin-bottom:12px;gap:13px}
+  .cc-rec .rd{color:var(--cc-dim);line-height:1.55;margin-top:3px}
+
+  /* -- Sidebar: calmer icons, medium text, more spacing -- */
+  .sb-nav{gap:5px}
+  .sb-item{gap:15px;padding:11px 12px;font-weight:500;color:var(--muted)}
+  .sb-item svg{opacity:.78}
+  .sb-item:hover{color:var(--secondary)} .sb-item:hover svg{opacity:1}
+  .sb-item.on{color:#F8FAFC} .sb-item.on svg{opacity:1}
+  .sb-cat{color:var(--disabled)}
 </style>
 </head>
 <body>

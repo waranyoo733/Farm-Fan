@@ -12,7 +12,7 @@
 <title>SmartFarm · by Waranyoo — PPF Lopburi Zone</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ====================================================================
    FarmSense · Smart Chicken Farm — modern dashboard theme
@@ -41,9 +41,9 @@
   --bg:         #080D18;
   --surface:    #131D30;
   --surface-2:  #0C1420;
-  --ink:        #E9EFFA;
-  --ink-soft:   #B5C4DD;
-  --ink-mute:   #94A6C4;
+  --ink:        #F8FAFC;
+  --ink-soft:   #CBD5E1;
+  --ink-mute:   #94A3B8;
   --border:     rgba(255,255,255,.10);
   --border-2:   rgba(255,255,255,.14);
 
@@ -53,18 +53,25 @@
   --radius:     12px;
   --radius-sm:  8px;
 }
+/* Thai display face: LINE Seed Sans TH (self-hosted, offline-first).
+   © LY Corporation · SIL Open Font License 1.1. */
+@font-face{font-family:'LINE Seed Sans TH';font-style:normal;font-weight:300 500;font-display:swap;src:url('vendor/line-seed/LINESeedSansTH-Regular.woff2') format('woff2')}
+@font-face{font-family:'LINE Seed Sans TH';font-style:normal;font-weight:600 700;font-display:swap;src:url('vendor/line-seed/LINESeedSansTH-Bold.woff2') format('woff2')}
+@font-face{font-family:'LINE Seed Sans TH';font-style:normal;font-weight:800 900;font-display:swap;src:url('vendor/line-seed/LINESeedSansTH-ExtraBold.woff2') format('woff2')}
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
-  font-family: 'IBM Plex Sans Thai', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',system-ui,-apple-system,sans-serif;
   background: var(--bg);
   color: var(--ink);
   font-size: 14px;
+  font-weight: 500;
   line-height: 1.6;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-.display { font-family: 'Bai Jamjuree', sans-serif; letter-spacing: -0.01em; }
+.display { font-family: 'Inter','LINE Seed Sans TH',sans-serif; letter-spacing: -0.01em; }
 .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.9em; }
 .wrap { max-width: 1320px; margin: 0 auto; padding: 0 28px; }
 b { font-weight: 600; }
@@ -86,12 +93,12 @@ b { font-weight: 600; }
   border-radius: 10px;
 }
 .brand-name {
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   font-size: 22px; font-weight: 700; color: var(--ink);
   line-height: 1.05; letter-spacing: -0.015em;
 }
 .brand-tag {
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   font-size: 11.5px;
   line-height: 1.4;
   letter-spacing: 0.02em;
@@ -162,7 +169,7 @@ b { font-weight: 600; }
   50%     { transform: translateY(-14px); }
 }
 .cover-title {
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   font-size: clamp(44px, 6.5vw, 78px);
   font-weight: 700;
   line-height: 1;
@@ -180,7 +187,7 @@ b { font-weight: 600; }
 .cover-author {
   display: flex; align-items: center; justify-content: center; gap: 14px;
   margin: 0 0 22px;
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   animation: riseIn .75s ease .35s both;
 }
 .cover-author .ca-line {
@@ -212,7 +219,7 @@ b { font-weight: 600; }
   letter-spacing: 0.06em;
 }
 .cover-sub {
-  font-family: 'IBM Plex Sans Thai', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   color: var(--ink-soft);
   font-size: clamp(14.5px, 1.5vw, 16.5px);
   font-weight: 400;
@@ -232,7 +239,7 @@ b { font-weight: 600; }
   animation: riseIn .75s ease .56s both;
 }
 .cover-badge {
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   background: rgba(255,255,255,.92);
   border: 1px solid var(--border-2);
   border-radius: 999px;
@@ -265,7 +272,7 @@ b { font-weight: 600; }
   margin-bottom: 10px; font-weight: 600;
 }
 .upload-zone h3 {
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   font-size: 21px; font-weight: 600; color: var(--ink); margin-bottom: 6px;
 }
 .upload-zone p { color: var(--ink-soft); font-size: 14px; }
@@ -317,7 +324,7 @@ b { font-weight: 600; }
 .file-diag .diag-saved { color: var(--blue-dark); font-size: 10.5px; }
 .map-btn {
   margin-left: auto; cursor: pointer;
-  font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 11px; font-weight: 600;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif; font-size: 11px; font-weight: 600;
   padding: 5px 12px; background: var(--red); color: #fff;
   border: none; border-radius: 999px; transition: all .12s;
 }
@@ -348,7 +355,7 @@ b { font-weight: 600; }
 }
 .tab {
   padding: 10px 18px;
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   font-size: 14px; font-weight: 500;
   cursor: pointer; color: var(--ink-soft);
   background: transparent; border: none;
@@ -378,7 +385,7 @@ b { font-weight: 600; }
 
 /* ============ SECTION HEADERS ============ */
 h2.sec {
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   font-size: 22px; font-weight: 600; color: var(--ink);
   margin: 0 0 4px;
   display: flex; align-items: baseline; gap: 12px;
@@ -411,7 +418,7 @@ h2.sec .tag { margin-left: auto; font-size: 11px; color: var(--ink-mute); letter
   color: var(--ink-mute); margin-bottom: 6px; font-weight: 600;
 }
 .kpi-row .val {
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   font-size: 28px; font-weight: 700; line-height: 1; color: var(--ink);
 }
 .kpi-row .delta { font-size: 11.5px; color: var(--ink-soft); margin-top: 6px; }
@@ -434,12 +441,12 @@ h2.sec .tag { margin-left: auto; font-size: 11px; color: var(--ink-mute); letter
 .farm-card.r3 { border-top-color: var(--red); }
 .farm-card .rank {
   position: absolute; top: 14px; right: 16px;
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   font-size: 10.5px; font-weight: 700; color: var(--ink-mute);
   letter-spacing: 0.06em;
 }
 .farm-card h3 {
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   font-size: 18px; font-weight: 600; color: var(--ink);
 }
 .farm-card .roundlab {
@@ -450,7 +457,7 @@ h2.sec .tag { margin-left: auto; font-size: 11px; color: var(--ink-mute); letter
   padding-top: 12px; border-top: 1px solid var(--border);
 }
 .farm-card .cell .k { font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-mute); font-weight: 600; }
-.farm-card .cell .v { font-family: 'Bai Jamjuree', sans-serif; font-size: 17px; font-weight: 600; margin-top: 2px; color: var(--ink); }
+.farm-card .cell .v { font-family: 'Inter','LINE Seed Sans TH',sans-serif; font-size: 17px; font-weight: 600; margin-top: 2px; color: var(--ink); }
 .farm-card .v.green { color: var(--green); }
 .farm-card .v.amber { color: var(--amber); }
 .farm-card .v.red { color: var(--red); }
@@ -534,7 +541,7 @@ table tbody tr.std { background: var(--surface-2); font-weight: 500; }
 }
 .card.dark { background: var(--navy); color: #d8e2f0; border-color: var(--ink); }
 .card h4 {
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 4px;
 }
 .card .card-sub { font-size: 12px; color: var(--ink-mute); margin-bottom: 16px; }
@@ -566,7 +573,7 @@ table tbody tr.std { background: var(--surface-2); font-weight: 500; }
 }
 .heat-cell:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); z-index: 2; }
 .heat-cell .h { font-size: 10px; color: var(--ink-mute); letter-spacing: 0.04em; text-transform: uppercase; font-weight: 600; }
-.heat-cell .p { font-family: 'Bai Jamjuree', sans-serif; font-size: 18px; font-weight: 700; line-height: 1.1; margin-top: 3px; }
+.heat-cell .p { font-family: 'Inter','LINE Seed Sans TH',sans-serif; font-size: 18px; font-weight: 700; line-height: 1.1; margin-top: 3px; }
 .heat-cell .d { font-size: 10px; color: var(--ink-mute); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
 .heat-cell.l1 { background: #e7f4ec; border-color: #bfe3cd; }
 .heat-cell.l1 .p { color: var(--green); }
@@ -634,7 +641,7 @@ table tbody tr.std { background: var(--surface-2); font-weight: 500; }
   padding: 11px 20px; border-radius: var(--radius-sm);
   background: var(--navy); color: #fff;
   border: none; cursor: pointer;
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   font-size: 14px; font-weight: 600;
   transition: all 0.15s;
 }
@@ -676,7 +683,7 @@ footer.colophon .footer-zone {
   display: flex; justify-content: space-between; align-items: flex-start;
   padding: 18px 22px; border-bottom: 1px solid var(--border);
 }
-.modal-head h3 { font-family: 'Bai Jamjuree', sans-serif; font-size: 19px; font-weight: 600; color: var(--ink); }
+.modal-head h3 { font-family: 'Inter','LINE Seed Sans TH',sans-serif; font-size: 19px; font-weight: 600; color: var(--ink); }
 .modal-sub { font-size: 12px; color: var(--ink-mute); margin-top: 2px; }
 .modal-x {
   cursor: pointer; background: none; border: none;
@@ -703,7 +710,7 @@ footer.colophon .footer-zone {
   width: 280px; max-width: 48%; padding: 7px 9px;
   border: 1px solid var(--border-2); border-radius: var(--radius-sm);
   background: var(--surface);
-  font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 12px; color: var(--ink);
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif; font-size: 12px; color: var(--ink);
 }
 .map-select:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue-bg); }
 .modal-foot {
@@ -712,7 +719,7 @@ footer.colophon .footer-zone {
 }
 .modal-btn {
   cursor: pointer; padding: 9px 18px; border-radius: var(--radius-sm);
-  font-family: 'Bai Jamjuree', sans-serif; font-size: 13px; font-weight: 600;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif; font-size: 13px; font-weight: 600;
   border: 1px solid var(--border-2); background: var(--surface); color: var(--ink);
   transition: all .13s;
 }
@@ -764,7 +771,7 @@ footer.colophon .footer-zone {
 
 /* Sub-section header (between banner + cards, between cards + disease) */
 .sub-section {
-  font-family: 'Bai Jamjuree', sans-serif;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif;
   font-size: 16px; font-weight: 600; color: var(--ink);
   margin: 22px 0 12px;
   display: flex; align-items: baseline; gap: 10px;
@@ -903,7 +910,7 @@ footer.colophon .footer-zone {
 }
 .house-card.compact .hc-compact-row .lab {
   color: var(--ink-mute); font-size: 11px;
-  margin-right: 4px; font-family: 'IBM Plex Sans Thai', sans-serif;
+  margin-right: 4px; font-family: 'Inter','LINE Seed Sans TH',sans-serif;
 }
 .house-card.compact .hc-compact-row b { color: var(--ink); }
 
@@ -921,7 +928,7 @@ footer.colophon .footer-zone {
   gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
 }
 .disease-head h4 {
-  font-family: 'Bai Jamjuree', sans-serif; font-size: 14.5px;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif; font-size: 14.5px;
   color: var(--ink); font-weight: 600;
 }
 .house-tags { display: flex; flex-wrap: wrap; gap: 4px 6px; }
@@ -975,7 +982,7 @@ footer.colophon .footer-zone {
   background: var(--surface); border: 1px solid var(--border-2);
   color: var(--ink-soft);
   padding: 6px 12px; border-radius: 999px;
-  font-family: 'IBM Plex Sans Thai', sans-serif; font-size: 12.5px; font-weight: 500;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif; font-size: 12.5px; font-weight: 500;
   transition: all .12s;
   display: inline-flex; align-items: center; gap: 4px;
 }
@@ -992,7 +999,7 @@ footer.colophon .footer-zone {
   display: flex; align-items: baseline; gap: 10px;
 }
 .ana-header h3 {
-  font-family: 'Bai Jamjuree', sans-serif; font-size: 18px; font-weight: 600; color: var(--ink);
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif; font-size: 18px; font-weight: 600; color: var(--ink);
 }
 .ana-header h3 small { font-size: 12px; color: var(--ink-mute); font-weight: 400; margin-left: 6px; }
 
@@ -1023,7 +1030,7 @@ footer.colophon .footer-zone {
   padding: 12px 16px; margin: 12px 0 18px;
 }
 .ana-problems h4 {
-  font-family: 'Bai Jamjuree', sans-serif; font-size: 14px; font-weight: 600;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif; font-size: 14px; font-weight: 600;
   color: var(--ink); margin-bottom: 6px;
 }
 .ana-problems h4 small { color: var(--ink-mute); font-size: 11px; font-weight: 400; margin-left: 4px; }
@@ -1054,7 +1061,7 @@ footer.colophon .footer-zone {
   gap: 10px; margin-bottom: 6px;
 }
 .ana-card-head h4 {
-  font-family: 'Bai Jamjuree', sans-serif; font-size: 14px; font-weight: 600;
+  font-family: 'Inter','LINE Seed Sans TH',sans-serif; font-size: 14px; font-weight: 600;
   color: var(--ink);
 }
 .ana-badge {
@@ -3749,7 +3756,7 @@ function renderOverview(farmKeys) {
     `).join('');
     return `
       <div style="margin-bottom: 20px">
-        <h4 style="font-family:'Bai Jamjuree',sans-serif; font-size:15px; font-weight:600; margin-bottom:10px; display:flex; align-items:baseline; gap:10px">
+        <h4 style="font-family:'Inter','LINE Seed Sans TH',sans-serif; font-size:15px; font-weight:600; margin-bottom:10px; display:flex; align-items:baseline; gap:10px">
           ${escapeHtml(farm.name)}
           <small style="font-size:11px; color:var(--ink-mute); font-weight:400; letter-spacing:0.05em">${farm.houses.length} เล้า · เฉลี่ย ${avg}%</small>
         </h4>
@@ -3809,7 +3816,7 @@ function renderMortality(farmKeys) {
       </div>`;
     }).join('');
     document.getElementById('pattern-source').innerHTML = `
-      <h5 style="font-family:'Bai Jamjuree',sans-serif; font-size:13px; font-weight:600; margin:12px 0 8px">จำนวนแหล่งที่มาลูกไก่ → %ตายสะสม</h5>
+      <h5 style="font-family:'Inter','LINE Seed Sans TH',sans-serif; font-size:13px; font-weight:600; margin:12px 0 8px">จำนวนแหล่งที่มาลูกไก่ → %ตายสะสม</h5>
       ${srcBars}
     `;
   } else {
@@ -3846,7 +3853,7 @@ function renderMortality(farmKeys) {
         </div>`;
       }).join('');
       document.getElementById('pattern-density').innerHTML = `
-        <h5 style="font-family:'Bai Jamjuree',sans-serif; font-size:13px; font-weight:600; margin:18px 0 8px">ความหนาแน่น → %ตายสะสม</h5>
+        <h5 style="font-family:'Inter','LINE Seed Sans TH',sans-serif; font-size:13px; font-weight:600; margin:18px 0 8px">ความหนาแน่น → %ตายสะสม</h5>
         ${densBars}
       `;
     }
@@ -4248,12 +4255,12 @@ function renderEnv(farmKeys) {
     const band = ENV_TABLE.find(t => ageInt >= t.ageMin && ageInt <= t.ageMax) || ENV_TABLE[ENV_TABLE.length-1];
     return `
       <div style="padding:14px; margin-bottom:10px; background:var(--cream); border:1px solid var(--rule); border-left:3px solid var(--gold)">
-        <h5 style="font-family:'Bai Jamjuree',sans-serif; font-size:15px; font-weight:600; margin-bottom:6px">${escapeHtml(farm.name)} · เฉลี่ยอายุ ${ageInt} วัน</h5>
+        <h5 style="font-family:'Inter','LINE Seed Sans TH',sans-serif; font-size:15px; font-weight:600; margin-bottom:6px">${escapeHtml(farm.name)} · เฉลี่ยอายุ ${ageInt} วัน</h5>
         <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px; margin-top:8px">
-          <div><div style="font-size:10px; color:var(--ink-mute); letter-spacing:0.08em; text-transform:uppercase">อุณหภูมิเป้า</div><div style="font-family:'Bai Jamjuree',sans-serif; font-size:18px; font-weight:600">${tgt}°C</div></div>
-          <div><div style="font-size:10px; color:var(--ink-mute); letter-spacing:0.08em; text-transform:uppercase">ความเร็วลม</div><div style="font-family:'Bai Jamjuree',sans-serif; font-size:18px; font-weight:600">${fpm[0] === fpm[1] ? fpm[0] : fpm[0] + '–' + fpm[1]} FPM</div></div>
-          <div><div style="font-size:10px; color:var(--ink-mute); letter-spacing:0.08em; text-transform:uppercase">ปั๊มแพดเปิดที่</div><div style="font-family:'Bai Jamjuree',sans-serif; font-size:18px; font-weight:600">${pump}°C</div></div>
-          <div><div style="font-size:10px; color:var(--ink-mute); letter-spacing:0.08em; text-transform:uppercase">ความชื้นเป้า</div><div style="font-family:'Bai Jamjuree',sans-serif; font-size:18px; font-weight:600">50–70%</div></div>
+          <div><div style="font-size:10px; color:var(--ink-mute); letter-spacing:0.08em; text-transform:uppercase">อุณหภูมิเป้า</div><div style="font-family:'Inter','LINE Seed Sans TH',sans-serif; font-size:18px; font-weight:600">${tgt}°C</div></div>
+          <div><div style="font-size:10px; color:var(--ink-mute); letter-spacing:0.08em; text-transform:uppercase">ความเร็วลม</div><div style="font-family:'Inter','LINE Seed Sans TH',sans-serif; font-size:18px; font-weight:600">${fpm[0] === fpm[1] ? fpm[0] : fpm[0] + '–' + fpm[1]} FPM</div></div>
+          <div><div style="font-size:10px; color:var(--ink-mute); letter-spacing:0.08em; text-transform:uppercase">ปั๊มแพดเปิดที่</div><div style="font-family:'Inter','LINE Seed Sans TH',sans-serif; font-size:18px; font-weight:600">${pump}°C</div></div>
+          <div><div style="font-size:10px; color:var(--ink-mute); letter-spacing:0.08em; text-transform:uppercase">ความชื้นเป้า</div><div style="font-family:'Inter','LINE Seed Sans TH',sans-serif; font-size:18px; font-weight:600">50–70%</div></div>
         </div>
         <div style="margin-top:10px; padding:8px 10px; background:var(--paper); font-size:12px; color:var(--ink-soft); border-left:2px solid var(--red)">
           ⚠ <b>สังเกตอาการ:</b> ${escapeHtml(band.warn)}
@@ -4308,7 +4315,7 @@ function updateWindCalc() {
   const recHtml = `
     <div style="margin-top:14px; padding:14px; background:var(--cream); border:1px solid var(--rule)">
       <div style="font-size:12px; color:var(--ink-mute); letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px">คำแนะนำ · เกณฑ์ฟาร์ม วันที่ ${age}</div>
-      <div style="font-family:'Bai Jamjuree',sans-serif; font-size:24px; font-weight:600; margin-bottom:8px">
+      <div style="font-family:'Inter','LINE Seed Sans TH',sans-serif; font-size:24px; font-weight:600; margin-bottom:8px">
         อุณหภูมิเป้า: <span style="color:var(--green)">${targetSet}°C</span> · แรงลมที่ต้องใช้: <span style="color:var(--gold)">${optimalWind} m/s</span> <span style="font-size:14px; color:var(--ink-mute)">(~${optimalFpm} FPM)</span>
       </div>
       <div style="font-size:13px; color:var(--ink-soft)">หากไก่อายุ <b>${age} วัน</b> และอุณหภูมิห้อง <b>${ambient}°C</b> ต้องเปิดเครื่องระบายให้ได้แรงลม &gt;= ${optimalWind} m/s เพื่อให้ไก่รู้สึก ≈ ${targetSet}°C ตามเกณฑ์ฟาร์ม · เกณฑ์ลมรายวัน: <b>${fpmTarget[0] === fpmTarget[1] ? fpmTarget[0] : fpmTarget[0] + '–' + fpmTarget[1]} FPM</b></div>
@@ -5159,7 +5166,7 @@ function chartAmPm(daily) {
   if (total === 0) {
     return svgFrame('🌅 เช้า vs เย็น',
       `<text x="${ANA_W/2}" y="${ANA_H/2}" text-anchor="middle" fill="${COL.inkMute}"
-             font-family="IBM Plex Sans Thai">ไม่มีข้อมูลการสูญเสียในช่วงนี้</text>`,
+             font-family="Inter, 'LINE Seed Sans TH', sans-serif">ไม่มีข้อมูลการสูญเสียในช่วงนี้</text>`,
       { status: 'neutral', badge: '–', headline: '0 ตัว', subtitle: 'ไม่พบบันทึกตาย/คัด' });
   }
 
@@ -5223,7 +5230,7 @@ function chartTemperature(daily) {
   if (filtered.length === 0) {
     return svgFrame('🌡️ อุณหภูมิเทียบเป้า',
       `<text x="${ANA_W/2}" y="${ANA_H/2}" text-anchor="middle" fill="${COL.inkMute}"
-             font-family="IBM Plex Sans Thai">ไม่มีบันทึกอุณหภูมิ</text>`,
+             font-family="Inter, 'LINE Seed Sans TH', sans-serif">ไม่มีบันทึกอุณหภูมิ</text>`,
       { status: 'neutral', badge: '–', headline: '–' });
   }
 
@@ -5288,7 +5295,7 @@ function chartWeight(daily, h) {
   if (haveWt.length === 0) {
     return svgFrame('⚖️ น้ำหนัก vs เกณฑ์ 4.5×',
       `<text x="${ANA_W/2}" y="${ANA_H/2}" text-anchor="middle" fill="${COL.inkMute}"
-             font-family="IBM Plex Sans Thai">ยังไม่มีการชั่งน้ำหนัก</text>`,
+             font-family="Inter, 'LINE Seed Sans TH', sans-serif">ยังไม่มีการชั่งน้ำหนัก</text>`,
       { status: 'neutral', badge: '–', headline: '–' });
   }
 
@@ -5332,7 +5339,7 @@ function chartWeight(daily, h) {
     <line x1="${scales.area.x0}" x2="${scales.area.x1}" y1="${tY}" y2="${tY}"
           stroke="${COL.red}" stroke-dasharray="5 4" stroke-width="1.6"/>
     <text x="${scales.area.x1 - 4}" y="${tY - 5}" text-anchor="end"
-          font-family="IBM Plex Sans Thai, sans-serif" font-size="10"
+          font-family="Inter, 'LINE Seed Sans TH', sans-serif" font-size="10"
           font-weight="600" fill="${COL.red}">เกณฑ์ 4.5× = ${threshold.toFixed(2)} กก.</text>`;
 
   // Per-weighing markers (red if below threshold, green if above)
@@ -5376,7 +5383,7 @@ function chartFeed(daily) {
   if (have.length === 0) {
     return svgFrame('🌾 อาหาร vs เกณฑ์',
       `<text x="${ANA_W/2}" y="${ANA_H/2}" text-anchor="middle" fill="${COL.inkMute}"
-             font-family="IBM Plex Sans Thai">ไม่มีข้อมูลอาหารใช้จริง</text>`,
+             font-family="Inter, 'LINE Seed Sans TH', sans-serif">ไม่มีข้อมูลอาหารใช้จริง</text>`,
       { status: 'neutral', badge: '–', headline: '–' });
   }
   const avgDev = have.reduce((s,v)=>s+v,0) / have.length;
@@ -5456,7 +5463,7 @@ function chartWaterFeed(daily) {
       : 'ไม่มีข้อมูลน้ำหรืออาหาร';
     return svgFrame('💧 น้ำ : อาหาร',
       `<text x="${ANA_W/2}" y="${ANA_H/2}" text-anchor="middle" fill="${COL.inkMute}"
-             font-family="IBM Plex Sans Thai">${escapeHtml(reason)}</text>`,
+             font-family="Inter, 'LINE Seed Sans TH', sans-serif">${escapeHtml(reason)}</text>`,
       { status: 'neutral', badge: '–', headline: '–',
         subtitle: 'มาตรฐาน 1.5–2.4 · ต่ำ = ดื่มน้อย · สูง = heat/ท้องเสีย',
         takeaway: 'ตรวจสอบหน่วยข้อมูลน้ำในไฟล์ Excel — ควรเป็นลิตรต่อวันทั้งเล้า' });
@@ -6317,7 +6324,7 @@ function mountFarm(farmKey, farmData, metaText, existingItem) {
   item.className = 'file-item';
   item.innerHTML = `
     <div class="file-row">
-      <div style="color:var(--green); font-weight:600; font-family:'Bai Jamjuree',sans-serif">✓</div>
+      <div style="color:var(--green); font-weight:600; font-family:'Inter','LINE Seed Sans TH',sans-serif">✓</div>
       <div class="fname">${escapeHtml(farmData.name)}</div>
       <div class="meta">${escapeHtml(metaText)}</div>
       <button class="x" data-key="${farmKey}">×</button>

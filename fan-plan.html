@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>แผนเปิดพัดลมรายฟาร์ม — PPF Smart Farm</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#080D18; --card:#101A2B; --ink:#E9EFFA; --muted:#94A6C4;
+  --bg:#080D18; --card:#101A2B; --ink:#F8FAFC; --muted:#94A3B8;
   --brand:#34D399; --brand2:#5EEAD4; --line:rgba(255,255,255,.10); --inp:#0C1522;
   /* สีตามรหัสของหมอ (ตรงตำนานในไฟล์แผน) — ปรับให้เห็นชัดบนพื้นดำ */
   --man:#22C55E;   /* เขียว = เปิดมือ (Manual) */
@@ -17,13 +17,16 @@
   --hl:rgba(251,191,36,.18);    /* เหลือง = วันสำคัญ */
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Prompt',system-ui,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:60px}
+@font-face{font-family:'LINE Seed Sans TH';font-style:normal;font-weight:300 500;font-display:swap;src:url('vendor/line-seed/LINESeedSansTH-Regular.woff2') format('woff2')}
+@font-face{font-family:'LINE Seed Sans TH';font-style:normal;font-weight:600 700;font-display:swap;src:url('vendor/line-seed/LINESeedSansTH-Bold.woff2') format('woff2')}
+@font-face{font-family:'LINE Seed Sans TH';font-style:normal;font-weight:800 900;font-display:swap;src:url('vendor/line-seed/LINESeedSansTH-ExtraBold.woff2') format('woff2')}
+body{font-family:'Inter','LINE Seed Sans TH','IBM Plex Sans Thai',system-ui,sans-serif;font-weight:500;background:var(--bg);color:var(--ink);padding-bottom:60px;letter-spacing:.1px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 .hero{background:linear-gradient(135deg,#0d5c3f,#12835a 60%,#17a06d);color:#fff;padding:22px 16px 18px;border-radius:0 0 22px 22px}
 .hero h1{font-size:20px;font-weight:600;display:flex;gap:8px;align-items:center}
 .hero .sub{font-size:12.5px;opacity:.85;margin-top:4px}
 .wrap{max-width:980px;margin:0 auto;padding:0 12px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
-.chip{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-size:13.5px;font-family:inherit;cursor:pointer;color:var(--ink);transition:.15s}
+.chip{border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:7px 14px;font-size:13.5px;font-family:inherit;font-weight:500;cursor:pointer;color:var(--ink);transition:.15s}
 .chip small{color:var(--muted);font-size:11px;margin-left:4px}
 .chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
 .chip.on small{color:#cfe9dd}
