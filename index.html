@@ -757,7 +757,7 @@ const I={
 };
 const TABS=[{id:'home',icon:'home',label:'หน้าแรก',desc:'ภาพรวมระบบฟาร์มอัจฉริยะ'},{id:'vent',icon:'fan',label:'ระบายอากาศ',desc:'อุณหภูมิ · พัดลม · ผ้าม่าน · อาหาร'},{id:'fanplan',icon:'fan',label:'แผนพัดลม',desc:'แผนเปิดพัดลมรายฟาร์ม · เปิดเบอร์ไหนก่อน'},{id:'feed',icon:'feed',label:'อาหาร',desc:'รับเข้า / กิน / คงเหลือ รายวัน'},{id:'guide',icon:'guide',label:'คู่มือ',desc:'การจัดการ · หลักการ & สูตร · ความรู้ระบายอากาศ'},{id:'set',icon:'set',label:'ตั้งค่า',desc:'ขนาดเล้า · พัดลม · แรงลม 9 จุด'},{id:'analytics',icon:'chart',label:'วิเคราะห์',desc:'แดชบอร์ดวิเคราะห์ (อัปโหลดไฟล์ Excel)'},{id:'mortality',icon:'alert',label:'ไก่ตาย',desc:'แดชบอร์ดไก่ตายรายวัน'}];
 let tab='home', cf=0;
-const EDIT_PIN='5671'; let canEdit=false;
+let canEdit=false;   // รหัสแก้ไขตรวจที่เซิร์ฟเวอร์ (Apps Script) เท่านั้น — ไม่ฝังรหัสลับในโค้ดสาธารณะ
 
 function zeros(){return new Array(42).fill(0);}
 const PAD={padH:1.8,padFront:28,padLeft:20,padRight:20,padBlock:0.54};
@@ -1215,7 +1215,7 @@ function tryUnlock(){
   if(syncCfg&&syncCfg.wcode){canEdit=true;applyLock();return;}          // มีรหัสแก้ไขในเครื่องแล้ว → ปลดล็อกได้เลย
   const p=prompt('🔒 ใส่รหัสสำหรับแก้ไขข้อมูล');
   if(p===null||p==='')return;
-  if(!syncCfg){ if(p===EDIT_PIN){canEdit=true;applyLock();}else alert('รหัสไม่ถูกต้อง'); return; }  // เผื่อไม่ได้เชื่อมคลาวด์
+  if(!syncCfg){ syncCfg={url:SYNC_DEFAULT_URL,code:'5671'}; try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){} }  // ไม่มีรหัสลับฝังในแอป → ตรวจกับเซิร์ฟเวอร์เสมอ
   syncStat('กำลังตรวจรหัส…');
   // ตรวจรหัสกับเซิร์ฟเวอร์แบบปลอดภัย: ดึงข้อมูลปัจจุบันจากคลาวด์ แล้วเขียนกลับด้วยข้อมูล+เวลาเดิม (ไม่ทับข้อมูลใคร)
   fetch(syncCfg.url+'?code='+encodeURIComponent(syncCfg.code)+'&t='+Date.now())
