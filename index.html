@@ -392,6 +392,12 @@
   .copy-row{display:flex;align-items:center;gap:11px;font-size:15px;color:var(--ink);padding:10px 6px;border-radius:9px;cursor:pointer;user-select:none}
   .copy-row:hover{background:var(--green-l2)}
   .copy-row input,.copyall-row input{width:19px;height:19px;flex:none;accent-color:var(--green)}
+  .cloud-list{display:flex;flex-direction:column;gap:8px;margin-bottom:15px}
+  .cloud-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:11px}
+  .cloud-when{font-size:14.5px;font-weight:700;color:var(--ink)}
+  .cloud-meta{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .cloud-pick{padding:7px 15px;font-size:13.5px;flex:none}
+  .cloud-empty{color:var(--muted);font-size:13.5px;padding:12px 4px;text-align:center}
   .modal-btns{display:flex;gap:10px;justify-content:flex-end}
   /* Heat Index modal */
   .hi-in{display:flex;gap:11px;margin-bottom:13px}
@@ -1057,6 +1063,15 @@
     <div class="modal-btns"><button class="btn" id="copyCancel" type="button">ยกเลิก</button><button class="btn primary" id="copyDo" type="button">ก๊อปไปเล้าที่เลือก</button></div>
   </div>
 </div>
+<div id="cloudmodal" class="modal">
+  <div class="modal-box">
+    <div class="modal-h">☁️ กู้คืนจากคลาวด์</div>
+    <div class="modal-sub">เลือกชุดข้อมูลสำรองย้อนหลังที่ระบบเก็บให้อัตโนมัติทุกครั้งที่มีการบันทึก (ใหม่สุดอยู่บน)</div>
+    <div class="modal-note" id="cloudLock" style="display:none">🔒 ตอนนี้อยู่โหมด "ดูอย่างเดียว" — ต้องกดกุญแจมุมขวาบน ใส่รหัสแก้ไขก่อน จึงจะกดกู้คืนได้</div>
+    <div class="cloud-list" id="cloudList"></div>
+    <div class="modal-btns"><button class="btn" id="cloudCancel" type="button">ปิด</button></div>
+  </div>
+</div>
 <div id="himodal" class="modal">
   <div class="modal-box">
     <div class="modal-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" style="vertical-align:-.15em"><path d="M14 14.5V5a2 2 0 0 0-4 0v9.5a3.5 3.5 0 1 0 4 0z"/><path d="M12 9v6"/></svg> Heat Index (ดัชนีความร้อน)</div>
@@ -1419,6 +1434,44 @@ function undoRestore(){
   try{syncSetTs(Date.now());if(typeof syncPush==='function')syncPush();}catch(_){}
   alert('↩️ กู้กลับสำเร็จ');
 }
+/* ===== กู้คืนจากคลาวด์ (snapshot ย้อนหลังที่ backend เก็บให้อัตโนมัติ) ===== */
+function _cloudDateStr(iso,ms){
+  var d=iso?new Date(iso):(ms?new Date(+ms):null);
+  if(!d||isNaN(d.getTime()))return '—';
+  var THMS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  var p=function(n){return('0'+n).slice(-2);};
+  return d.getDate()+' '+THMS[d.getMonth()]+' '+(d.getFullYear()+543)+' '+p(d.getHours())+':'+p(d.getMinutes());
+}
+function openCloudRestore(){
+  if(!syncCfg){alert('ยังไม่ได้เชื่อมต่อคลาวด์');return;}
+  var m=document.getElementById('cloudmodal');if(!m)return;
+  var lk=document.getElementById('cloudLock');if(lk)lk.style.display=canEdit?'none':'block';
+  document.getElementById('cloudList').innerHTML='<div class="cloud-empty">⏳ กำลังโหลดรายการสำรอง…</div>';
+  m.classList.add('show');
+  fetch(syncCfg.url+'?code='+encodeURIComponent(syncCfg.code)+'&history=list&t='+Date.now())
+   .then(function(r){return r.json();}).then(function(j){
+     if(!j||!j.ok||!Array.isArray(j.history)){document.getElementById('cloudList').innerHTML='<div class="cloud-empty">โหลดรายการไม่สำเร็จ ('+((j&&j.error)||'เชื่อมต่อไม่ได้')+')</div>';return;}
+     if(!j.history.length){document.getElementById('cloudList').innerHTML='<div class="cloud-empty">ยังไม่มีข้อมูลสำรองบนคลาวด์</div>';return;}
+     document.getElementById('cloudList').innerHTML=j.history.map(function(s){
+       var nf=+s.farms||0,nh=+s.houses||0;
+       return '<div class="cloud-row"><div><div class="cloud-when">'+_cloudDateStr(s.savedAt,s.updatedAt)+'</div><div class="cloud-meta">'+nf+' ฟาร์ม · '+nh+' เล้า</div></div>'
+         +'<button class="btn primary cloud-pick" type="button" onclick="doCloudRestore('+(+s.i)+','+nf+','+nh+')"'+(canEdit?'':' disabled')+'>กู้คืน</button></div>';
+     }).join('');
+   }).catch(function(){document.getElementById('cloudList').innerHTML='<div class="cloud-empty">เชื่อมต่อไม่ได้ (เน็ต/ลิงก์?)</div>';});
+}
+function closeCloudRestore(){var m=document.getElementById('cloudmodal');if(m)m.classList.remove('show');}
+function doCloudRestore(i,nf,nh){
+  if(!canEdit||!syncCfg||!syncCfg.wcode){alert('🔒 ต้องปลดล็อกก่อน — กดกุญแจมุมขวาบน ใส่รหัสแก้ไข แล้วค่อยกู้คืน');return;}
+  if(!confirm('☁️ กู้คืนข้อมูลชุดนี้?\n\nชุดสำรอง: '+nf+' ฟาร์ม · '+nh+' เล้า\n\nจะ "ทับ" ข้อมูลปัจจุบันบนคลาวด์และทุกเครื่อง\n(ระบบยังเก็บชุดปัจจุบันไว้ใน history ให้ — กู้กลับได้อีก)'))return;
+  syncStat('กำลังกู้คืนจากคลาวด์…');
+  try{if(farms&&farms[0]&&farms[0].houses)localStorage.setItem('ppf_farms_v3_prev',JSON.stringify(farms));}catch(_){}
+  fetch(syncCfg.url,{method:'POST',body:JSON.stringify({code:syncCfg.wcode,restore:i})})
+   .then(function(r){return r.json();}).then(function(j){
+     if(j&&j.ok){ syncSetTs((+j.updatedAt)||Date.now()); closeCloudRestore(); if(typeof syncPull==='function')syncPull({force:true}); alert('✅ กู้คืนจากคลาวด์สำเร็จ'); }
+     else if(j&&/write code|bad code/i.test(j.error||'')){ alert('🔒 รหัสแก้ไขไม่ถูกต้อง/ถูกเปลี่ยน — กดกุญแจใส่รหัสแก้ไขใหม่'); syncStat('รหัสแก้ไขไม่ถูกต้อง','err'); }
+     else { alert('กู้คืนไม่สำเร็จ: '+((j&&j.error)||'?')); syncStat('กู้คืนไม่สำเร็จ','err'); }
+   }).catch(function(){alert('เชื่อมต่อไม่ได้ ลองใหม่');syncStat('เชื่อมต่อไม่ได้','err');});
+}
 
 function calc(h){
   const side=h.fan*2.54/30.48,area=side*side,avg=h.pts.reduce((a,b)=>a+(+b||0),0)/9,fanCFM=area*avg;
@@ -1723,7 +1776,7 @@ function applyLock(){
 function tryUnlock(){
   if(canEdit){canEdit=false;applyLock();return;}
   if(syncCfg&&syncCfg.wcode){canEdit=true;applyLock();return;}          // มีรหัสแก้ไขในเครื่องแล้ว → ปลดล็อกได้เลย
-  const p=prompt('🔒 ใส่รหัสสำหรับแก้ไขข้อมูล');
+  const p=prompt('🔒 ใส่รหัสสำหรับ "แก้ไข" ข้อมูล\n(เป็นคนละตัวกับรหัสดู 5671 — ถ้าไม่ทราบ ถามหมอวรัญญู)');
   if(p===null||p==='')return;
   if(!syncCfg){ syncCfg={url:SYNC_DEFAULT_URL,code:'5671'}; try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){} }  // ไม่มีรหัสลับฝังในแอป → ตรวจกับเซิร์ฟเวอร์เสมอ
   syncStat('กำลังตรวจรหัส…');
@@ -2372,7 +2425,7 @@ function render(){
   document.getElementById('tabName').textContent=t.label;
   document.getElementById('tabDesc').textContent=t.id==='guide'?t.desc:t.desc+' — '+farms[cf].name;
   const tb=document.getElementById('toolbar');
-  tb.innerHTML = tab==='set'?`<div class="setbar1"><span class="editic" title="แตะเพื่อแก้ไขชื่อฟาร์ม">${I.edit}</span><input class="farmname" value="${esc(farms[cf].name)}" aria-label="ชื่อฟาร์ม"></div><div class="setbar2"><button class="btn primary" id="addHouse">+ เพิ่มโรงเรือน</button><button class="btn" id="addFarm">+ เพิ่มฟาร์ม</button><button class="btn" id="importXlsx">${I.download} นำเข้าจาก Excel</button><button class="btn" id="expBackup">${I.download} สำรองข้อมูล</button><button class="btn" id="impBackup">${I.upload} กู้คืนจากไฟล์</button>`+(localStorage.getItem('ppf_farms_v3_prev')?`<button class="btn" id="undoBackup">${I.undo} กู้กลับ</button>`:'')+(farms.length>1?`<button class="btn warn" id="delFarm">ลบฟาร์มนี้</button>`:'')+`</div>`:(tab==='vent'?`<button class="btn" id="openHI" type="button">${I.temp} คำนวณ Heat Index</button>`:'');
+  tb.innerHTML = tab==='set'?`<div class="setbar1"><span class="editic" title="แตะเพื่อแก้ไขชื่อฟาร์ม">${I.edit}</span><input class="farmname" value="${esc(farms[cf].name)}" aria-label="ชื่อฟาร์ม"></div><div class="setbar2"><button class="btn primary" id="addHouse">+ เพิ่มโรงเรือน</button><button class="btn" id="addFarm">+ เพิ่มฟาร์ม</button><button class="btn" id="importXlsx">${I.download} นำเข้าจาก Excel</button><button class="btn" id="expBackup">${I.download} สำรองข้อมูล</button><button class="btn" id="impBackup">${I.upload} กู้คืนจากไฟล์</button><button class="btn" id="cloudBackup">☁️ กู้จากคลาวด์</button>`+(localStorage.getItem('ppf_farms_v3_prev')?`<button class="btn" id="undoBackup">${I.undo} กู้กลับ</button>`:'')+(farms.length>1?`<button class="btn warn" id="delFarm">ลบฟาร์มนี้</button>`:'')+`</div>`:(tab==='vent'?`<button class="btn" id="openHI" type="button">${I.temp} คำนวณ Heat Index</button>`:'');
   const g=document.getElementById('grid');
   if(tab==='guide'){g.style.gridTemplateColumns='1fr';g.innerHTML=guideCard();const pm=document.getElementById('printManual');if(pm)pm.onclick=buildManual;applyLock();return;}
   if(tab==='cal'){g.style.gridTemplateColumns='1fr';calStyleInject();g.innerHTML=calendarView();_swPaint();calClockPaint();if(!calClkTimer)calClkTimer=setInterval(calClockPaint,1000);applyLock();return;}
@@ -2388,6 +2441,7 @@ function render(){
   const imp=document.getElementById('importXlsx');if(imp)imp.onclick=()=>document.getElementById('faceFile').click();
   const eb=document.getElementById('expBackup');if(eb)eb.onclick=exportBackup;
   const ib=document.getElementById('impBackup');if(ib)ib.onclick=()=>document.getElementById('backupFile').click();
+  const clb=document.getElementById('cloudBackup');if(clb)clb.onclick=openCloudRestore;
   const ub=document.getElementById('undoBackup');if(ub)ub.onclick=undoRestore;
   const hib=document.getElementById('openHI');if(hib)hib.onclick=openHI;
   applyLock();
@@ -2528,6 +2582,8 @@ document.getElementById('copyCancel').addEventListener('click',closeCopyModal);
 document.getElementById('copyAll').addEventListener('change',e=>{document.querySelectorAll('.copytgt').forEach(c=>c.checked=e.target.checked);});
 document.getElementById('copyList').addEventListener('change',()=>{const all=[...document.querySelectorAll('.copytgt')],ca=document.getElementById('copyAll');if(ca)ca.checked=all.length>0&&all.every(c=>c.checked);});
 document.getElementById('copymodal').addEventListener('click',e=>{if(e.target.id==='copymodal')closeCopyModal();});
+document.getElementById('cloudCancel').addEventListener('click',closeCloudRestore);
+document.getElementById('cloudmodal').addEventListener('click',e=>{if(e.target.id==='cloudmodal')closeCloudRestore();});
 // ===== Heat Index (ดัชนีความร้อน · °F + %RH, 4 ระดับ) =====
 function hiLevel(hi){
   if(hi<150)  return{k:'ok',    b:'ปกติ',   d:'สภาพแวดล้อมปลอดภัย ไก่ไม่เครียดความร้อน'};
