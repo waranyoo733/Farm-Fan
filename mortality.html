@@ -103,7 +103,7 @@
   @media print{body{background:#fff;padding:0}.card,.kpi,.hero{break-inside:avoid}}
   /* ===== Phase 3 dark override ===== */
   body{background:linear-gradient(170deg,#0B1120,#080D18 65%)!important;background-attachment:fixed}
-  .hero,.exechead{background:linear-gradient(135deg,#7a3320,#9c2f4a 52%,#b3305a);box-shadow:0 8px 22px rgba(0,0,0,.4)}
+  .hero,.exechead{background:linear-gradient(135deg,#3E2130,#55263C 55%,#632B47);box-shadow:0 8px 22px rgba(0,0,0,.35)}
   .hero .sub{color:#FFD5CC}
   .status,.exec-st{background:rgba(255,255,255,.15);color:#fff}
   .drop{background:rgba(255,255,255,.03);border-color:rgba(251,113,133,.4);color:var(--mute)}
@@ -111,7 +111,7 @@
   .drop.over,.clearbtn:hover{background:rgba(251,113,133,.12);color:var(--brand)}
   .files span{background:rgba(251,113,133,.14)}
   .kpi,.ek{background:var(--card);border-color:var(--line2)}
-  .kpi.hot{background:linear-gradient(160deg,rgba(251,113,133,.2),rgba(251,90,60,.12));border:none}
+  .kpi.hot{background:linear-gradient(160deg,rgba(251,113,133,.12),rgba(251,90,60,.07));border:none}
   .kpi.hot .l,.kpi.hot .s{color:#FFC4CC!important}
   .sec,.exectitle,.alert .rec{color:#22D3EE!important}
   th,table.exec th{border-bottom-color:rgba(34,211,238,.4)!important}
@@ -158,8 +158,8 @@
     <div class="grid2">
       <div class="card pad"><div class="sec" id="donutTitle">สัดส่วนการตายตามเล้า</div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-          <div style="width:150px;height:150px;flex:none;position:relative"><canvas id="chDonut"></canvas><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none"><div style="font-size:18px;font-weight:700;color:#E9EFFA" id="donutTot">–</div><div style="font-size:10px;color:#9A5563">ตัว</div></div></div>
-          <div id="donutLegend" style="font-size:11.5px;line-height:1.9;flex:1;min-width:120px;color:#5A3210"></div>
+          <div style="width:150px;height:150px;flex:none;position:relative"><canvas id="chDonut"></canvas><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none"><div style="font-size:18px;font-weight:700;color:#E9EFFA" id="donutTot">–</div><div style="font-size:10px;color:#94A3B8">ตัว</div></div></div>
+          <div id="donutLegend" style="font-size:11.5px;line-height:1.9;flex:1;min-width:120px;color:#CBD5E1"></div>
         </div>
       </div>
       <div class="card pad"><div class="sec" id="rankTitle">ยอดตายตามเล้า</div>
@@ -468,7 +468,7 @@ function drawDonut(farmRows){
   document.getElementById('donutTot').textContent=n(tot);
   const ctx=document.getElementById('chDonut'); if(chF)chF.destroy();
   chF=new Chart(ctx,{type:'doughnut',data:{labels:items.map(x=>x.label),datasets:[{data:items.map(x=>x.val),backgroundColor:items.map((x,i)=>FCOL[i%FCOL.length]),borderWidth:2,borderColor:'#101A2B'}]},options:{cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+n(c.parsed)+' ตัว'}}},maintainAspectRatio:false}});
-  document.getElementById('donutLegend').innerHTML=items.map((x,i)=>`<div style="display:flex;align-items:center;gap:7px;margin:2px 0"><span style="width:10px;height:10px;border-radius:3px;background:${FCOL[i%FCOL.length]};flex:none"></span><span>${x.label} — <b>${n(x.val)}</b> ตัว · ตาย <b>${(x.rate||0).toFixed(2)}%</b></span></div>`).join('')||'<span style="color:#9A5563">ยังไม่มีการตาย</span>';
+  document.getElementById('donutLegend').innerHTML=items.map((x,i)=>`<div style="display:flex;align-items:center;gap:7px;margin:2px 0"><span style="width:10px;height:10px;border-radius:3px;background:${FCOL[i%FCOL.length]};flex:none"></span><span>${x.label} — <b>${n(x.val)}</b> ตัว · ตาย <b>${(x.rate||0).toFixed(2)}%</b></span></div>`).join('')||'<span style="color:#94A3B8">ยังไม่มีการตาย</span>';
 }
 function rankItems(farmRows){
   let items;
