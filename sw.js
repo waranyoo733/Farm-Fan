@@ -2,10 +2,11 @@
    - vendor/รูป = cache-first (ไฟล์ไม่เปลี่ยน โหลดเร็ว)
    - html/js อื่น = network-first (ออนไลน์ได้ของใหม่เสมอ · ออฟไลน์ใช้แคช)
    ⚠️ เวลาแก้โค้ดแล้ว deploy ใหม่ ให้เพิ่มเลขเวอร์ชัน CACHE ด้านล่าง เพื่อล้างแคชเก่า */
-const CACHE='ppf-farmfan-v9';
+const CACHE='ppf-farmfan-v10';
 const ASSETS=[
   './','./index.html','./analytics.html','./mortality.html','./fan-plan.html','./parse-worker.js',
   './vendor/xlsx.full.min.js','./vendor/chart.umd.min.js','./vendor/html2canvas.min.js','./vendor/three.min.js',
+  './vendor/line-seed/LINESeedSansTH-Regular.woff2','./vendor/line-seed/LINESeedSansTH-Bold.woff2','./vendor/line-seed/LINESeedSansTH-ExtraBold.woff2',
   './home-render.jpg','./manifest.webmanifest','./icon.svg'
 ];
 self.addEventListener('install',e=>{
