@@ -715,6 +715,12 @@
   .cc-pf .v u{font-size:12px;font-weight:600;color:var(--cc-sub);text-decoration:none;margin-left:2px}
   .cc-pf .d{font-size:11.5px;margin-top:7px;color:var(--cc-sub)}
   .cc-up{color:var(--cc-emerald)} .cc-down{color:var(--cc-red)}
+  /* side KPI panel (replaces AI card) + executive one-page capture button */
+  .cc-sidekpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;align-content:start}
+  .cc-cap{display:inline-flex;align-items:center;gap:8px;flex:none;padding:9px 15px;border-radius:12px;border:1px solid transparent;background:linear-gradient(145deg,var(--cc-cyan),var(--cc-blue));color:#04121a;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(34,211,238,.25);transition:transform .12s,box-shadow .12s;white-space:nowrap}
+  .cc-cap:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(34,211,238,.4)}
+  .cc-cap:disabled{opacity:.55;cursor:default}
+  .cc-cap svg{width:16px;height:16px}
 
   .cc-back{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:11px;background:var(--cc-glass);border:1px solid var(--cc-line);color:var(--cc-ink);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
   .cc-back:hover{border-color:rgba(34,211,238,.4);color:var(--cc-cyan)}
@@ -2101,6 +2107,7 @@ function commandCenter(){
       +'<div class="cc-sel"><span class="cv">'+(I.chart||'')+'</span><span><small>โรงเรือน</small><b>'+esc(h.name)+' · อายุ '+age+' วัน</b></span></div>'
     +'</div>'
     +'<div class="cc-spacer"></div>'
+    +'<button class="cc-cap" onclick="capDashboard(this)" title="แคปหน้าจอส่งผู้บริหาร">'+(I.download||'')+'<span>แคปส่งผู้บริหาร</span></button>'
     +'<div class="cc-clock"><b id="ccClock">--:--:--</b><small id="ccDate">—</small></div>'
     +'<div class="cc-health"><div class="cc-ring"><svg width="46" height="46"><circle cx="23" cy="23" r="20" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="4"/><circle cx="23" cy="23" r="20" fill="none" stroke="#34D399" stroke-width="4" stroke-linecap="round" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg><b>'+health+'</b></div><div><div class="hl">AI Health</div><div class="hs">'+hword+'</div></div></div>'
   +'</div>'
@@ -2138,21 +2145,17 @@ function commandCenter(){
       +'<div class="cc-twin-legend"><span><i style="background:#22D3EE"></i>พัดลมทำงาน ('+r.ventMax+')</span><span><i style="background:#3a4a63"></i>พัดลมสำรอง</span><span><i style="background:#0891b2"></i>Cooling Pad</span><span><i style="background:linear-gradient(90deg,#0e7490,#b45309)"></i>ทิศลม เย็น→อุ่น</span></div>'
       +'<div class="cc-navbtns" style="margin-top:14px">'+hchips+'</div>'
     +'</div>'
-    +'<div style="display:flex;flex-direction:column;gap:16px">'
-      +ccAiCard(hs)
+    +'<div class="cc-sidekpi">'
+      +'<div class="cc-pf cc-glass"><div class="l">'+(I.chart||'')+'น้ำหนักเฉลี่ย</div><div class="v">'+(curKg||targetKg)+'<u>kg</u></div><div class="d">'+(curKg?('เป้า '+targetKg+' kg'):'ค่าเป้าตามอายุ')+'</div></div>'
+      +'<div class="cc-pf cc-glass"><div class="l">'+(I.chart||'')+'น้ำหนักขึ้น/วัน</div><div class="v">'+gain+'<u>kg</u></div><div class="d cc-up">ตามตารางมาตรฐาน</div></div>'
+      +'<div class="cc-pf cc-glass"><div class="l">'+(I.feed||'')+'อาหารวันนี้</div><div class="v">'+Math.round(r.fhouse).toLocaleString()+'<u>kg</u></div><div class="d">'+r.fd+' g/ตัว · สะสม '+r.fpct+'%</div></div>'
+      +'<div class="cc-pf cc-glass"><div class="l">'+(I.chart||'')+'FCR'+(fcrA?' จริง':' เป้า')+'</div><div class="v">'+(fcrA?fcrA.toFixed(2):r.fcrT.toFixed(2))+'</div><div class="d">'+(fcrA?('เป้า '+r.fcrT.toFixed(2)):'ตามตาราง STD')+'</div></div>'
+      +'<div class="cc-pf cc-glass"><div class="l">'+(I.alert||'')+'อัตราตายสะสม</div><div class="v">'+mort.toFixed(2)+'<u>%</u></div><div class="d">ตาย '+cumDead(h,h.age).toLocaleString()+' ตัว</div></div>'
+      +'<div class="cc-pf cc-glass"><div class="l">'+(I.bird||'')+'ไก่คงเหลือ</div><div class="v">'+alive.toLocaleString()+'</div><div class="d">จาก '+birds.toLocaleString()+' ตัว</div></div>'
     +'</div>'
   +'</div>'
-  // ===== PERFORMANCE ROW =====
-  +'<div class="cc-perf cc-fade" style="animation-delay:.3s">'
-    +'<div class="cc-pf cc-glass"><div class="l">'+(I.chart||'')+'น้ำหนักเฉลี่ย</div><div class="v">'+(curKg||targetKg)+'<u>kg</u></div><div class="d">'+(curKg?('เป้า '+targetKg+' kg'):'ค่าเป้าตามอายุ')+'</div></div>'
-    +'<div class="cc-pf cc-glass"><div class="l">'+(I.chart||'')+'น้ำหนักขึ้น/วัน</div><div class="v">'+gain+'<u>kg</u></div><div class="d cc-up">ตามตารางมาตรฐาน</div></div>'
-    +'<div class="cc-pf cc-glass"><div class="l">'+(I.feed||'')+'อาหารวันนี้</div><div class="v">'+Math.round(r.fhouse).toLocaleString()+'<u>kg</u></div><div class="d">'+r.fd+' g/ตัว · สะสม '+r.fpct+'%</div></div>'
-    +'<div class="cc-pf cc-glass"><div class="l">'+(I.chart||'')+'FCR'+(fcrA?' จริง':' เป้า')+'</div><div class="v">'+(fcrA?fcrA.toFixed(2):r.fcrT.toFixed(2))+'</div><div class="d">'+(fcrA?('เป้า '+r.fcrT.toFixed(2)):'ตามตาราง STD')+'</div></div>'
-    +'<div class="cc-pf cc-glass"><div class="l">'+(I.alert||'')+'อัตราตายสะสม</div><div class="v">'+mort.toFixed(2)+'<u>%</u></div><div class="d">ตาย '+cumDead(h,h.age).toLocaleString()+' ตัว</div></div>'
-    +'<div class="cc-pf cc-glass"><div class="l">'+(I.bird||'')+'ไก่คงเหลือ</div><div class="v">'+alive.toLocaleString()+'</div><div class="d">จาก '+birds.toLocaleString()+' ตัว</div></div>'
-  +'</div>'
   // ===== QUICK NAV =====
-  +'<div class="cc-navbtns" style="margin-top:16px">'
+  +'<div class="cc-navbtns cc-quicknav" style="margin-top:16px">'
     +'<button class="cc-navb" onclick="goTab(\'vent\')">'+(I.fan||'')+'ระบายอากาศ</button>'
     +'<button class="cc-navb" onclick="goTab(\'feed\')">'+(I.feed||'')+'อาหาร</button>'
     +'<button class="cc-navb" onclick="goTab(\'cal\')">'+(I.cal||'')+'ปฏิทิน</button>'
@@ -2644,6 +2647,28 @@ function capCard(el,h){
         if(cap)cap.disabled=false;
       },'image/png');
     }).catch(function(){if(cap)cap.disabled=false;alert('แคปไม่สำเร็จ ลองใหม่อีกครั้ง');});
+  }
+  if(window.html2canvas)return go();
+  var mk=function(src,onerr){var s=document.createElement('script');s.src=src;s.onload=go;s.onerror=onerr;document.head.appendChild(s);};
+  mk('vendor/html2canvas.min.js',function(){mk('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',function(){alert('โหลดตัวแคปไม่ได้ (เช็คเน็ต)');});});
+}
+function capDashboard(btn){
+  function go(){
+    if(btn)btn.disabled=true;
+    var cc=document.querySelector('.cc'); if(!cc){if(btn)btn.disabled=false;return;}
+    if(typeof ccTwinMode!=='undefined'&&ccTwinMode==='3d'){alert('สลับ Digital Twin เป็นโหมด 2D ก่อนแคป จะได้ภาพครบ');if(btn)btn.disabled=false;return;}
+    window.html2canvas(cc,{backgroundColor:'#0B1120',scale:2,useCORS:true,onclone:function(doc){
+      var c=doc.querySelector('.cc'); if(c){c.querySelectorAll('.cc-cap,.cc-quicknav').forEach(function(e){e.style.visibility='hidden';});}
+    }}).then(function(cv){
+      cv.toBlob(function(b){
+        if(!b){if(btn)btn.disabled=false;return;}
+        var url=URL.createObjectURL(b),a=document.createElement('a');
+        a.href=url;a.download='PPF แดชบอร์ด '+((farms[cf]&&farms[cf].name)?farms[cf].name:'')+'.png';
+        document.body.appendChild(a);a.click();a.remove();
+        setTimeout(function(){URL.revokeObjectURL(url);},1500);
+        if(btn)btn.disabled=false;
+      },'image/png');
+    }).catch(function(){if(btn)btn.disabled=false;alert('แคปไม่สำเร็จ ลองใหม่อีกครั้ง');});
   }
   if(window.html2canvas)return go();
   var mk=function(src,onerr){var s=document.createElement('script');s.src=src;s.onload=go;s.onerror=onerr;document.head.appendChild(s);};
