@@ -5008,13 +5008,14 @@ function renderAnalysis(farmKeys) {
 // ====================================================================
 
 const ANA_W = 620, ANA_H = 200, ANA_M = { l: 42, r: 14, t: 14, b: 26 };
+/* dark-theme chart palette: bright data lines, light text, subtle grid */
 const COL = {
-  navy: '#16284a', blue: '#2b7fd4', bluesoft: '#5b9fe0', blueLight: '#cfe0f5', blueBg: '#eaf2fb',
-  red: '#d62828', redSoft: '#e85d5d', redBg: '#fdecec',
-  green: '#2e7d4f', greenSoft: '#4fa873', greenBg: '#e8f5ed',
-  amber: '#c8860b', amberSoft: '#e3a92e', amberBg: '#fbf1da',
-  ink: '#1a2233', inkSoft: '#46526b', inkMute: '#8a94a8',
-  grid: '#eef2f7', neutralBar: '#cbd5e1',
+  navy: '#93A4C0', blue: '#60A5FA', bluesoft: '#93C5FD', blueLight: 'rgba(96,165,250,.30)', blueBg: 'rgba(96,165,250,.12)',
+  red: '#FB7185', redSoft: '#FCA5B4', redBg: 'rgba(251,113,133,.12)',
+  green: '#34D399', greenSoft: '#6EE7B7', greenBg: 'rgba(52,211,153,.12)',
+  amber: '#FBBF24', amberSoft: '#FCD34D', amberBg: 'rgba(251,191,36,.12)',
+  ink: '#F8FAFC', inkSoft: '#CBD5E1', inkMute: '#94A3B8',
+  grid: 'rgba(255,255,255,.07)', neutralBar: '#94A3B8',
 };
 
 function plotArea() {
