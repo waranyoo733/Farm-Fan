@@ -8,13 +8,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f4f6f4; --card:#ffffff; --ink:#1c2b24; --muted:#6b7c72;
-  --brand:#0d5c3f; --brand2:#0f7a52; --line:#e3e9e4;
-  /* สีตามรหัสของหมอ (ตรงตำนานในไฟล์แผน) */
-  --man:#00B050;   /* เขียว = เปิดมือ (Manual) */
-  --ck:#D99694;    /* ชมพู = โช้ค (Cycle) */
-  --au:#404040;    /* ดำ = ออโต้ตู้คุม (Diff/Auto) */
-  --hl:#fff3bf;    /* เหลือง = วันสำคัญ */
+  --bg:#080D18; --card:#101A2B; --ink:#E9EFFA; --muted:#94A6C4;
+  --brand:#34D399; --brand2:#5EEAD4; --line:rgba(255,255,255,.10); --inp:#0C1522;
+  /* สีตามรหัสของหมอ (ตรงตำนานในไฟล์แผน) — ปรับให้เห็นชัดบนพื้นดำ */
+  --man:#22C55E;   /* เขียว = เปิดมือ (Manual) */
+  --ck:#EC7CA8;    /* ชมพู = โช้ค (Cycle) */
+  --au:#8593AB;    /* เทา = ออโต้ตู้คุม (Diff/Auto) */
+  --hl:rgba(251,191,36,.18);    /* เหลือง = วันสำคัญ */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Prompt',system-ui,sans-serif;background:var(--bg);color:var(--ink);padding-bottom:60px}
@@ -74,6 +74,29 @@ tr.cur td{background:#dff3e6;font-weight:600}
 .foot{font-size:11.5px;color:var(--muted);text-align:center;margin-top:22px;line-height:1.8}
 a.back{color:#cfe9dd;font-size:12.5px;text-decoration:none}
 @media print{.hero{border-radius:0}.chips,.dayrow,.inps{display:none}.tblwrap{max-height:none;overflow:visible}}
+/* ===== Phase 3 dark override ===== */
+body{background:linear-gradient(170deg,#0B1120,#080D18 65%);background-attachment:fixed}
+.hero{background:linear-gradient(135deg,#0d3b2a,#0f5c3f 55%,#0e7490);box-shadow:0 8px 22px rgba(0,0,0,.4)}
+.dayval{background:rgba(34,211,238,.14);color:var(--brand2)}
+.k-fan{background:rgba(52,211,153,.12)}.k-cur{background:rgba(96,165,250,.12)}.k-wind{background:rgba(167,139,250,.14)}.k-feed{background:rgba(251,146,60,.12)}.k-fcr{background:rgba(251,113,133,.12)}
+.chip{background:var(--card);color:var(--ink)}.chip small{color:var(--muted)}
+.chip.on{background:rgba(34,211,238,.16);border-color:rgba(34,211,238,.5);color:#22D3EE}.chip.on small{color:#7DE9FF}
+.card{box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.spec b{color:var(--brand2)}
+.order{background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.3)}
+.bub.ck{color:#3a1116}
+.fw .d{background:rgba(255,255,255,.06);color:var(--muted)}
+.fw.ck .d{color:#3a1116}
+.tl{border-left-color:rgba(255,255,255,.14)}
+.tlr:before{background:#5a6b7f;border-color:#101A2B}
+.tlr.now:before{background:#ff9f1c;box-shadow:0 0 0 4px rgba(255,159,28,.25)}
+.tlr b.f{color:var(--brand2)}
+.tlr .off{color:#FB7185}
+th{background:rgba(34,211,238,.14);color:#22D3EE}
+tr.cur td{background:rgba(52,211,153,.14);font-weight:600}
+.inps input{background:var(--inp);color:var(--ink)}
+input[type=range]{accent-color:#22D3EE}
+a.back{color:#7DE9FF}
 </style>
 </head>
 <body>
@@ -85,7 +108,7 @@ a.back{color:#cfe9dd;font-size:12.5px;text-decoration:none}
 <div class="wrap">
   <div class="chips" id="chips"></div>
   <div id="content"></div>
-  <div class="foot">สูตร: ลมที่ไก่ต้องการ = cfm/kg (3 วัน0–13 · 4 วัน14–27 · 5 วัน28–42) × น้ำหนัก STD × จำนวนไก่ · ผ้าม่านหน้าแพด = สูงแพด × (พัดลมที่เปิด ÷ พัดลมทั้งหมด) · แรงลม = ลมรวม(m³/h) ÷ 3600 ÷ (กว้าง × สูงหน้าตัด) · เส้นผ่าศูนย์กลางพัดลม นิ้ว × 2.54 = ซม. · FCR = อาหารสะสม ÷ น้ำหนักตัว (วันจับ 42 = 1.68) · %อาหารสะสม = อาหารสะสมต่อตัว ÷ ถุงอาหาร 30 กก./กระสอบ (วัน16 = 2.33)<br>สีตามรหัสในไฟล์แผนของหมอ: <span style="color:#00B050">■ เขียว = เปิดมือ</span> · <span style="color:#D99694">■ ชมพู = โช้ค (Cycle)</span> · <span style="color:#404040">■ ดำ = ออโต้ตู้คุม</span> · น้ำหนัก STD วัน31 = 2,094 ก. · cap พัดลมชัยนาทคำนวณด้วย 2.54 (6-7 = 27,359 · 1-5 = 27,976) · เบอร์พัดลมถอดจากไฟล์แผนการระบายอากาศ + รูปผังรุ่งเรือง (หมอยืนยัน 3 ก.ค. 2569)</div>
+  <div class="foot">สูตร: ลมที่ไก่ต้องการ = cfm/kg (3 วัน0–13 · 4 วัน14–27 · 5 วัน28–42) × น้ำหนัก STD × จำนวนไก่ · ผ้าม่านหน้าแพด = สูงแพด × (พัดลมที่เปิด ÷ พัดลมทั้งหมด) · แรงลม = ลมรวม(m³/h) ÷ 3600 ÷ (กว้าง × สูงหน้าตัด) · เส้นผ่าศูนย์กลางพัดลม นิ้ว × 2.54 = ซม. · FCR = อาหารสะสม ÷ น้ำหนักตัว (วันจับ 42 = 1.68) · %อาหารสะสม = อาหารสะสมต่อตัว ÷ ถุงอาหาร 30 กก./กระสอบ (วัน16 = 2.33)<br>สีตามรหัสในไฟล์แผนของหมอ: <span style="color:#22C55E">■ เขียว = เปิดมือ</span> · <span style="color:#EC7CA8">■ ชมพู = โช้ค (Cycle)</span> · <span style="color:#8593AB">■ ดำ = ออโต้ตู้คุม</span> · น้ำหนัก STD วัน31 = 2,094 ก. · cap พัดลมชัยนาทคำนวณด้วย 2.54 (6-7 = 27,359 · 1-5 = 27,976) · เบอร์พัดลมถอดจากไฟล์แผนการระบายอากาศ + รูปผังรุ่งเรือง (หมอยืนยัน 3 ก.ค. 2569)</div>
 </div>
 <script>
 const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2094,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278];
@@ -180,7 +203,7 @@ function render(){
       <div>🟢 เปิดมือ ${man.length} ตัว: ${bubbles(man,'man')}</div>
       ${f.choke.length?'<div style="margin-top:6px">🩷 โช้ค (ตู้คุมเดินเอง): '+bubbles(f.choke,'ck')+'</div>':''}
       ${f.autos.length?'<div style="margin-top:6px">⬛ ออโต้ตามอุณหภูมิ Step2–4: '+f.autos.map(a=>bubbles(a,'au')).join('<span style="color:var(--muted)"> · </span>')+'</div>':''}
-      <div class="legend"><span><i style="background:var(--man)"></i>เขียว = เปิดมือ</span><span><i style="background:var(--ck)"></i>ชมพู = โช้ค</span><span><i style="background:var(--au)"></i>ดำ = ออโต้ตู้คุม</span><span><i style="background:#eef1ee;border:1px solid var(--line)"></i>เทา = ยังไม่เปิด</span></div>
+      <div class="legend"><span><i style="background:var(--man)"></i>เขียว = เปิดมือ</span><span><i style="background:var(--ck)"></i>ชมพู = โช้ค</span><span><i style="background:var(--au)"></i>ดำ = ออโต้ตู้คุม</span><span><i style="background:rgba(255,255,255,.09);border:1px solid var(--line)"></i>เทา = ยังไม่เปิด</span></div>
       <div class="fanwall">${wall}</div>
     </div>
     <div class="secH">🗓 แผนทั้งรุ่น — เปิดเบอร์ไหนก่อน</div>

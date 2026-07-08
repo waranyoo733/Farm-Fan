@@ -10,8 +10,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="vendor/xlsx.full.min.js" onerror="this.onerror=null;this.src='https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js'"></script>
 <script src="vendor/chart.umd.min.js" onerror="this.onerror=null;this.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js'"></script>
+<script>window.addEventListener('load',function(){if(window.Chart){Chart.defaults.color='#94A6C4';Chart.defaults.borderColor='rgba(255,255,255,.08)';}});</script>
 <style>
-  :root{--ink:#3A1620;--mute:#9A5563;--line:#FFEAE2;--line2:#FFE0D6;--red:#E5326B;--amber:#D97706;--green:#16a34a;--card:#fff;--brand:#E5326B}
+  :root{--ink:#E9EFFA;--mute:#94A6C4;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.10);--red:#FB7185;--amber:#FBBF24;--green:#34D399;--card:#101A2B;--brand:#FB7185}
   *{box-sizing:border-box}
   body{margin:0;background:linear-gradient(180deg,#FFF4F0,#FFEAF0);background-attachment:fixed;color:var(--ink);font-family:'Prompt',sans-serif;font-size:15px;line-height:1.5;padding:14px}
   .wrap{max-width:1000px;margin:0 auto}
@@ -97,6 +98,33 @@
   .execclose{font-family:inherit;font-size:13px;font-weight:600;color:#fff;background:var(--brand);border:none;border-radius:9px;padding:9px 18px;cursor:pointer}
   @media(max-width:760px){.kpis{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}.execkpis{grid-template-columns:repeat(2,1fr)}.execgrid{grid-template-columns:1fr}}
   @media print{body{background:#fff;padding:0}.card,.kpi,.hero{break-inside:avoid}}
+  /* ===== Phase 3 dark override ===== */
+  body{background:linear-gradient(170deg,#0B1120,#080D18 65%)!important;background-attachment:fixed}
+  .hero,.exechead{background:linear-gradient(135deg,#7a3320,#9c2f4a 52%,#b3305a);box-shadow:0 8px 22px rgba(0,0,0,.4)}
+  .hero .sub{color:#FFD5CC}
+  .status,.exec-st{background:rgba(255,255,255,.15);color:#fff}
+  .drop{background:rgba(255,255,255,.03);border-color:rgba(251,113,133,.4);color:var(--mute)}
+  .drop b{color:var(--ink)}
+  .drop.over,.clearbtn:hover{background:rgba(251,113,133,.12);color:var(--brand)}
+  .files span{background:rgba(251,113,133,.14)}
+  .kpi,.ek{background:var(--card);border-color:var(--line2)}
+  .kpi.hot{background:linear-gradient(160deg,rgba(251,113,133,.2),rgba(251,90,60,.12));border:none}
+  .kpi.hot .l,.kpi.hot .s{color:#FFC4CC!important}
+  .sec,.exectitle,.alert .rec{color:#22D3EE!important}
+  th,table.exec th{border-bottom-color:rgba(34,211,238,.4)!important}
+  tr.frow:hover{background:rgba(255,255,255,.04)}
+  tr.tot td,table.exec tr.tot td{border-top-color:rgba(34,211,238,.4)!important;color:#22D3EE!important}
+  .clearbtn{background:var(--card);border-color:var(--line2)}
+  .delfarm:hover{background:rgba(251,113,133,.18)}
+  .watch{background:rgba(251,113,133,.08)}
+  .watch b{color:var(--brand)}
+  .alert.r{background:rgba(251,113,133,.14);border-left-color:#F43F5E}
+  .alert.a{background:rgba(251,191,36,.14);border-left-color:#FBBF24}
+  .alert.g{background:rgba(52,211,153,.14);border-left-color:#34D399}
+  .alert .hn{color:var(--ink)}
+  select{background:#0C1522;color:var(--ink);border-color:var(--line2)}
+  .execwrap{background:rgba(4,8,14,.72)}
+  .execcard{background:var(--card);box-shadow:0 24px 70px rgba(0,0,0,.6)}
 </style>
 </head>
 <body>
@@ -121,13 +149,13 @@
       <div class="kpi"><div class="l">ลงไก่ทั้งหมด</div><div class="v" id="k-birds">–</div><div class="s" id="k-farms"></div></div>
       <div class="kpi"><div class="l">ตายสะสม (ตาย+คัด)</div><div class="v" style="color:var(--brand)" id="k-loss">–</div><div class="s" id="k-today"></div></div>
       <div class="kpi hot"><div class="l">% สูญเสียสะสม</div><div class="v" style="color:var(--brand)" id="k-pct">–</div><div class="s" style="color:#8A1A3A">เฉลี่ยทุกฟาร์ม</div></div>
-      <div class="kpi" style="background:linear-gradient(160deg,#DBEAFE,#BFDBFE);border:none"><div class="l" style="color:#1E40AF">ไก่คงเหลือ</div><div class="v" style="color:#1D4ED8" id="k-alive">–</div><div class="s" style="color:#1E40AF">ประมาณการ</div></div>
+      <div class="kpi" style="background:linear-gradient(160deg,rgba(59,130,246,.18),rgba(96,165,250,.1));border:none"><div class="l" style="color:#BFD8FF">ไก่คงเหลือ</div><div class="v" style="color:#93C5FD" id="k-alive">–</div><div class="s" style="color:#BFD8FF">ประมาณการ</div></div>
     </div>
 
     <div class="grid2">
       <div class="card pad"><div class="sec" id="donutTitle">สัดส่วนการตายตามเล้า</div>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-          <div style="width:150px;height:150px;flex:none;position:relative"><canvas id="chDonut"></canvas><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none"><div style="font-size:18px;font-weight:700;color:#8A1A3A" id="donutTot">–</div><div style="font-size:10px;color:#9A5563">ตัว</div></div></div>
+          <div style="width:150px;height:150px;flex:none;position:relative"><canvas id="chDonut"></canvas><div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none"><div style="font-size:18px;font-weight:700;color:#E9EFFA" id="donutTot">–</div><div style="font-size:10px;color:#9A5563">ตัว</div></div></div>
           <div id="donutLegend" style="font-size:11.5px;line-height:1.9;flex:1;min-width:120px;color:#5A3210"></div>
         </div>
       </div>
@@ -219,7 +247,7 @@ const stackTotalLabel={id:'stackTotalLabel',afterDatasetsDraw(c){
   const nL=c.data.labels.length, totals=[], tops=[];
   for(let i=0;i<nL;i++){let s=0,top=area.bottom;bars.forEach(({d,i:di})=>{s+=d.data[i]||0;const b=c.getDatasetMeta(di).data[i];if(b&&b.y<top)top=b.y;});totals.push(s);tops.push(top);}
   const fontPx=area.width<340?9:area.width<480?10:11;
-  ctx.save();ctx.font='600 '+fontPx+'px Prompt,sans-serif';ctx.fillStyle='#8A1A3A';ctx.textAlign='center';
+  ctx.save();ctx.font='600 '+fontPx+'px Prompt,sans-serif';ctx.fillStyle='#E9EFFA';ctx.textAlign='center';
   let maxW=0;totals.forEach(v=>{if(v>0){const w=ctx.measureText(v).width;if(w>maxW)maxW=w;}});
   const minGap=maxW+6; let maxI=-1,maxV=-1;totals.forEach((v,i)=>{if(v>maxV){maxV=v;maxI=i;}});
   const meta=c.getDatasetMeta(bars[0].i), show=new Set();let lastX=-1e9;
@@ -230,7 +258,7 @@ const stackTotalLabel={id:'stackTotalLabel',afterDatasetsDraw(c){
 }};
 // ===== สูตรมาตรฐานคละเพศ (port จากแอปหลัก index.html — validate แล้ว) =====
 const D=a=>Math.max(0,Math.min(42,Math.round(a)));
-const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2093,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278];
+const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2094,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278];
 const FEED=[0,14,18,21,24,27,31,34,38,42,47,51,56,61,66,71,76,82,87,93,98,104,109,115,120,125,130,135,140,145,150,154,159,163,167,171,175,178,182,185,188,192,194];
 function cumFeed(age){let s=0;for(let d=1;d<=D(age);d++)s+=FEED[d];return s;}
 function farmInfo(fn){
@@ -436,7 +464,7 @@ function drawDonut(farmRows){
   const tot=items.reduce((a,x)=>a+x.val,0)||0;
   document.getElementById('donutTot').textContent=n(tot);
   const ctx=document.getElementById('chDonut'); if(chF)chF.destroy();
-  chF=new Chart(ctx,{type:'doughnut',data:{labels:items.map(x=>x.label),datasets:[{data:items.map(x=>x.val),backgroundColor:items.map((x,i)=>FCOL[i%FCOL.length]),borderWidth:2,borderColor:'#fff'}]},options:{cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+n(c.parsed)+' ตัว'}}},maintainAspectRatio:false}});
+  chF=new Chart(ctx,{type:'doughnut',data:{labels:items.map(x=>x.label),datasets:[{data:items.map(x=>x.val),backgroundColor:items.map((x,i)=>FCOL[i%FCOL.length]),borderWidth:2,borderColor:'#101A2B'}]},options:{cutout:'62%',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.label+': '+n(c.parsed)+' ตัว'}}},maintainAspectRatio:false}});
   document.getElementById('donutLegend').innerHTML=items.map((x,i)=>`<div style="display:flex;align-items:center;gap:7px;margin:2px 0"><span style="width:10px;height:10px;border-radius:3px;background:${FCOL[i%FCOL.length]};flex:none"></span><span>${x.label} — <b>${n(x.val)}</b> ตัว · ตาย <b>${(x.rate||0).toFixed(2)}%</b></span></div>`).join('')||'<span style="color:#9A5563">ยังไม่มีการตาย</span>';
 }
 function rankItems(farmRows){
@@ -453,8 +481,8 @@ function drawRank(farmRows){
   chK=new Chart(ctx,{type:'bar',plugins:[trackBg],data:{labels:items.map(x=>x.label),datasets:[{data:items.map(x=>x.val),_rate:items.map(x=>x.rate),backgroundColor:items.map((x,i)=>FCOL[i%FCOL.length]),borderRadius:7,borderSkipped:false,barPercentage:0.62,categoryPercentage:0.88,hoverBackgroundColor:items.map((x,i)=>FCOL[i%FCOL.length])}]},options:{
     indexAxis:'y',
     plugins:{legend:{display:false},tooltip:{padding:11,backgroundColor:'#2A1118',titleFont:{family:'Prompt',size:13,weight:'600'},bodyFont:{family:'Prompt',size:12.5},displayColors:false,callbacks:{title:its=>its[0].label,label:c=>'ตาย : '+n(c.parsed.x)+' ตัว',afterLabel:c=>{const r=c.dataset._rate[c.dataIndex];return r!=null?'อัตรา : '+r.toFixed(2)+'%':'';}}}},
-    scales:{x:{beginAtZero:true,grace:'6%',grid:{color:'#F1F2F4',drawTicks:false},border:{display:false},ticks:{font:{family:'Prompt',size:11},color:'#9A5563',callback:v=>v>=1000?(v/1000)+'k':v}},
-      y:{grid:{display:false},border:{display:false},ticks:{font:{family:'Prompt',size:12.5},color:'#3A1620'}}},
+    scales:{x:{beginAtZero:true,grace:'6%',grid:{color:'rgba(255,255,255,.08)',drawTicks:false},border:{display:false},ticks:{font:{family:'Prompt',size:11},color:'#94A6C4',callback:v=>v>=1000?(v/1000)+'k':v}},
+      y:{grid:{display:false},border:{display:false},ticks:{font:{family:'Prompt',size:12.5},color:'#C4D2E8'}}},
     maintainAspectRatio:false}});
 }
 function farmSeries(f,maxAge,arr){const a=[];for(let d=0;d<maxAge;d++){let s=0;f.houses.forEach(h=>s+=((h[arr]&&h[arr][d])||0));a.push(s);}return a;}
@@ -481,7 +509,7 @@ function drawTrend(fi){
   chT=new Chart(ctx,{type:'bar',plugins:[stackTotalLabel],data:{labels,datasets:sets},options:{
     plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>'วันที่ '+c[0].label,label:c=>c.dataset.label+': '+n(c.parsed.y)+' ตัว',footer:items=>{let s=0;items.forEach(it=>{if((it.dataset.yAxisID||'y')==='y'&&it.dataset.type!=='line')s+=it.parsed.y;});return 'รวมวันนี้: '+n(s)+' ตัว';}}}},
     scales:{x:{stacked:true,title:{display:true,text:'อายุ (วัน)',font:{family:'Prompt'}},grid:{display:false},ticks:{font:{family:'Prompt'}}},
-      y:{stacked:true,grace:'14%',beginAtZero:true,grid:{color:'#FFEAE2'},ticks:{font:{family:'Prompt'}},title:{display:true,text:'รายวัน (ตัว)',font:{family:'Prompt',size:10},color:'#9A5563'}},
+      y:{stacked:true,grace:'14%',beginAtZero:true,grid:{color:'rgba(255,255,255,.08)'},ticks:{font:{family:'Prompt'}},title:{display:true,text:'รายวัน (ตัว)',font:{family:'Prompt',size:10},color:'#9A5563'}},
       y1:{position:'right',beginAtZero:true,grid:{display:false},ticks:{font:{family:'Prompt'},color:'#1D4ED8'},title:{display:true,text:'สะสม (ตัว)',font:{family:'Prompt',size:10},color:'#1D4ED8'}}},
     maintainAspectRatio:false}});
 }
@@ -500,7 +528,7 @@ function drawRate(fi){
     {type:'bar',label:'% ตาย/วัน',data:rate.map(v=>+v.toFixed(3)),backgroundColor:'#FB7185',borderRadius:3,order:3},
     {type:'line',label:'เฉลี่ย 3 วัน',data:ma.map(v=>+v.toFixed(3)),borderColor:'#1D4ED8',borderWidth:2.5,pointRadius:0,tension:.3,fill:false,order:1},
     {type:'line',label:'วันพีค',data:spike.map(v=>v==null?null:+v.toFixed(3)),borderColor:'transparent',backgroundColor:'#E5326B',pointRadius:5,pointHoverRadius:7,showLine:false,order:0}
-  ]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>'วันที่ '+c[0].label,label:c=>c.parsed.y!=null?c.dataset.label+': '+c.parsed.y.toFixed(3)+'%':null}}},scales:{x:{title:{display:true,text:'อายุ (วัน)',font:{family:'Prompt'}},grid:{display:false},ticks:{font:{family:'Prompt'}}},y:{beginAtZero:true,grace:'12%',grid:{color:'#FFEAE2'},ticks:{font:{family:'Prompt'},callback:v=>v+'%'}}},maintainAspectRatio:false}});
+  ]},options:{plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>'วันที่ '+c[0].label,label:c=>c.parsed.y!=null?c.dataset.label+': '+c.parsed.y.toFixed(3)+'%':null}}},scales:{x:{title:{display:true,text:'อายุ (วัน)',font:{family:'Prompt'}},grid:{display:false},ticks:{font:{family:'Prompt'}}},y:{beginAtZero:true,grace:'12%',grid:{color:'rgba(255,255,255,.08)'},ticks:{font:{family:'Prompt'},callback:v=>v+'%'}}},maintainAspectRatio:false}});
 }
 function drawHouses(fi){
   const f=DATA[fi]; if(!f)return;

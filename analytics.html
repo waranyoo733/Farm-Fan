@@ -20,36 +20,36 @@
    cool light-gray surface.
    ==================================================================== */
 :root {
-  --navy:       #16284a;
-  --navy-2:     #1f3a66;
-  --blue:       #2b7fd4;
-  --blue-dark:  #1f6ec0;
-  --blue-soft:  #5b9fe0;
-  --blue-bg:    #eaf2fb;
-  --red:        #d62828;
-  --red-soft:   #e85d5d;
-  --red-bg:     #fdecec;
-  --green:      #2e7d4f;
-  --green-soft: #4fa873;
-  --green-bg:   #e8f5ed;
-  --amber:      #c8860b;
-  --amber-soft: #e3a92e;
-  --amber-bg:   #fbf1da;
-  --purple:     #6b4ea8;
-  --purple-bg:  #efebf8;
+  --navy:       #16223f;
+  --navy-2:     #20335a;
+  --blue:       #60A5FA;
+  --blue-dark:  #3B82F6;
+  --blue-soft:  #93C5FD;
+  --blue-bg:    rgba(96,165,250,.14);
+  --red:        #FB7185;
+  --red-soft:   #F43F5E;
+  --red-bg:     rgba(251,113,133,.14);
+  --green:      #34D399;
+  --green-soft: #5EEAD4;
+  --green-bg:   rgba(52,211,153,.14);
+  --amber:      #FBBF24;
+  --amber-soft: #FCD34D;
+  --amber-bg:   rgba(251,191,36,.14);
+  --purple:     #A78BFA;
+  --purple-bg:  rgba(167,139,250,.16);
 
-  --bg:         #f4f6fa;
-  --surface:    #ffffff;
-  --surface-2:  #eef2f7;
-  --ink:        #1a2233;
-  --ink-soft:   #46526b;
-  --ink-mute:   #8a94a8;
-  --border:     #e4e9f0;
-  --border-2:   #d2dae5;
+  --bg:         #080D18;
+  --surface:    #131D30;
+  --surface-2:  #0C1420;
+  --ink:        #E9EFFA;
+  --ink-soft:   #B5C4DD;
+  --ink-mute:   #94A6C4;
+  --border:     rgba(255,255,255,.10);
+  --border-2:   rgba(255,255,255,.14);
 
-  --shadow-sm:  0 1px 2px rgba(22,40,74,.05), 0 1px 3px rgba(22,40,74,.07);
-  --shadow-md:  0 2px 8px rgba(22,40,74,.07), 0 6px 20px rgba(22,40,74,.07);
-  --shadow-lg:  0 8px 32px rgba(22,40,74,.16);
+  --shadow-sm:  0 1px 2px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.35);
+  --shadow-md:  0 2px 8px rgba(0,0,0,.35), 0 6px 20px rgba(0,0,0,.4);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,.55);
   --radius:     12px;
   --radius-sm:  8px;
 }
@@ -87,7 +87,7 @@ b { font-weight: 600; }
 }
 .brand-name {
   font-family: 'Bai Jamjuree', sans-serif;
-  font-size: 22px; font-weight: 700; color: var(--navy);
+  font-size: 22px; font-weight: 700; color: var(--ink);
   line-height: 1.05; letter-spacing: -0.015em;
 }
 .brand-tag {
@@ -200,7 +200,7 @@ b { font-weight: 600; }
   font-style: italic; font-weight: 400; color: var(--ink-mute);
 }
 .cover-author b {
-  font-weight: 700; color: var(--navy);
+  font-weight: 700; color: var(--ink);
   letter-spacing: 0.005em;
 }
 .cover-author .ca-em {
@@ -222,7 +222,7 @@ b { font-weight: 600; }
   margin-bottom: 24px;
   animation: riseIn .75s ease .42s both;
 }
-.cover-sub b, .cover-sub strong { color: var(--navy); font-weight: 600; }
+.cover-sub b, .cover-sub strong { color: var(--ink); font-weight: 600; }
 @keyframes riseIn {
   from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -239,7 +239,7 @@ b { font-weight: 600; }
   padding: 8px 18px;
   font-size: 13px; font-weight: 600;
   letter-spacing: 0.005em;
-  color: var(--navy);
+  color: var(--ink);
   box-shadow: var(--shadow-sm);
 }
 
@@ -266,7 +266,7 @@ b { font-weight: 600; }
 }
 .upload-zone h3 {
   font-family: 'Bai Jamjuree', sans-serif;
-  font-size: 21px; font-weight: 600; color: var(--navy); margin-bottom: 6px;
+  font-size: 21px; font-weight: 600; color: var(--ink); margin-bottom: 6px;
 }
 .upload-zone p { color: var(--ink-soft); font-size: 14px; }
 .upload-zone p b { color: var(--ink); }
@@ -358,7 +358,7 @@ b { font-weight: 600; }
   margin-bottom: -1px;
   transition: all 0.15s;
 }
-.tab:hover { color: var(--navy); background: var(--surface-2); }
+.tab:hover { color: var(--ink); background: var(--surface-2); }
 .tab.active {
   color: var(--blue-dark); font-weight: 600;
   border-bottom-color: var(--blue);
@@ -379,7 +379,7 @@ b { font-weight: 600; }
 /* ============ SECTION HEADERS ============ */
 h2.sec {
   font-family: 'Bai Jamjuree', sans-serif;
-  font-size: 22px; font-weight: 600; color: var(--navy);
+  font-size: 22px; font-weight: 600; color: var(--ink);
   margin: 0 0 4px;
   display: flex; align-items: baseline; gap: 12px;
 }
@@ -412,7 +412,7 @@ h2.sec .tag { margin-left: auto; font-size: 11px; color: var(--ink-mute); letter
 }
 .kpi-row .val {
   font-family: 'Bai Jamjuree', sans-serif;
-  font-size: 28px; font-weight: 700; line-height: 1; color: var(--navy);
+  font-size: 28px; font-weight: 700; line-height: 1; color: var(--ink);
 }
 .kpi-row .delta { font-size: 11.5px; color: var(--ink-soft); margin-top: 6px; }
 .kpi-row .delta.warn { color: var(--red); font-weight: 600; }
@@ -440,7 +440,7 @@ h2.sec .tag { margin-left: auto; font-size: 11px; color: var(--ink-mute); letter
 }
 .farm-card h3 {
   font-family: 'Bai Jamjuree', sans-serif;
-  font-size: 18px; font-weight: 600; color: var(--navy);
+  font-size: 18px; font-weight: 600; color: var(--ink);
 }
 .farm-card .roundlab {
   font-size: 11px; color: var(--ink-mute); margin-bottom: 14px;
@@ -518,8 +518,8 @@ table tbody tr.std { background: var(--surface-2); font-weight: 500; }
 .pill.cf    { background: var(--red);    color: #fff; border-color: var(--red); }
 .pill.over  { background: var(--purple-bg); color: var(--purple); border-color: #d6ccec; }
 /* per-farm colour chips */
-.pill.phiphat  { background: #e3effb; color: #1f6ec0; border-color: #c3ddf4; }
-.pill.pumwong  { background: #def0ec; color: #1d7d6b; border-color: #bce0d8; }
+.pill.phiphat  { background: #e3effb; color: #60A5FA; border-color: #c3ddf4; }
+.pill.pumwong  { background: #def0ec; color: #5EEAD4; border-color: #bce0d8; }
 .pill.yungruay { background: #ece8f8; color: #5b46a0; border-color: #d6cdee; }
 .pill.farm4    { background: var(--amber-bg); color: var(--amber); border-color: #ecd6a4; }
 .pill.farm5    { background: #fae3e8; color: #b03050; border-color: #f0c6cf; }
@@ -532,10 +532,10 @@ table tbody tr.std { background: var(--surface-2); font-weight: 500; }
   padding: 22px; margin-bottom: 18px;
   box-shadow: var(--shadow-sm);
 }
-.card.dark { background: var(--navy); color: #d8e2f0; border-color: var(--navy); }
+.card.dark { background: var(--navy); color: #d8e2f0; border-color: var(--ink); }
 .card h4 {
   font-family: 'Bai Jamjuree', sans-serif;
-  font-size: 16px; font-weight: 600; color: var(--navy); margin-bottom: 4px;
+  font-size: 16px; font-weight: 600; color: var(--ink); margin-bottom: 4px;
 }
 .card .card-sub { font-size: 12px; color: var(--ink-mute); margin-bottom: 16px; }
 .card.dark h4 { color: var(--blue-soft); }
@@ -653,7 +653,7 @@ footer.colophon {
   display: flex; justify-content: space-between;
   flex-wrap: wrap; gap: 12px;
 }
-footer.colophon b { color: var(--navy); font-weight: 700; letter-spacing: -0.005em; }
+footer.colophon b { color: var(--ink); font-weight: 700; letter-spacing: -0.005em; }
 footer.colophon em { font-style: italic; color: var(--ink-mute); }
 footer.colophon .footer-zone {
   color: var(--amber); font-weight: 600; letter-spacing: 0.04em;
@@ -676,7 +676,7 @@ footer.colophon .footer-zone {
   display: flex; justify-content: space-between; align-items: flex-start;
   padding: 18px 22px; border-bottom: 1px solid var(--border);
 }
-.modal-head h3 { font-family: 'Bai Jamjuree', sans-serif; font-size: 19px; font-weight: 600; color: var(--navy); }
+.modal-head h3 { font-family: 'Bai Jamjuree', sans-serif; font-size: 19px; font-weight: 600; color: var(--ink); }
 .modal-sub { font-size: 12px; color: var(--ink-mute); margin-top: 2px; }
 .modal-x {
   cursor: pointer; background: none; border: none;
@@ -716,7 +716,7 @@ footer.colophon .footer-zone {
   border: 1px solid var(--border-2); background: var(--surface); color: var(--ink);
   transition: all .13s;
 }
-.modal-btn.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+.modal-btn.primary { background: var(--navy); color: #fff; border-color: var(--ink); }
 .modal-btn.primary:hover { background: var(--blue); border-color: var(--blue); }
 .modal-btn.ghost { background: var(--surface-2); color: var(--ink-soft); }
 .modal-btn.ghost:hover { background: var(--blue-bg); color: var(--blue-dark); }
@@ -765,7 +765,7 @@ footer.colophon .footer-zone {
 /* Sub-section header (between banner + cards, between cards + disease) */
 .sub-section {
   font-family: 'Bai Jamjuree', sans-serif;
-  font-size: 16px; font-weight: 600; color: var(--navy);
+  font-size: 16px; font-weight: 600; color: var(--ink);
   margin: 22px 0 12px;
   display: flex; align-items: baseline; gap: 10px;
 }
@@ -922,7 +922,7 @@ footer.colophon .footer-zone {
 }
 .disease-head h4 {
   font-family: 'Bai Jamjuree', sans-serif; font-size: 14.5px;
-  color: var(--navy); font-weight: 600;
+  color: var(--ink); font-weight: 600;
 }
 .house-tags { display: flex; flex-wrap: wrap; gap: 4px 6px; }
 .house-tag {
@@ -982,7 +982,7 @@ footer.colophon .footer-zone {
 .ana-pill small { color: var(--ink-mute); font-size: 10.5px; font-weight: 400; }
 .ana-pill:hover { background: var(--blue-bg); border-color: var(--blue-soft); color: var(--blue-dark); }
 .ana-pill.active {
-  background: var(--navy); border-color: var(--navy); color: #fff;
+  background: var(--navy); border-color: var(--ink); color: #fff;
   box-shadow: 0 2px 6px rgba(22,40,74,.18);
 }
 .ana-pill.active small { color: rgba(255,255,255,.7); }
@@ -992,7 +992,7 @@ footer.colophon .footer-zone {
   display: flex; align-items: baseline; gap: 10px;
 }
 .ana-header h3 {
-  font-family: 'Bai Jamjuree', sans-serif; font-size: 18px; font-weight: 600; color: var(--navy);
+  font-family: 'Bai Jamjuree', sans-serif; font-size: 18px; font-weight: 600; color: var(--ink);
 }
 .ana-header h3 small { font-size: 12px; color: var(--ink-mute); font-weight: 400; margin-left: 6px; }
 
@@ -1055,7 +1055,7 @@ footer.colophon .footer-zone {
 }
 .ana-card-head h4 {
   font-family: 'Bai Jamjuree', sans-serif; font-size: 14px; font-weight: 600;
-  color: var(--navy);
+  color: var(--ink);
 }
 .ana-badge {
   font-size: 10.5px; font-weight: 700;
@@ -1399,7 +1399,13 @@ footer.colophon .footer-zone {
   .tab-content { display: block !important; page-break-after: always; }
   .card, .table-wrap, .kpi-row .stat, .farm-card { box-shadow: none; }
 }
-
+/* ===== Phase 3 dark override ===== */
+body{background:radial-gradient(1100px 560px at 80% -6%,rgba(34,211,238,.08),transparent 60%),radial-gradient(900px 520px at 6% 2%,rgba(59,130,246,.10),transparent 58%),linear-gradient(170deg,#0B1120,#080D18 65%)!important;background-attachment:fixed}
+.blob-1{background:#22D3EE!important;opacity:.16!important}
+.blob-2{background:#3B82F6!important;opacity:.18!important}
+.blob-3{background:#A78BFA!important;opacity:.15!important}
+.cover-badge{background:rgba(255,255,255,.06)!important;border-color:var(--border-2);color:var(--ink)}
+.cover-badge b,.cover-badge strong{color:var(--blue-soft)}
 </style>
 <script src="vendor/xlsx.full.min.js" onerror="this.onerror=null;this.src='https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js'"></script>
 </head>
@@ -5920,22 +5926,22 @@ function buildReportBody() {
 
   let html = `
     <div style="border-bottom:2px solid #16284a; padding-bottom:8pt; margin-bottom:12pt;">
-      <h1 style="font-size:26pt; color:#16284a; margin:0; letter-spacing:-0.5pt;">SmartFarm</h1>
+      <h1 style="font-size:26pt; color:#E9EFFA; margin:0; letter-spacing:-0.5pt;">SmartFarm</h1>
       <p style="margin:2pt 0 0; font-size:11pt; color:#46526b;">
         <em style="color:#8a94a8;">by</em>
-        <b style="color:#16284a;">Waranyoo</b>
+        <b style="color:#E9EFFA;">Waranyoo</b>
         <span style="color:#8a94a8;"> — </span>
         <span style="color:#c8860b; font-weight:600; letter-spacing:1pt;">PPF Lopburi Zone</span>
       </p>
       <p style="margin:6pt 0 0; font-size:10pt; color:#888;">รายงานวิเคราะห์ฟาร์มไก่ · ${_esc(dateThai)}</p>
     </div>
 
-    <h2 style="font-size:16pt; color:#16284a;">§ 1 ภาพรวม</h2>
+    <h2 style="font-size:16pt; color:#E9EFFA;">§ 1 ภาพรวม</h2>
     <table style="width:100%; border-collapse:collapse; margin-bottom:12pt;">
       <tr>
         <td style="border:1px solid #ccc; padding:8pt; width:25%;">
           <div style="font-size:9pt; color:#888;">ไก่คงเหลือรวม</div>
-          <div style="font-size:18pt; font-weight:bold; color:#16284a;">${_num(totalRem)}</div>
+          <div style="font-size:18pt; font-weight:bold; color:#E9EFFA;">${_num(totalRem)}</div>
           <div style="font-size:9pt; color:#888;">จาก ${_num(totalIn)} ที่ลง</div>
         </td>
         <td style="border:1px solid #ccc; padding:8pt; width:25%;">
@@ -5967,9 +5973,9 @@ function buildReportBody() {
   const risky = scored.filter(s => s.r.level !== 'OK').sort((a, b) => b.r.score - a.r.score);
   const LEVEL_LBL = { CRITICAL: 'วิกฤต', HIGH: 'เสี่ยงสูง', WATCH: 'เฝ้าระวัง' };
   const LEVEL_COLOR = { CRITICAL: '#d62828', HIGH: '#c8860b', WATCH: '#2e7d4f' };
-  html += `<h2 style="font-size:16pt; color:#16284a; page-break-before:auto;">§ 2 เล้าที่ต้องดูวันนี้</h2>`;
+  html += `<h2 style="font-size:16pt; color:#E9EFFA; page-break-before:auto;">§ 2 เล้าที่ต้องดูวันนี้</h2>`;
   if (risky.length === 0) {
-    html += `<p style="color:#2e7d4f;">✓ ทุกเล้าอยู่ในเกณฑ์ปกติ</p>`;
+    html += `<p style="color:#34D399;">✓ ทุกเล้าอยู่ในเกณฑ์ปกติ</p>`;
   } else {
     html += `
       <table style="width:100%; border-collapse:collapse; margin-bottom:12pt; font-size:10pt;">
@@ -5998,11 +6004,11 @@ function buildReportBody() {
   }
 
   // ---------- Per-farm summary ----------
-  html += `<h2 style="font-size:16pt; color:#16284a;">§ 3 สรุปต่อเล้า</h2>`;
+  html += `<h2 style="font-size:16pt; color:#E9EFFA;">§ 3 สรุปต่อเล้า</h2>`;
   for (const fk of farmKeys) {
     const farm = STATE.farms[fk];
     html += `
-      <h3 style="font-size:13pt; color:#1f4e79; margin-top:14pt;">${_esc(farm.name)}${farm.round ? ' · รุ่น ' + farm.round : ''}</h3>
+      <h3 style="font-size:13pt; color:#93C5FD; margin-top:14pt;">${_esc(farm.name)}${farm.round ? ' · รุ่น ' + farm.round : ''}</h3>
       <table style="width:100%; border-collapse:collapse; margin-bottom:10pt; font-size:10pt;">
         <thead>
           <tr style="background:#16284a; color:#fff;">
@@ -6038,7 +6044,7 @@ function buildReportBody() {
   }
 
   // ---------- AM/PM cull pattern ----------
-  html += `<h2 style="font-size:16pt; color:#16284a; page-break-before:auto;">§ 4 รูปแบบ ตาย/คัด เช้า·เย็น</h2>`;
+  html += `<h2 style="font-size:16pt; color:#E9EFFA; page-break-before:auto;">§ 4 รูปแบบ ตาย/คัด เช้า·เย็น</h2>`;
   html += `
     <table style="width:100%; border-collapse:collapse; margin-bottom:12pt; font-size:10pt;">
       <thead>
@@ -6065,7 +6071,7 @@ function buildReportBody() {
         <tr>
           <td style="border:1px solid #ccc; padding:5pt;">${_esc(farm.name.replace('ฟาร์ม',''))} · เล้า ${_esc(String(h.house))}</td>
           <td style="border:1px solid #ccc; padding:5pt; text-align:right; color:#d62828;">${_num(b.died)}</td>
-          <td style="border:1px solid #ccc; padding:5pt; text-align:right; color:#2e7d4f;">${_num(b.culled)}</td>
+          <td style="border:1px solid #ccc; padding:5pt; text-align:right; color:#34D399;">${_num(b.culled)}</td>
           <td style="border:1px solid #ccc; padding:5pt; text-align:right;">${_num(b.morning)}</td>
           <td style="border:1px solid #ccc; padding:5pt; text-align:right;">${_num(b.evening)}</td>
           <td style="border:1px solid #ccc; padding:5pt; color:${patternColor}; font-weight:bold;">${patternLbl}</td>
@@ -6075,7 +6081,7 @@ function buildReportBody() {
   html += `</tbody></table>`;
 
   // ---------- Weekly weight + ADG + FCR ----------
-  html += `<h2 style="font-size:16pt; color:#16284a; page-break-before:auto;">§ 5 น้ำหนัก · ADG · FCR รายสัปดาห์ (เทียบ Ross 308)</h2>`;
+  html += `<h2 style="font-size:16pt; color:#E9EFFA; page-break-before:auto;">§ 5 น้ำหนัก · ADG · FCR รายสัปดาห์ (เทียบ Ross 308)</h2>`;
   let hasAny = false;
   for (const fk of farmKeys) {
     const farm = STATE.farms[fk];
@@ -6088,14 +6094,14 @@ function buildReportBody() {
       const overallColor = w.overall === 'BAD' ? '#d62828'
                          : w.overall === 'WARN' ? '#c8860b' : '#2e7d4f';
       html += `
-        <h3 style="font-size:12pt; color:#1f4e79; margin-top:12pt;">
+        <h3 style="font-size:12pt; color:#93C5FD; margin-top:12pt;">
           ${_esc(farm.name.replace('ฟาร์ม',''))} · เล้า ${_esc(String(h.house))}
           <span style="font-size:10pt; font-weight:normal; color:#888;">· อายุ ${h.age != null ? h.age : '–'} วัน · แรกเข้า ${(w.initial*1000).toFixed(0)} ก.
           · <span style="color:${overallColor}; font-weight:bold;">${overallLbl}</span></span>
         </h3>
         <table style="width:100%; border-collapse:collapse; margin-bottom:10pt; font-size:10pt;">
           <thead>
-            <tr style="background:#eef2f7; color:#16284a;">
+            <tr style="background:#eef2f7; color:#E9EFFA;">
               <th style="border:1px solid #ccc; padding:5pt;">วันที่ชั่ง</th>
               <th style="border:1px solid #ccc; padding:5pt;">น.น. (kg)</th>
               <th style="border:1px solid #ccc; padding:5pt;">ADG จริง (g/วัน)</th>
@@ -6132,7 +6138,7 @@ function buildReportBody() {
   html += `
     <hr style="margin-top:20pt; border:none; border-top:1px solid #ccc;">
     <p style="font-size:9pt; color:#888; text-align:center;">
-      <b style="color:#16284a;">SmartFarm</b> ·
+      <b style="color:#E9EFFA;">SmartFarm</b> ·
       <em style="color:#8a94a8;">by</em> Waranyoo —
       <span style="color:#c8860b; font-weight:600;">PPF Lopburi Zone</span>
       &nbsp;·&nbsp; รายงานสร้างเมื่อ ${_esc(new Date().toLocaleString('th-TH'))}
@@ -6164,7 +6170,7 @@ xmlns="http://www.w3.org/TR/REC-html40">
 <style>
 @page Section1 { size: 21.0cm 29.7cm; margin: 2.0cm 1.5cm 2.0cm 1.5cm; mso-page-orientation: portrait; }
 div.Section1 { page: Section1; }
-body { font-family: "TH Sarabun New", "Sarabun", "Tahoma", sans-serif; font-size: 12pt; color: #1a2233; }
+body { font-family: "TH Sarabun New", "Sarabun", "Tahoma", sans-serif; font-size: 12pt; color: #E9EFFA; }
 h1, h2, h3 { font-family: "TH Sarabun New", "Sarabun", "Tahoma", sans-serif; }
 table { border-collapse: collapse; }
 </style>
@@ -6206,10 +6212,10 @@ function exportPdfReport() {
   @page { size: A4 portrait; margin: 18mm 14mm; }
   * { box-sizing: border-box; }
   body { font-family: 'Sarabun', 'TH Sarabun New', 'Tahoma', sans-serif;
-         font-size: 11pt; color: #1a2233; margin: 0; padding: 0; line-height: 1.5; }
-  h1 { font-size: 22pt; color: #16284a; margin: 0 0 4pt; }
-  h2 { font-size: 15pt; color: #16284a; margin: 16pt 0 6pt; page-break-after: avoid; }
-  h3 { font-size: 12pt; color: #1f4e79; margin: 10pt 0 4pt; page-break-after: avoid; }
+         font-size: 11pt; color: #E9EFFA; margin: 0; padding: 0; line-height: 1.5; }
+  h1 { font-size: 22pt; color: #E9EFFA; margin: 0 0 4pt; }
+  h2 { font-size: 15pt; color: #E9EFFA; margin: 16pt 0 6pt; page-break-after: avoid; }
+  h3 { font-size: 12pt; color: #93C5FD; margin: 10pt 0 4pt; page-break-after: avoid; }
   table { width: 100%; border-collapse: collapse; page-break-inside: avoid; }
   th, td { border: 1px solid #ccc; padding: 4pt 6pt; text-align: left; vertical-align: top; }
   th { background: #16284a; color: #fff; font-weight: 600; }
