@@ -547,6 +547,165 @@
   .dot{width:15px;height:15px;border-radius:50%;box-shadow:inset 0 -1px 1px rgba(0,0,0,.13)}
   .fan .num{font-size:9.5px;color:var(--muted);font-weight:600;line-height:1}
   .dot.d-man{background:var(--green)}.dot.d-ck{background:#ec6ca0}.dot.d-au{background:#3b82c4}.dot.d-off{background:#dde1e7;box-shadow:inset 0 0 0 1px #c2cbc5}
+
+  /* ============================================================
+     COMMAND CENTER — Dark IoT Operating System (scoped .cc)
+     Phase 1 flagship dashboard. Self-contained; does not affect
+     other tabs. All values fed by existing calc() — no logic touched.
+     ============================================================ */
+  .cc{
+    --cc-bg0:#070B14; --cc-bg1:#0B1120; --cc-bg2:#0E1626;
+    --cc-surf:rgba(20,30,50,.55); --cc-surf2:rgba(28,40,66,.42);
+    --cc-glass:rgba(255,255,255,.045); --cc-line:rgba(255,255,255,.09); --cc-line2:rgba(255,255,255,.055);
+    --cc-ink:#EAF1FB; --cc-sub:#9DB0CE; --cc-dim:#61728F;
+    --cc-cyan:#22D3EE; --cc-cyan-d:#0E7490; --cc-blue:#3B82F6; --cc-blue-l:#60A5FA;
+    --cc-emerald:#34D399; --cc-amber:#FBBF24; --cc-orange:#FB923C; --cc-red:#F43F5E; --cc-violet:#A78BFA;
+    --cc-r:18px; --cc-r-lg:24px; --cc-r-sm:12px;
+    --cc-glow-cyan:0 0 0 1px rgba(34,211,238,.25),0 8px 30px rgba(34,211,238,.10);
+    --cc-elev:0 10px 30px rgba(0,0,0,.45),0 2px 8px rgba(0,0,0,.35);
+    position:relative;width:100%;min-height:100vh;overflow-x:hidden;
+    padding:22px clamp(14px,2.4vw,34px) 40px;box-sizing:border-box;
+    color:var(--cc-ink);font-family:'Prompt',system-ui,sans-serif;
+    background:
+      radial-gradient(1200px 620px at 78% -8%,rgba(34,211,238,.10),transparent 60%),
+      radial-gradient(1000px 560px at 8% 4%,rgba(59,130,246,.12),transparent 58%),
+      radial-gradient(900px 700px at 50% 120%,rgba(167,139,250,.07),transparent 60%),
+      linear-gradient(160deg,var(--cc-bg1),var(--cc-bg0) 60%);
+    -webkit-font-smoothing:antialiased;
+  }
+  .cc::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
+    background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+    background-size:46px 46px;mask-image:radial-gradient(120% 90% at 50% 0%,#000 35%,transparent 78%);-webkit-mask-image:radial-gradient(120% 90% at 50% 0%,#000 35%,transparent 78%);}
+  .cc>*{position:relative;z-index:1}
+  .cc *{box-sizing:border-box}
+  .cc-glass{background:linear-gradient(180deg,var(--cc-surf),var(--cc-surf2));border:1px solid var(--cc-line);border-radius:var(--cc-r);-webkit-backdrop-filter:blur(14px) saturate(1.2);backdrop-filter:blur(14px) saturate(1.2);box-shadow:var(--cc-elev)}
+  @keyframes ccUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .cc-fade{animation:ccUp .5s cubic-bezier(.22,.9,.3,1) both}
+
+  /* ---- Top status bar ---- */
+  .cc-top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 18px;margin-bottom:16px}
+  .cc-brand{display:flex;align-items:center;gap:12px;flex:none}
+  .cc-logo{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,var(--cc-cyan),var(--cc-blue));color:#04121A;box-shadow:0 0 18px rgba(34,211,238,.45)}
+  .cc-logo svg{width:24px;height:24px}
+  .cc-brand b{font-size:16px;font-weight:800;letter-spacing:.3px;display:block;line-height:1.15}
+  .cc-brand small{font-size:11px;color:var(--cc-sub);letter-spacing:.6px;text-transform:uppercase}
+  .cc-selects{display:flex;gap:10px;flex-wrap:wrap}
+  .cc-sel{display:flex;align-items:center;gap:9px;padding:8px 14px;border-radius:12px;background:var(--cc-glass);border:1px solid var(--cc-line);font-family:inherit;color:var(--cc-ink);font-size:14px;font-weight:600;cursor:pointer;transition:all .16s}
+  .cc-sel:hover{border-color:rgba(34,211,238,.4);box-shadow:var(--cc-glow-cyan)}
+  .cc-sel small{color:var(--cc-sub);font-weight:500;font-size:11px;display:block}
+  .cc-sel .cv{color:var(--cc-cyan)}
+  .cc-sel svg{width:15px;height:15px}
+  .cc-spacer{flex:1}
+  .cc-clock{text-align:right;flex:none;line-height:1.2}
+  .cc-clock b{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.5px}
+  .cc-clock small{font-size:11.5px;color:var(--cc-sub);display:block}
+  .cc-health{display:flex;align-items:center;gap:11px;flex:none;padding:7px 14px 7px 9px;border-radius:14px;background:var(--cc-glass);border:1px solid var(--cc-line)}
+  .cc-ring{position:relative;width:46px;height:46px;flex:none}
+  .cc-ring svg{transform:rotate(-90deg)}
+  .cc-ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800}
+  .cc-health .hl{font-size:10.5px;color:var(--cc-sub);text-transform:uppercase;letter-spacing:.5px}
+  .cc-health .hs{font-size:14px;font-weight:700;color:var(--cc-emerald)}
+
+  /* ---- Cycle strip ---- */
+  .cc-cycle{display:flex;align-items:center;gap:10px 22px;flex-wrap:wrap;padding:13px 20px;margin-bottom:16px}
+  .cc-cyitem{display:flex;flex-direction:column;gap:1px}
+  .cc-cyitem .l{font-size:10.5px;color:var(--cc-sub);text-transform:uppercase;letter-spacing:.6px}
+  .cc-cyitem .v{font-size:18px;font-weight:800;letter-spacing:-.2px}
+  .cc-cyitem .v i{font-size:12px;font-weight:500;color:var(--cc-sub);font-style:normal;margin-left:2px}
+  .cc-cydiv{width:1px;align-self:stretch;background:var(--cc-line)}
+  .cc-prog{flex:1;min-width:180px;display:flex;flex-direction:column;gap:6px}
+  .cc-prog .pt{display:flex;justify-content:space-between;font-size:11px;color:var(--cc-sub)}
+  .cc-prog .pbar{height:8px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;position:relative}
+  .cc-prog .pbar i{position:absolute;inset:0 auto 0 0;border-radius:99px;background:linear-gradient(90deg,var(--cc-blue),var(--cc-cyan));box-shadow:0 0 12px rgba(34,211,238,.55)}
+
+  /* ---- KPI row ---- */
+  .cc-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:16px}
+  .cc-kpi{padding:15px 16px;border-radius:var(--cc-r);position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s}
+  .cc-kpi:hover{transform:translateY(-3px)}
+  .cc-kpi .kt{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--cc-sub);font-weight:600;margin-bottom:10px}
+  .cc-kpi .kt .ki{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(34,211,238,.12);color:var(--cc-cyan);flex:none}
+  .cc-kpi .kt .ki svg{width:17px;height:17px}
+  .cc-kpi .kv{font-size:29px;font-weight:800;letter-spacing:-.8px;line-height:1;font-variant-numeric:tabular-nums}
+  .cc-kpi .kv u{font-size:13px;font-weight:600;color:var(--cc-sub);text-decoration:none;margin-left:3px}
+  .cc-kpi .kf{display:flex;align-items:center;gap:6px;margin-top:9px;font-size:11.5px;color:var(--cc-sub)}
+  .cc-kpi .kchip{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:99px;letter-spacing:.3px}
+  .cc-kpi .spark{position:absolute;right:0;bottom:0;left:0;height:34px;opacity:.5;pointer-events:none}
+  .cc-kpi.k-cyan .ki{background:rgba(34,211,238,.14);color:var(--cc-cyan)} .k-cyan .kchip{background:rgba(34,211,238,.15);color:var(--cc-cyan)}
+  .cc-kpi.k-blue .ki{background:rgba(59,130,246,.16);color:var(--cc-blue-l)} .k-blue .kchip{background:rgba(59,130,246,.16);color:var(--cc-blue-l)}
+  .cc-kpi.k-emerald .ki{background:rgba(52,211,153,.14);color:var(--cc-emerald)} .k-emerald .kchip{background:rgba(52,211,153,.16);color:var(--cc-emerald)}
+  .cc-kpi.k-amber .ki{background:rgba(251,191,36,.15);color:var(--cc-amber)} .k-amber .kchip{background:rgba(251,191,36,.16);color:var(--cc-amber)}
+  .cc-kpi.k-violet .ki{background:rgba(167,139,250,.16);color:var(--cc-violet)} .k-violet .kchip{background:rgba(167,139,250,.16);color:var(--cc-violet)}
+  .cc-kpi.k-red .ki{background:rgba(244,63,94,.15);color:var(--cc-red)} .k-red .kchip{background:rgba(244,63,94,.16);color:var(--cc-red)}
+
+  /* ---- Main grid: twin + side ---- */
+  .cc-main{display:grid;grid-template-columns:1fr;gap:16px;margin-bottom:16px}
+  @media(min-width:1080px){.cc-main{grid-template-columns:1.9fr 1fr}}
+  .cc-panel{padding:16px 18px}
+  .cc-ph{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .cc-ph .pt{font-size:14.5px;font-weight:800;letter-spacing:.2px;flex:1;display:flex;align-items:center;gap:9px}
+  .cc-ph .pt .dotlive{width:8px;height:8px;border-radius:50%;background:var(--cc-emerald);box-shadow:0 0 0 0 rgba(52,211,153,.6);animation:ccPulse 1.8s infinite}
+  .cc-ph .badge{font-size:10.5px;font-weight:700;color:var(--cc-sub);text-transform:uppercase;letter-spacing:.5px}
+  @keyframes ccPulse{0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}70%{box-shadow:0 0 0 7px rgba(52,211,153,0)}100%{box-shadow:0 0 0 0 rgba(52,211,153,0)}}
+
+  /* ---- Digital Twin ---- */
+  .cc-twin-wrap{position:relative;border-radius:var(--cc-r);overflow:hidden;background:radial-gradient(120% 120% at 70% 10%,#0d1a2b,#070d17);border:1px solid var(--cc-line2)}
+  .cc-twin svg{display:block;width:100%;height:auto}
+  .cc-twin .fanrot{transform-origin:center;animation:ccSpin 1.1s linear infinite}
+  .cc-twin .fanrot.slow{animation-duration:2.1s}
+  @keyframes ccSpin{to{transform:rotate(360deg)}}
+  .cc-flow{stroke-dasharray:6 12;animation:ccFlow 1.1s linear infinite}
+  @keyframes ccFlow{to{stroke-dashoffset:-18}}
+  .cc-water{animation:ccWater 2.4s ease-in-out infinite}
+  @keyframes ccWater{0%,100%{opacity:.45}50%{opacity:.95}}
+  .cc-pin{animation:ccPin 2.4s ease-in-out infinite}
+  @keyframes ccPin{0%,100%{opacity:.85}50%{opacity:.35}}
+  .cc-twin-legend{display:flex;flex-wrap:wrap;gap:8px 16px;padding:12px 4px 2px;font-size:11.5px;color:var(--cc-sub)}
+  .cc-twin-legend span{display:inline-flex;align-items:center;gap:6px}
+  .cc-twin-legend i{width:11px;height:11px;border-radius:3px;flex:none}
+  .cc-twin-stats{display:flex;gap:10px;flex-wrap:wrap;position:absolute;left:14px;top:14px;z-index:3}
+  .cc-tstat{padding:7px 12px;border-radius:11px;background:rgba(7,14,24,.72);border:1px solid var(--cc-line);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+  .cc-tstat .l{font-size:9.5px;color:var(--cc-sub);text-transform:uppercase;letter-spacing:.5px}
+  .cc-tstat .v{font-size:15px;font-weight:800;letter-spacing:-.2px}
+  .cc-tstat .v.on{color:var(--cc-emerald)} .cc-tstat .v.off{color:var(--cc-dim)}
+
+  /* ---- Recommendation / Alert lists ---- */
+  .cc-rec{display:flex;gap:11px;padding:12px 13px;border-radius:14px;background:var(--cc-glass);border:1px solid var(--cc-line2);margin-bottom:10px;transition:all .16s;cursor:default}
+  .cc-rec:last-child{margin-bottom:0}
+  .cc-rec:hover{border-color:rgba(34,211,238,.35);transform:translateX(2px)}
+  .cc-rec .ri{width:34px;height:34px;border-radius:10px;flex:none;display:flex;align-items:center;justify-content:center;background:rgba(34,211,238,.12);color:var(--cc-cyan)}
+  .cc-rec .ri svg{width:18px;height:18px}
+  .cc-rec .rb{flex:1;min-width:0}
+  .cc-rec .rt{font-size:13.5px;font-weight:700;line-height:1.3;margin-bottom:3px}
+  .cc-rec .rd{font-size:12px;color:var(--cc-sub);line-height:1.45}
+  .cc-rec .rp{font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:99px;flex:none;height:fit-content;letter-spacing:.4px;text-transform:uppercase}
+  .rp-high{background:rgba(244,63,94,.16);color:var(--cc-red)} .rp-med{background:rgba(251,191,36,.16);color:var(--cc-amber)} .rp-low{background:rgba(52,211,153,.14);color:var(--cc-emerald)} .rp-info{background:rgba(59,130,246,.16);color:var(--cc-blue-l)}
+  .cc-rec.sev-high .ri{background:rgba(244,63,94,.14);color:var(--cc-red)}
+  .cc-rec.sev-med .ri{background:rgba(251,191,36,.14);color:var(--cc-amber)}
+  .cc-rec.sev-ok .ri{background:rgba(52,211,153,.14);color:var(--cc-emerald)}
+  .cc-empty{padding:22px 14px;text-align:center;color:var(--cc-dim);font-size:13px}
+  .cc-empty svg{width:34px;height:34px;opacity:.5;margin-bottom:8px}
+
+  /* ---- Performance row ---- */
+  .cc-perf{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+  .cc-pf{padding:15px 16px;border-radius:var(--cc-r)}
+  .cc-pf .l{font-size:11.5px;color:var(--cc-sub);font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+  .cc-pf .l svg{width:15px;height:15px;color:var(--cc-cyan)}
+  .cc-pf .v{font-size:25px;font-weight:800;letter-spacing:-.6px;line-height:1}
+  .cc-pf .v u{font-size:12px;font-weight:600;color:var(--cc-sub);text-decoration:none;margin-left:2px}
+  .cc-pf .d{font-size:11.5px;margin-top:7px;color:var(--cc-sub)}
+  .cc-up{color:var(--cc-emerald)} .cc-down{color:var(--cc-red)}
+
+  .cc-back{display:inline-flex;align-items:center;gap:7px;padding:8px 15px;border-radius:11px;background:var(--cc-glass);border:1px solid var(--cc-line);color:var(--cc-ink);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+  .cc-back:hover{border-color:rgba(34,211,238,.4);color:var(--cc-cyan)}
+  .cc-navbtns{display:flex;gap:9px;flex-wrap:wrap;margin-top:2px}
+  .cc-navb{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:12px;background:var(--cc-glass);border:1px solid var(--cc-line);color:var(--cc-sub);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+  .cc-navb:hover{border-color:rgba(34,211,238,.4);color:var(--cc-cyan);transform:translateY(-2px)}
+  .cc-navb svg{width:16px;height:16px}
+  @media(max-width:600px){
+    .cc{padding:16px 12px 34px}
+    .cc-clock{display:none}
+    .cc-kpi .kv{font-size:25px}
+  }
 </style>
 </head>
 <body>
@@ -1298,6 +1457,194 @@ function renderHomeSVG(){var g=document.getElementById('grid');if(g&&tab==='home
 function fitHome(){var w=document.getElementById('homewrap');if(!w||tab!=='home')return;var wrap=w.querySelector('.aiimgwrap'),img=w.querySelector('.aiimg');if(!wrap)return;wrap.style.width='100%';w.style.height='';var ar=(img&&img.naturalWidth)?img.naturalWidth/img.naturalHeight:1024/656;var cw=w.getBoundingClientRect().width,imgH=cw/ar;if(window.innerWidth<760){w.style.height=Math.round(imgH)+'px';return;}var top=w.getBoundingClientRect().top,avail=window.innerHeight-top-2;w.style.height=(avail>imgH?avail:imgH)+'px';}
 window.addEventListener('resize',fitHome);
 function setGr(p){try{localStorage.setItem('ppf_gr',p);}catch(e){}var w=document.getElementById('homewrap');if(w)w.className='aihero2 gr-'+p;[].forEach.call(document.querySelectorAll('.grsel button'),function(b){b.classList.toggle('on',b.getAttribute('data-gr')===p);});}
+
+/* ============================================================
+   COMMAND CENTER — Phase 1 flagship dashboard (home tab)
+   Pure presentation over existing calc(); no calc logic changed.
+   ============================================================ */
+var ccHouse=0, ccClkTimer=null;
+function ccClamp(){const n=houses().length;if(ccHouse>=n)ccHouse=0;if(ccHouse<0)ccHouse=0;}
+function ccSetHouse(i){ccHouse=+i;renderCC();}
+function ccSetFarm(i){cf=+i;ccHouse=0;if(typeof renderChips==='function')renderChips();renderCC();}
+function renderCC(){const g=document.getElementById('grid');if(g){g.innerHTML=commandCenter();ccClockPaint();}}
+function ccClockPaint(){const el=document.getElementById('ccClock');if(!el)return;const d=new Date();const p=n=>String(n).padStart(2,'0');el.textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());const dd=document.getElementById('ccDate');if(dd){const TM2=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];dd.textContent=d.getDate()+' '+TM2[d.getMonth()]+' '+(d.getFullYear()+543);}}
+function ccHealthScore(hs){let s=100;hs.forEach(function(h){try{const r=calc(h);if(r.padNeeded)s-=6;const mort=h.birds>0?cumDead(h,h.age)/h.birds*100:0;if(mort>5)s-=9;else if(mort>3)s-=4;if(!h.placeDate)s-=2;if(h.age>42)s-=6;if(h.wtActual>0&&h.wtActual<bw(h.age)*0.95)s-=3;}catch(e){}});return Math.max(45,Math.min(100,Math.round(s)));}
+function ccScoreWord(s){return s>=90?'ดีเยี่ยม':s>=80?'ดี':s>=70?'เฝ้าระวัง':s>=60?'ต้องดูแล':'วิกฤต';}
+function ccFanTwinSVG(h,r){
+  const nfans=Math.max(1,Math.min(24,h.fans||1)),nOn=Math.max(0,Math.min(nfans,r.ventMax));
+  // fan wall grid on the right
+  const cols=nfans>10?3:2, rows=Math.ceil(nfans/cols);
+  const fx0=848, fy0=104, fgW=94, fgH=214, cw=fgW/cols, ch=fgH/rows, fr=Math.min(cw,ch)/2-4;
+  let fans='';
+  for(let k=0;k<nfans;k++){const c=k%cols,rr=Math.floor(k/cols);const cx=fx0+cw*c+cw/2, cy=fy0+ch*rr+ch/2;const on=k<nOn;
+    const col=on?'#22D3EE':'#3a4a63', glow=on?'filter="url(#ccGlow)"':'';
+    fans+='<g '+glow+'><circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="'+fr.toFixed(1)+'" fill="none" stroke="'+col+'" stroke-width="1.6" opacity="'+(on?0.9:0.5)+'"/>'
+      +'<g class="'+(on?'fanrot'+(r.ventMax<h.fans*0.6?' slow':''):'')+'" style="transform-origin:'+cx.toFixed(1)+'px '+cy.toFixed(1)+'px">'
+      +'<circle cx="'+cx.toFixed(1)+'" cy="'+cy.toFixed(1)+'" r="1.8" fill="'+col+'"/>'
+      +[0,72,144,216,288].map(function(a){const rad=a*Math.PI/180;const x2=cx+Math.cos(rad)*fr*0.82,y2=cy+Math.sin(rad)*fr*0.82;return '<path d="M'+cx.toFixed(1)+' '+cy.toFixed(1)+' Q'+(cx+Math.cos(rad+0.5)*fr*0.5).toFixed(1)+' '+(cy+Math.sin(rad+0.5)*fr*0.5).toFixed(1)+' '+x2.toFixed(1)+' '+y2.toFixed(1)+'" fill="none" stroke="'+col+'" stroke-width="1.4" opacity="'+(on?0.85:0.4)+'"/>';}).join('')
+      +'</g></g>';
+  }
+  // airflow arrows
+  let flow='';const fys=[130,175,220,265];
+  fys.forEach(function(y,i){flow+='<line class="cc-flow" x1="150" y1="'+y+'" x2="820" y2="'+y+'" stroke="#22D3EE" stroke-width="2" opacity="'+(nOn>0?0.55:0.12)+'" marker-end="url(#ccArrow)" style="animation-delay:'+(i*0.22)+'s"/>';});
+  // chickens on floor
+  let birds='';for(let i=0;i<11;i++){const x=180+i*58;birds+='<g opacity="0.9"><ellipse cx="'+x+'" cy="322" rx="11" ry="8" fill="#c9863f"/><circle cx="'+(x+8)+'" cy="315" r="5" fill="#d99a55"/><path d="M'+(x-11)+' 322 q-6 -2 -9 2" stroke="#b5732f" stroke-width="2" fill="none"/></g>';}
+  const padOn=r.padNeeded, inletPct=Math.round(r.ratio*100);
+  return '<svg viewBox="0 0 960 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Digital Twin โรงเรือน">'
+  +'<defs>'
+  +'<linearGradient id="ccFloor" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0e7490"/><stop offset="0.45" stop-color="#0f766e"/><stop offset="0.72" stop-color="#a16207"/><stop offset="1" stop-color="#b45309"/></linearGradient>'
+  +'<linearGradient id="ccRoof" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2740"/><stop offset="1" stop-color="#0e1626"/></linearGradient>'
+  +'<linearGradient id="ccPad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0891b2"/><stop offset="1" stop-color="#155e75"/></linearGradient>'
+  +'<filter id="ccGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
+  +'<marker id="ccArrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 1 L7 4 L0 7" fill="#22D3EE"/></marker>'
+  +'</defs>'
+  +'<path d="M70 96 L140 60 L900 60 L960 96 Z" fill="url(#ccRoof)" stroke="rgba(255,255,255,.08)"/>'
+  +'<rect x="70" y="96" width="866" height="236" fill="#0b1524" stroke="rgba(255,255,255,.09)"/>'
+  +'<rect x="70" y="322" width="866" height="20" fill="url(#ccFloor)" opacity="0.55"/>'
+  +birds
+  // cooling pad
+  +'<rect x="74" y="104" width="30" height="214" rx="4" fill="url(#ccPad)" stroke="#22D3EE" stroke-width="1" opacity="0.9"/>'
+  +'<g class="cc-water">'+[0,1,2,3,4,5,6].map(function(i){return '<line x1="'+(76+i*4.2)+'" y1="106" x2="'+(76+i*4.2)+'" y2="316" stroke="#67e8f9" stroke-width="1" opacity="0.5"/>';}).join('')+'</g>'
+  +flow
+  +fans
+  // pad label
+  +'<text x="89" y="90" fill="#67e8f9" font-size="11" text-anchor="middle" font-family="Prompt">PAD</text>'
+  +'<text x="895" y="90" fill="#22D3EE" font-size="11" text-anchor="middle" font-family="Prompt">FANS</text>'
+  // target temp badge center
+  +'<g transform="translate(430,84)"><rect x="-46" y="-16" width="92" height="30" rx="8" fill="rgba(7,14,24,.85)" stroke="rgba(34,211,238,.4)"/><text x="0" y="4" fill="#eaf1fb" font-size="14" font-weight="700" text-anchor="middle" font-family="Prompt">'+r.tt.toFixed(1)+'°C</text><text x="0" y="-20" fill="#9db0ce" font-size="9" text-anchor="middle" font-family="Prompt">อุณหภูมิเป้าหมาย</text></g>'
+  +'</svg>';
+}
+function ccKPI(cls,ic,label,val,unit,foot,chip,chipCls){
+  return '<div class="cc-kpi cc-glass '+cls+'"><div class="kt"><span class="ki">'+(I[ic]||'')+'</span>'+label+'</div>'
+    +'<div class="kv">'+val+(unit?'<u>'+unit+'</u>':'')+'</div>'
+    +'<div class="kf">'+(chip?'<span class="kchip '+(chipCls||'')+'">'+chip+'</span>':'')+(foot||'')+'</div></div>';
+}
+function ccRecommendations(hs){
+  const rec=[];
+  hs.forEach(function(h,i){try{const r=calc(h);const nm=esc(h.name);
+    if(r.padNeeded)rec.push({p:'high',ic:'drop',t:'เปิด Cooling Pad — '+nm,d:'ความเร็วลม '+r.velMax.toFixed(2)+' m/s เกินที่ไก่ทน ('+r.comfort.toFixed(1)+' m/s) → เปิดแพดลดความร้อน'});
+    if(h.wtActual>0&&h.wtActual<bw(h.age)*0.95)rec.push({p:'med',ic:'chart',t:'น้ำหนักต่ำกว่าเป้า — '+nm,d:'จริง '+(h.wtActual/1000).toFixed(2)+' kg · เป้า '+(bw(h.age)/1000).toFixed(2)+' kg — ตรวจอาหาร/น้ำ/อุณหภูมิ'});
+  }catch(e){}});
+  // farm-wide guidance from selected house
+  try{const h=hs[ccHouse],r=calc(h);
+    rec.push({p:'info',ic:'wind',t:'ลมเป้าหมายอายุนี้ ~'+r.windTarget.toFixed(2)+' m/s',d:'('+Math.round(r.windTarget*196.85)+' ft/min) · สูงสุดที่ไก่ทน '+r.comfort.toFixed(1)+' m/s'+(h.age<=7?' · ไก่เล็ก เน้นระบายก๊าซ ห้ามลมปะทะตัว':'')});
+    rec.push({p:'info',ic:'fan',t:'พัดลมขั้นต่ำอายุนี้ '+r.ventMin+'–'+r.ventMax+' ตัว',d:'อุณหภูมิเป้า '+r.tt.toFixed(1)+'°C · ปั๊ม/แพด '+r.pump.toFixed(1)+'°C · แสง '+r.lx+' lux '+r.lhr+' ชม.'});
+  }catch(e){}
+  const order={high:0,med:1,info:2,low:3};rec.sort(function(a,b){return order[a.p]-order[b.p];});
+  if(!rec.length)return '<div class="cc-empty">'+(I.check||'')+'<div>ทุกเล้าอยู่ในเกณฑ์ปกติ</div></div>';
+  const pw={high:'High',med:'Medium',info:'Info',low:'Low'};
+  return rec.slice(0,6).map(function(x){return '<div class="cc-rec"><span class="ri">'+(I[x.ic]||'')+'</span><div class="rb"><div class="rt">'+x.t+'</div><div class="rd">'+x.d+'</div></div><span class="rp rp-'+x.p+'">'+pw[x.p]+'</span></div>';}).join('');
+}
+function ccAlerts(hs){
+  const al=[];
+  hs.forEach(function(h,i){try{const r=calc(h);const nm=esc(h.name);const mort=h.birds>0?cumDead(h,h.age)/h.birds*100:0;
+    if(r.padNeeded)al.push({s:'high',ic:'alert',t:'ลมเกินเกณฑ์ที่ไก่ทน',loc:nm,note:'ควรเปิด Cooling Pad'});
+    if(h.age>42)al.push({s:'high',ic:'cal',t:'เลยกำหนดจับ (อายุ '+h.age+')',loc:nm,note:'ตรวจสอบรอบเลี้ยง'});
+    if(mort>5)al.push({s:'high',ic:'alert',t:'อัตราตายสะสมสูง '+mort.toFixed(1)+'%',loc:nm,note:'ตรวจสุขภาพฝูง'});
+    else if(mort>3)al.push({s:'med',ic:'alert',t:'อัตราตายสะสม '+mort.toFixed(1)+'%',loc:nm,note:'เฝ้าระวัง'});
+    if(!h.placeDate)al.push({s:'med',ic:'cal',t:'ยังไม่ตั้งวันลงไก่',loc:nm,note:'ตั้งเพื่อคำนวณอายุอัตโนมัติ'});
+  }catch(e){}});
+  const ord={high:0,med:1,low:2};al.sort(function(a,b){return ord[a.s]-ord[b.s];});
+  if(!al.length)return '<div class="cc-empty">'+(I.check||'')+'<div>ไม่มีการแจ้งเตือน — ทุกระบบปกติ</div></div>';
+  const sw={high:'Critical',med:'Medium',low:'Low'};
+  return al.slice(0,7).map(function(x){return '<div class="cc-rec sev-'+(x.s==='high'?'high':'med')+'"><span class="ri">'+(I[x.ic]||'')+'</span><div class="rb"><div class="rt">'+x.t+'</div><div class="rd">'+x.loc+' · '+x.note+'</div></div><span class="rp rp-'+(x.s==='high'?'high':'med')+'">'+sw[x.s]+'</span></div>';}).join('');
+}
+function commandCenter(){
+  ccClamp();
+  const farm=farms[cf], hs=houses();
+  if(!hs.length)return '<div class="cc"><div class="cc-empty" style="margin-top:90px;font-size:15px">'+(I.home||'')+'<div style="margin-top:10px">ยังไม่มีโรงเรือนในฟาร์มนี้</div><button class="cc-navb" style="margin-top:16px" onclick="goTab(\'set\')">'+(I.set||'')+' ไปเพิ่มโรงเรือน</button></div></div>';
+  const h=hs[ccHouse], r=calc(h);
+  const age=h.age, day=Math.max(0,Math.min(42,age)), pct=Math.round(day/42*100);
+  const alive=r.alive, birds=h.birds;
+  const targetKg=(bw(age)/1000).toFixed(2), curKg=h.wtActual>0?(h.wtActual/1000).toFixed(2):null;
+  const mort=birds>0?cumDead(h,h.age)/birds*100:0;
+  const gain=((bw(age)-bw(Math.max(0,age-1)))/1000).toFixed(3);
+  const fcrA=(h.wtActual>0&&age>=1)?(CUMF_STD[D(age)]/h.wtActual):null;
+  const health=ccHealthScore(hs), hword=ccScoreWord(health);
+  const circ=2*Math.PI*20, off=circ*(1-health/100);
+  const inletPct=Math.round(r.ratio*100);
+  // farm total alive
+  let farmAlive=0;hs.forEach(function(x){try{farmAlive+=calc(x).alive;}catch(e){}});
+  // house selector chips
+  const hchips=hs.map(function(x,i){return '<button class="cc-navb'+(i===ccHouse?' on':'')+'" onclick="ccSetHouse('+i+')" style="'+(i===ccHouse?'border-color:rgba(34,211,238,.5);color:#22D3EE':'')+'">'+(I.home||'')+esc(x.name)+'</button>';}).join('');
+  const farmOpts=farms.map(function(f,i){return '<option value="'+i+'"'+(i===cf?' selected':'')+'>'+esc(f.name)+'</option>';}).join('');
+
+  return '<div class="cc">'
+  // ===== TOP BAR =====
+  +'<div class="cc-top cc-glass cc-fade">'
+    +'<div class="cc-brand"><div class="cc-logo">'+(I.fan||'')+'</div><div><b>FARM FAN</b><small>Smart Broiler Farm OS</small></div></div>'
+    +'<div class="cc-selects">'
+      +'<label class="cc-sel"><span>'+(I.home||'')+'</span><span><small>ฟาร์ม</small><select onchange="ccSetFarm(this.value)" style="background:transparent;border:none;color:#eaf1fb;font-family:inherit;font-weight:700;font-size:14px;outline:none;cursor:pointer">'+farmOpts+'</select></span></label>'
+      +'<div class="cc-sel"><span class="cv">'+(I.chart||'')+'</span><span><small>โรงเรือน</small><b>'+esc(h.name)+' · อายุ '+age+' วัน</b></span></div>'
+    +'</div>'
+    +'<div class="cc-spacer"></div>'
+    +'<div class="cc-clock"><b id="ccClock">--:--:--</b><small id="ccDate">—</small></div>'
+    +'<div class="cc-health"><div class="cc-ring"><svg width="46" height="46"><circle cx="23" cy="23" r="20" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="4"/><circle cx="23" cy="23" r="20" fill="none" stroke="#34D399" stroke-width="4" stroke-linecap="round" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg><b>'+health+'</b></div><div><div class="hl">AI Health</div><div class="hs">'+hword+'</div></div></div>'
+  +'</div>'
+  // ===== CYCLE STRIP =====
+  +'<div class="cc-cycle cc-glass cc-fade" style="animation-delay:.05s">'
+    +'<div class="cc-cyitem"><span class="l">ไก่ทั้งฟาร์ม</span><span class="v">'+farmAlive.toLocaleString()+'<i>ตัว</i></span></div>'
+    +'<div class="cc-cydiv"></div>'
+    +'<div class="cc-cyitem"><span class="l">เล้านี้ (คงเหลือ)</span><span class="v">'+alive.toLocaleString()+'<i>/ '+birds.toLocaleString()+'</i></span></div>'
+    +'<div class="cc-cydiv"></div>'
+    +'<div class="cc-cyitem"><span class="l">น้ำหนักเป้า</span><span class="v">'+targetKg+'<i>kg</i></span></div>'
+    +(curKg?'<div class="cc-cydiv"></div><div class="cc-cyitem"><span class="l">น้ำหนักจริง</span><span class="v">'+curKg+'<i>kg</i></span></div>':'')
+    +'<div class="cc-prog"><div class="pt"><span>รอบเลี้ยง วันที่ '+day+' / 42</span><span>'+pct+'%</span></div><div class="pbar"><i style="width:'+pct+'%"></i></div></div>'
+  +'</div>'
+  // ===== KPI ROW =====
+  +'<div class="cc-kpis cc-fade" style="animation-delay:.1s">'
+    +ccKPI('k-cyan','temp','อุณหภูมิเป้าหมาย',r.tt.toFixed(1),'°C','ตามอายุ '+age+' วัน','Optimal','')
+    +ccKPI('k-blue','water','ปั๊มน้ำ / แพด',r.pump.toFixed(1),'°C',(r.padNeeded?'ควรเปิดแพด':'ยังไม่จำเป็น'),(r.padNeeded?'เปิด':'พร้อม'),'')
+    +ccKPI('k-cyan','fan','พัดลม (Fan Stage)',r.ventMin+'–'+r.ventMax,'/ '+h.fans,'ขั้นต่ำต่อเนื่อง','ตัว','')
+    +ccKPI('k-emerald','pad','เปิดผ้าม่าน / Inlet',(r.openH*100).toFixed(0),'ซม.',inletPct+'% ของแพด','Inlet','')
+    +ccKPI('k-amber','sun','ความเข้มแสง',r.lx,'lux','ให้แสง '+r.lhr+' ชม./วัน','Light','')
+    +ccKPI('k-violet','wind','ลมเป้าหมาย',r.windTarget.toFixed(2),'m/s',Math.round(r.windTarget*196.85)+' ft/min','Air','')
+  +'</div>'
+  // ===== MAIN: TWIN + SIDE =====
+  +'<div class="cc-main">'
+    +'<div class="cc-panel cc-glass cc-fade" style="animation-delay:.15s">'
+      +'<div class="cc-ph"><div class="pt"><span class="dotlive"></span>DIGITAL TWIN — '+esc(h.name)+'</div><span class="badge">อายุ '+age+' วัน · '+h.W+'×'+h.L+' ม.</span></div>'
+      +'<div class="cc-twin-wrap"><div class="cc-twin-stats">'
+        +'<div class="cc-tstat"><div class="l">Fan Stage</div><div class="v">'+r.ventMax+' / '+h.fans+'</div></div>'
+        +'<div class="cc-tstat"><div class="l">Inlet</div><div class="v">'+inletPct+'%</div></div>'
+        +'<div class="cc-tstat"><div class="l">Cooling Pad</div><div class="v '+(r.padNeeded?'on':'off')+'">'+(r.padNeeded?'ON':'พร้อม')+'</div></div>'
+        +'<div class="cc-tstat"><div class="l">Tunnel</div><div class="v '+(age>=21?'on':'off')+'">'+(age>=21?'ON':'OFF')+'</div></div>'
+      +'</div><div class="cc-twin">'+ccFanTwinSVG(h,r)+'</div></div>'
+      +'<div class="cc-twin-legend"><span><i style="background:#22D3EE"></i>พัดลมทำงาน ('+r.ventMax+')</span><span><i style="background:#3a4a63"></i>พัดลมสำรอง</span><span><i style="background:#0891b2"></i>Cooling Pad</span><span><i style="background:linear-gradient(90deg,#0e7490,#b45309)"></i>ทิศลม เย็น→อุ่น</span></div>'
+      +'<div class="cc-navbtns" style="margin-top:14px">'+hchips+'</div>'
+    +'</div>'
+    +'<div style="display:flex;flex-direction:column;gap:16px">'
+      +'<div class="cc-panel cc-glass cc-fade" style="animation-delay:.2s">'
+        +'<div class="cc-ph"><div class="pt">'+(I.bulb||'')+' AI RECOMMENDATION</div><span class="badge">จากข้อมูลจริง</span></div>'
+        +ccRecommendations(hs)
+      +'</div>'
+      +'<div class="cc-panel cc-glass cc-fade" style="animation-delay:.25s">'
+        +'<div class="cc-ph"><div class="pt">'+(I.alert||'')+' ALERT CENTER</div><span class="badge" id="ccAlertN"></span></div>'
+        +ccAlerts(hs)
+      +'</div>'
+    +'</div>'
+  +'</div>'
+  // ===== PERFORMANCE ROW =====
+  +'<div class="cc-perf cc-fade" style="animation-delay:.3s">'
+    +'<div class="cc-pf cc-glass"><div class="l">'+(I.chart||'')+'น้ำหนักเฉลี่ย</div><div class="v">'+(curKg||targetKg)+'<u>kg</u></div><div class="d">'+(curKg?('เป้า '+targetKg+' kg'):'ค่าเป้าตามอายุ')+'</div></div>'
+    +'<div class="cc-pf cc-glass"><div class="l">'+(I.chart||'')+'น้ำหนักขึ้น/วัน</div><div class="v">'+gain+'<u>kg</u></div><div class="d cc-up">ตามตารางมาตรฐาน</div></div>'
+    +'<div class="cc-pf cc-glass"><div class="l">'+(I.feed||'')+'อาหารวันนี้</div><div class="v">'+Math.round(r.fhouse).toLocaleString()+'<u>kg</u></div><div class="d">'+r.fd+' g/ตัว · สะสม '+r.fpct+'%</div></div>'
+    +'<div class="cc-pf cc-glass"><div class="l">'+(I.chart||'')+'FCR'+(fcrA?' จริง':' เป้า')+'</div><div class="v">'+(fcrA?fcrA.toFixed(2):r.fcrT.toFixed(2))+'</div><div class="d">'+(fcrA?('เป้า '+r.fcrT.toFixed(2)):'ตามตาราง STD')+'</div></div>'
+    +'<div class="cc-pf cc-glass"><div class="l">'+(I.alert||'')+'อัตราตายสะสม</div><div class="v">'+mort.toFixed(2)+'<u>%</u></div><div class="d">ตาย '+cumDead(h,h.age).toLocaleString()+' ตัว</div></div>'
+    +'<div class="cc-pf cc-glass"><div class="l">'+(I.bird||'')+'ไก่คงเหลือ</div><div class="v">'+alive.toLocaleString()+'</div><div class="d">จาก '+birds.toLocaleString()+' ตัว</div></div>'
+  +'</div>'
+  // ===== QUICK NAV =====
+  +'<div class="cc-navbtns" style="margin-top:16px">'
+    +'<button class="cc-navb" onclick="goTab(\'vent\')">'+(I.fan||'')+'ระบายอากาศ</button>'
+    +'<button class="cc-navb" onclick="goTab(\'feed\')">'+(I.feed||'')+'อาหาร</button>'
+    +'<button class="cc-navb" onclick="goTab(\'cal\')">'+(I.cal||'')+'ปฏิทิน</button>'
+    +'<button class="cc-navb" onclick="goTab(\'analytics\')">'+(I.chart||'')+'วิเคราะห์</button>'
+    +'<button class="cc-navb" onclick="goTab(\'mortality\')">'+(I.alert||'')+'ไก่ตาย</button>'
+    +'<button class="cc-navb" onclick="goTab(\'guide\')">'+(I.guide||'')+'คู่มือ</button>'
+    +'<button class="cc-navb" onclick="goTab(\'set\')">'+(I.set||'')+'ตั้งค่า</button>'
+  +'</div>'
+  +'</div>';
+}
 function homeHero(){
   const hot=(l,t,w,h,act,lb)=>`<button class="hot" style="left:${l}%;top:${t}%;width:${w}%;height:${h}%" onclick="${act}" aria-label="${lb}"></button>`;
   return `<div style="width:100vw;margin-left:calc(50% - 50vw)"><div id="homewrap" class="aihero2 gr-cine" style="max-width:none;border-radius:0;margin:0;box-shadow:none"><div class="aiimgwrap">
@@ -1462,7 +1809,7 @@ function render(){
   ['chips','lockbar'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=(isFrame||isHome)?'none':'';});
   {const _wp=document.querySelector('.wrap');if(_wp)_wp.style.padding=isHome?'0':'';document.body.style.paddingBottom=isHome?'0':'';}
   const _tt=document.querySelector('.tabtitle');if(_tt)_tt.style.display=(isFrame||isHome)?'none':'';
-  if(isHome){const _tb=document.getElementById('toolbar');if(_tb)_tb.innerHTML='';const _g=document.getElementById('grid');_g.style.gridTemplateColumns='1fr';_g.innerHTML=homeHero();applyLock();setTimeout(fitHome,30);return;}
+  if(isHome){const _tb=document.getElementById('toolbar');if(_tb)_tb.innerHTML='';const _g=document.getElementById('grid');_g.style.gridTemplateColumns='1fr';_g.innerHTML=commandCenter();applyLock();ccClockPaint();if(!ccClkTimer)ccClkTimer=setInterval(ccClockPaint,1000);return;}
   if(isFrame){const _tb=document.getElementById('toolbar');if(_tb)_tb.innerHTML='';const _g=document.getElementById('grid');_g.style.gridTemplateColumns='1fr';const cur=_g.querySelector('iframe#appFrame');if(!cur||cur.getAttribute('data-src')!==ift.src)_g.innerHTML='<iframe id="appFrame" data-src="'+ift.src+'" src="'+ift.src+'" title="'+ift.title+'" style="width:100%;height:calc(100vh - 140px);min-height:480px;border:none;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(16,120,70,.10)"></iframe>';return;}
   document.getElementById('tabIc').innerHTML=I[t.icon];
   document.getElementById('tabName').textContent=t.label;
