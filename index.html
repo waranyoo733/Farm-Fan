@@ -837,6 +837,7 @@ function nclamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
 function normalize(r){
   if(!Array.isArray(r))return [];
   r.forEach(fm=>{ if(typeof fm.name!=='string')fm.name=String(fm.name==null?'ฟาร์ม':fm.name); if(!Array.isArray(fm.houses))fm.houses=[];
+    fm.catchAge=nclamp(Math.round(nnum(fm.catchAge,45)),30,60);
     fm.houses.forEach(h=>{
     if(typeof h.name!=='string')h.name=String(h.name==null?'เล้า':h.name);
     if(typeof h.placeDate!=='string')h.placeDate='';
@@ -1356,16 +1357,20 @@ function homeHeroSVG(){
   <button class="aienter" onclick="goTab('vent')">เข้าสู่หน้าจัดการรายวัน →</button>
   </div></div>`;
 }
-/* ===== แท็บปฏิทิน: รอบเลี้ยง + นับถอยหลังวันจับ (อายุ 45) + จับเวลา ===== */
-var CATCH_AGE=45;
-var calY=null,calM=null,calSel=null;
+/* ===== แท็บปฏิทิน (ดีไซน์ Aurora): รอบเลี้ยง + นับถอยหลังวันจับ (ตั้งได้ต่อฟาร์ม) + จับเวลา · เรียลไทม์ ===== */
+function catchAgeOf(){var v=+((farms[cf]||{}).catchAge);return (v>=30&&v<=60)?v:45;}
+function calStep(d){if(!canEdit)return;farms[cf].catchAge=Math.max(30,Math.min(60,catchAgeOf()+d));save();render();}
+function calCatch(v){if(!canEdit)return;var n=parseInt(v||'0',10);if(isNaN(n))return;farms[cf].catchAge=Math.max(30,Math.min(60,n));save();render();}
+var calY=null,calM=null,calSel=null,calClkTimer=null;
 function calEnsure(){ if(calY===null){var t=new Date();calY=t.getFullYear();calM=t.getMonth();} }
 function calPrev(){calEnsure();calM--;if(calM<0){calM=11;calY--;}render();}
 function calNext(){calEnsure();calM++;if(calM>11){calM=0;calY++;}render();}
 function calGoToday(){var t=new Date();calY=t.getFullYear();calM=t.getMonth();calSel=null;render();}
 function calPick(ds){calSel=ds;render();}
+function calClockPaint(){var e=document.getElementById('calClock');if(!e){if(calClkTimer){clearInterval(calClkTimer);calClkTimer=null;}return;}var d=new Date();var p=function(n){return String(n).padStart(2,'0');};e.textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
 function _dkey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-function calEvents(){var ev={};houses().forEach(function(h){if(!h.placeDate)return;var p=new Date(h.placeDate+'T00:00:00');if(isNaN(p.getTime()))return;var c=new Date(p.getTime()+(CATCH_AGE-1)*86400000);(ev[_dkey(p)]=ev[_dkey(p)]||[]).push({t:'place',n:h.name});(ev[_dkey(c)]=ev[_dkey(c)]||[]).push({t:'catch',n:h.name});});return ev;}
+function calEvents(){var ev={};var C=catchAgeOf();houses().forEach(function(h){if(!h.placeDate)return;var p=new Date(h.placeDate+'T00:00:00');if(isNaN(p.getTime()))return;var c=new Date(p.getTime()+(C-1)*86400000);(ev[_dkey(p)]=ev[_dkey(p)]||[]).push({t:'place',n:h.name});(ev[_dkey(c)]=ev[_dkey(c)]||[]).push({t:'catch',n:h.name});});return ev;}
+function calStyleInject(){ if(document.getElementById('calBStyle'))return; var s=document.createElement('style'); s.id='calBStyle'; s.textContent='.cbwrap{display:flex;flex-direction:column;gap:16px}.cbtop{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}.cbtt{font-size:15px;font-weight:700;color:#123122}.cbtt small{display:block;font-size:12px;color:#5c7568;font-weight:400;margin-top:1px}.cbclock{font-variant-numeric:tabular-nums;font-size:13px;color:#0e7a4d;font-weight:600;background:rgba(255,255,255,.72);border:1px solid rgba(20,120,80,.12);border-radius:12px;padding:7px 13px;box-shadow:0 6px 16px rgba(20,90,60,.07)}.cbclock small{color:#5c7568;font-weight:400;margin-right:6px}.cbstep{display:inline-flex;align-items:center;gap:10px;background:rgba(255,255,255,.72);border:1px solid rgba(20,120,80,.12);border-radius:15px;padding:9px 13px;box-shadow:0 6px 16px rgba(20,90,60,.06)}.cbstep .lb{font-size:13px;color:#3d5a4c;font-weight:600}.cbstep button{width:33px;height:33px;border-radius:11px;border:none;background:#e7f4ee;color:#12925f;font-size:20px;font-weight:700;cursor:pointer;line-height:1}.cbstep button:disabled{opacity:.4;cursor:default}.cbstep input{width:48px;text-align:center;font-size:21px;font-weight:800;color:#0e7a4d;border:none;background:transparent;outline:none;font-variant-numeric:tabular-nums}.cbstep input:disabled{color:#0e7a4d}.cbstep .u{font-size:12px;color:#5c7568}.cbsect>.cbh{font-weight:700;margin-bottom:9px;color:#123122;font-size:14.5px}.cbgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:11px}.cbcd{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 22px rgba(20,90,60,.09);border-radius:16px;padding:13px 14px;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}.cbring{position:relative;width:62px;height:62px;flex:none;border-radius:50%}.cbring .ri{position:absolute;inset:5px;border-radius:50%;background:#fbfdfc;display:grid;place-items:center;line-height:1}.cbring .ri b{font-size:21px;font-weight:800;font-variant-numeric:tabular-nums}.cbring .ri i{font-size:9px;font-style:normal;color:#5c7568;margin-top:1px}.cbcn{font-size:15px;font-weight:600;color:#123122}.cbcl{font-size:12.5px;font-weight:600;margin-top:2px}.cbca{font-size:11.5px;color:#7a8a80;margin-top:2px}.cbcard{background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 22px rgba(20,90,60,.09);border-radius:18px;padding:14px;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}.cbnav{display:flex;gap:6px}.cbnav button{border:1px solid rgba(20,120,80,.14);background:rgba(255,255,255,.72);border-radius:10px;cursor:pointer;color:#123122;height:34px}.cbday{min-height:42px;border-radius:11px;padding:5px 0;cursor:pointer;text-align:center;border:1.5px solid transparent}.cbday:hover{background:rgba(22,180,111,.08)}.cbday.today{background:#d7f0e4;border-color:#9fdcbf}.cbday.sel{border-color:#16b46f}.cbwd{text-align:center;font-size:12px;color:#7a8a80;padding-bottom:5px}.cbsw{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 22px rgba(20,90,60,.09);border-radius:18px;padding:15px 17px;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}.cbsw .t{font-size:12px;color:#7a8a80}.cbsw .clk{font-size:32px;font-weight:800;color:#123122;font-variant-numeric:tabular-nums;letter-spacing:1px}.cbsw .go{display:flex;gap:8px}.cbsw .go button{border:none;border-radius:12px;padding:10px 20px;font-size:15px;font-weight:700;cursor:pointer}'; document.head.appendChild(s); }
 var swElapsed=0,swStart=0,swRunning=false,swTimer=null;
 function _swNow(){return swElapsed+(swRunning?(Date.now()-swStart):0);}
 function _swFmt(ms){var s=Math.floor(ms/1000);var h=Math.floor(s/3600);s-=h*3600;var m=Math.floor(s/60);s-=m*60;var p=function(n){return String(n).padStart(2,'0');};return (h?p(h)+':':'')+p(m)+':'+p(s);}
@@ -1375,18 +1380,22 @@ function swReset(){swRunning=false;if(swTimer){clearInterval(swTimer);swTimer=nu
 function calendarView(){
   calEnsure();
   var THM=['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+  var THMS=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
   var WD=['อา','จ','อ','พ','พฤ','ศ','ส'];
+  var C=catchAgeOf();
   var hs=houses(), ev=calEvents();
-  var today=new Date();today.setHours(0,0,0,0);var todayKey=_dkey(today);
-  var cd=hs.map(function(h){if(!h.placeDate)return{n:h.name,no:true};var a=todayAge(h.placeDate);return{n:h.name,a:a,left:CATCH_AGE-a};});
+  var now=new Date(),today=new Date();today.setHours(0,0,0,0);var todayKey=_dkey(today);
+  var todayStr='วันนี้ '+now.getDate()+' '+THMS[now.getMonth()]+' '+(now.getFullYear()+543);
+  var COL={ok:'#16a86a',warn:'#e0902a',over:'#d9483b'};
+  var cd=hs.map(function(h){if(!h.placeDate)return{n:h.name,no:true};var a=todayAge(h.placeDate);return{n:h.name,a:a,left:C-a};});
   cd.sort(function(x,y){return (x.no?1:0)-(y.no?1:0) || (x.left-y.left);});
   var cdHTML=cd.map(function(r){
-    if(r.no)return '<div style="background:#fff;border:1px solid #e2e6e2;border-radius:12px;padding:10px 12px"><b>'+esc(r.n)+'</b> · <span style="color:#9aa097">ยังไม่ตั้งวันลงไก่</span></div>';
-    var pct=Math.max(0,Math.min(100,Math.round(r.a/CATCH_AGE*100)));
-    var done=r.left<=0;
+    if(r.no)return '<div class="cbcd"><div class="cbring" style="background:conic-gradient(#cfe0d7 0deg,#dcebe3 0)"><span class="ri"><b style="color:#9aa097">–</b></span></div><div><div class="cbcn">'+esc(r.n)+'</div><div class="cbca">ยังไม่ตั้งวันลงไก่</div></div></div>';
+    var pct=Math.max(0,Math.min(100,Math.round(r.a/C*100)));
+    var done=r.left<=0, col=done?COL.over:(r.left<=5?COL.warn:COL.ok);
     var lab=done?(r.left===0?'ครบวันจับวันนี้':'เลยวันจับ '+(-r.left)+' วัน'):('เหลืออีก '+r.left+' วันจับ');
-    var col=done?'#c0392b':(r.left<=5?'#d97a00':'#1f8a4c');
-    return '<div style="background:#fff;border:1px solid #e2e6e2;border-radius:12px;padding:10px 12px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>'+esc(r.n)+'</b><span style="color:'+col+';font-weight:600">'+lab+'</span></div><div style="font-size:12.5px;color:#6b726b;margin:2px 0 6px">อายุ '+r.a+' วัน / จับ '+CATCH_AGE+'</div><div style="height:7px;background:#eef1ee;border-radius:99px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+col+'"></div></div></div>';
+    return '<div class="cbcd"><div class="cbring" style="background:conic-gradient('+col+' '+(pct*3.6)+'deg,#dcebe3 0)"><span class="ri"><b style="color:'+col+'">'+(done?0:r.left)+'</b><i>วัน</i></span></div>'
+      +'<div><div class="cbcn">'+esc(r.n)+'</div><div class="cbcl" style="color:'+col+'">'+lab+'</div><div class="cbca">อายุ '+r.a+' วัน · จับ '+C+'</div></div></div>';
   }).join('');
   var first=new Date(calY,calM,1),lead=first.getDay(),dim=new Date(calY,calM+1,0).getDate();
   var cells='';for(var i=0;i<lead;i++)cells+='<div></div>';
@@ -1394,19 +1403,23 @@ function calendarView(){
     var ds=calY+'-'+String(calM+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
     var es=ev[ds]||[],hasP=es.some(function(e){return e.t==='place';}),hasC=es.some(function(e){return e.t==='catch';});
     var isToday=ds===todayKey,isSel=ds===calSel;
-    var dots='';if(hasP)dots+='<span style="width:6px;height:6px;border-radius:99px;background:#1f8a4c;display:inline-block"></span>';if(hasC)dots+='<span style="width:6px;height:6px;border-radius:99px;background:#c0392b;display:inline-block;margin-left:2px"></span>';
-    cells+='<div onclick="calPick(\''+ds+'\')" style="min-height:40px;border-radius:8px;padding:4px;cursor:pointer;text-align:center;border:1.5px solid '+(isSel?'#1f8a4c':(isToday?'#9fd3b6':'transparent'))+';background:'+(isToday?'#eaf5ee':'transparent')+'"><div style="font-size:13px;'+(isToday?'font-weight:700;color:#1f8a4c':'')+'">'+d+'</div><div style="height:8px">'+dots+'</div></div>';
+    var dots='';if(hasP)dots+='<span style="width:6px;height:6px;border-radius:99px;background:#16a86a;display:inline-block"></span>';if(hasC)dots+='<span style="width:6px;height:6px;border-radius:99px;background:#d9483b;display:inline-block;margin-left:3px"></span>';
+    cells+='<div class="cbday'+(isSel?' sel':'')+(isToday?' today':'')+'" onclick="calPick(\''+ds+'\')"><div style="font-size:13px;'+(isToday?'font-weight:700;color:#0e7a4d':'color:#2c3a32')+'">'+d+'</div><div style="height:8px">'+dots+'</div></div>';
   }
-  var wdHTML=WD.map(function(w){return '<div style="text-align:center;font-size:12px;color:#9aa097;padding-bottom:4px">'+w+'</div>';}).join('');
+  var wdHTML=WD.map(function(w){return '<div class="cbwd">'+w+'</div>';}).join('');
   var selKey=calSel||todayKey,selEv=ev[selKey]||[],sp=selKey.split('-');
-  var selHTML=selEv.length?selEv.map(function(e){return '<div style="padding:4px 0"><span style="color:'+(e.t==='place'?'#1f8a4c':'#c0392b')+';font-weight:600">'+(e.t==='place'?'⬤ ลงไก่':'⬤ วันจับ')+'</span> · '+esc(e.n)+'</div>';}).join(''):'<div style="color:#9aa097;padding:4px 0">— ไม่มีรายการ —</div>';
-  var swHTML='<div style="background:#fff;border:1px solid #e2e6e2;border-radius:14px;padding:16px;text-align:center"><div id="swDisp" style="font-size:38px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:1px">00:00</div><div style="display:flex;gap:8px;justify-content:center;margin-top:10px"><button id="swBtn" onclick="swToggle()" style="border:none;color:#fff;background:#1f8a4c;padding:9px 22px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer">▶ เริ่ม</button><button onclick="swReset()" style="border:1px solid #d2d6d2;background:#f4f6f4;padding:9px 18px;border-radius:10px;font-size:15px;cursor:pointer">รีเซ็ต</button></div><div style="font-size:12px;color:#9aa097;margin-top:8px">จับเวลางานหน้างาน เช่น รดแพด · วัดแรงลม 9 จุด</div></div>';
-  return '<div style="display:flex;flex-direction:column;gap:18px">'
-    +'<div><div style="font-weight:700;margin-bottom:8px">⏳ นับถอยหลังวันจับ (อายุ '+CATCH_AGE+' วัน)</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">'+(cdHTML||'<div style="color:#9aa097">ยังไม่มีเล้าในฟาร์มนี้</div>')+'</div></div>'
-    +'<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font-weight:700">📅 '+THM[calM]+' '+(calY+543)+'</div><div style="display:flex;gap:6px"><button onclick="calPrev()" style="border:1px solid #d2d6d2;background:#fff;width:34px;height:34px;border-radius:8px;cursor:pointer">‹</button><button onclick="calGoToday()" style="border:1px solid #d2d6d2;background:#fff;padding:0 12px;height:34px;border-radius:8px;cursor:pointer;font-size:13px">วันนี้</button><button onclick="calNext()" style="border:1px solid #d2d6d2;background:#fff;width:34px;height:34px;border-radius:8px;cursor:pointer">›</button></div></div>'
-    +'<div style="background:#fff;border:1px solid #e2e6e2;border-radius:14px;padding:12px"><div style="display:grid;grid-template-columns:repeat(7,1fr)">'+wdHTML+'</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">'+cells+'</div><div style="display:flex;gap:14px;margin-top:8px;font-size:12px;color:#6b726b"><span><span style="width:8px;height:8px;border-radius:99px;background:#1f8a4c;display:inline-block;margin-right:4px"></span>ลงไก่</span><span><span style="width:8px;height:8px;border-radius:99px;background:#c0392b;display:inline-block;margin-right:4px"></span>วันจับ</span></div></div>'
-    +'<div style="background:#f7faf8;border:1px solid #e2e6e2;border-radius:12px;padding:10px 14px;margin-top:10px"><div style="font-weight:600;margin-bottom:2px">'+sp[2]+'/'+sp[1]+'/'+((+sp[0])+543)+'</div>'+selHTML+'</div></div>'
-    +'<div><div style="font-weight:700;margin-bottom:8px">⏱️ จับเวลา (stopwatch)</div>'+swHTML+'</div>'
+  var selHTML=selEv.length?selEv.map(function(e){return '<div style="padding:4px 0;font-size:13px"><span style="color:'+(e.t==='place'?'#16a86a':'#d9483b')+';font-weight:600">'+(e.t==='place'?'● ลงไก่':'● วันจับ')+'</span> · '+esc(e.n)+'</div>';}).join(''):'<div style="color:#9aa097;padding:4px 0;font-size:13px">— ไม่มีรายการวันนี้ —</div>';
+  var ed=canEdit?'':' disabled';
+  var stepHTML='<div class="cbstep"><span class="lb">🐔 วันจับที่อายุ</span><button onclick="calStep(-1)"'+ed+'>−</button><input class="ce" value="'+C+'" inputmode="numeric" onchange="calCatch(this.value)"'+ed+'><button onclick="calStep(1)"'+ed+'>+</button><span class="u">วัน</span></div>';
+  var swHTML='<div class="cbsw"><div><div class="t">จับเวลางานหน้างาน · รดแพด · วัดแรงลม 9 จุด</div><div class="clk" id="swDisp">00:00</div></div><div class="go"><button id="swBtn" onclick="swToggle()" style="background:linear-gradient(135deg,#16b46f,#0e9c86);color:#fff">▶ เริ่ม</button><button onclick="swReset()" style="background:#e7f4ee;color:#12925f">รีเซ็ต</button></div></div>';
+  return '<div class="cbwrap">'
+    +'<div class="cbtop"><div class="cbtt">📅 ปฏิทินรอบเลี้ยง<small>'+esc(farms[cf].name)+' · '+hs.length+' เล้า</small></div><div class="cbclock"><small>'+todayStr+' ·</small><span id="calClock">--:--:--</span></div></div>'
+    +'<div>'+stepHTML+'</div>'
+    +'<div class="cbsect"><div class="cbh">⏳ นับถอยหลังวันจับ</div><div class="cbgrid">'+(cdHTML||'<div style="color:#9aa097">ยังไม่มีเล้าในฟาร์มนี้</div>')+'</div></div>'
+    +'<div class="cbsect"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px"><div class="cbh" style="margin:0">'+THM[calM]+' '+(calY+543)+'</div><div class="cbnav"><button onclick="calPrev()" style="width:34px">‹</button><button onclick="calGoToday()" style="padding:0 13px;font-size:13px">วันนี้</button><button onclick="calNext()" style="width:34px">›</button></div></div>'
+    +'<div class="cbcard"><div style="display:grid;grid-template-columns:repeat(7,1fr)">'+wdHTML+'</div><div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px">'+cells+'</div><div style="display:flex;gap:16px;margin-top:9px;font-size:12px;color:#5c7568"><span><span style="width:8px;height:8px;border-radius:99px;background:#16a86a;display:inline-block;margin-right:5px"></span>ลงไก่</span><span><span style="width:8px;height:8px;border-radius:99px;background:#d9483b;display:inline-block;margin-right:5px"></span>วันจับ</span></div></div>'
+    +'<div class="cbcard" style="margin-top:10px;padding:11px 15px"><div style="font-weight:600;margin-bottom:2px;color:#123122">'+sp[2]+' '+THMS[(+sp[1])-1]+' '+((+sp[0])+543)+'</div>'+selHTML+'</div></div>'
+    +'<div class="cbsect"><div class="cbh">⏱️ จับเวลา</div>'+swHTML+'</div>'
     +'</div>';
 }
 function render(){
@@ -1427,7 +1440,7 @@ function render(){
   tb.innerHTML = tab==='set'?`<div class="setbar1"><span class="editic" title="แตะเพื่อแก้ไขชื่อฟาร์ม">${I.edit}</span><input class="farmname" value="${esc(farms[cf].name)}" aria-label="ชื่อฟาร์ม"></div><div class="setbar2"><button class="btn primary" id="addHouse">+ เพิ่มโรงเรือน</button><button class="btn" id="addFarm">+ เพิ่มฟาร์ม</button><button class="btn" id="importXlsx">📥 นำเข้าจาก Excel</button><button class="btn" id="expBackup">⬇️ สำรองข้อมูล</button><button class="btn" id="impBackup">⬆️ กู้คืนจากไฟล์</button>`+(localStorage.getItem('ppf_farms_v3_prev')?`<button class="btn" id="undoBackup">↩️ กู้กลับ</button>`:'')+(farms.length>1?`<button class="btn warn" id="delFarm">ลบฟาร์มนี้</button>`:'')+`</div>`:(tab==='vent'?`<button class="btn" id="openHI" type="button">🌡️ คำนวณ Heat Index</button>`:'');
   const g=document.getElementById('grid');
   if(tab==='guide'){g.style.gridTemplateColumns='1fr';g.innerHTML=guideCard();const pm=document.getElementById('printManual');if(pm)pm.onclick=buildManual;applyLock();return;}
-  if(tab==='cal'){g.style.gridTemplateColumns='1fr';g.innerHTML=calendarView();_swPaint();applyLock();return;}
+  if(tab==='cal'){g.style.gridTemplateColumns='1fr';calStyleInject();g.innerHTML=calendarView();_swPaint();calClockPaint();if(!calClkTimer)calClkTimer=setInterval(calClockPaint,1000);applyLock();return;}
   g.style.gridTemplateColumns='';
   const fn=tab==='vent'?ventCard:tab==='feed'?feedCard:setCard;
   g.innerHTML=houses().map(fn).join('');
