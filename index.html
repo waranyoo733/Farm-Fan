@@ -1441,10 +1441,10 @@ function calendarView(){
   var selKey=calSel||todayKey,selEv=ev[selKey]||[],sp=selKey.split('-');
   var selHTML=selEv.length?selEv.map(function(e){return '<div style="padding:4px 0;font-size:13px"><span style="color:'+(e.t==='place'?'#16a86a':'#d9483b')+';font-weight:600">'+(e.t==='place'?'● ลงไก่':'● วันจับ')+'</span> · '+esc(e.n)+'</div>';}).join(''):'<div style="color:#9aa097;padding:4px 0;font-size:13px">— ไม่มีรายการวันนี้ —</div>';
   var ed=canEdit?'':' disabled';
-  var stepHTML='<div class="cbstep"><span class="lb">🐔 วันจับที่อายุ</span><button onclick="calStep(-1)"'+ed+'>−</button><input class="ce" value="'+C+'" inputmode="numeric" onchange="calCatch(this.value)"'+ed+'><button onclick="calStep(1)"'+ed+'>+</button><span class="u">วัน</span></div>';
+  var stepHTML='<div class="cbstep"><span class="lb">'+I.bird+' วันจับที่อายุ</span><button onclick="calStep(-1)"'+ed+'>−</button><input class="ce" value="'+C+'" inputmode="numeric" onchange="calCatch(this.value)"'+ed+'><button onclick="calStep(1)"'+ed+'>+</button><span class="u">วัน</span></div>';
   var swHTML='<div class="cbsw"><div><div class="t">จับเวลางานหน้างาน · รดแพด · วัดแรงลม 9 จุด</div><div class="clk" id="swDisp">00:00</div></div><div class="go"><button id="swBtn" onclick="swToggle()" style="background:linear-gradient(135deg,#16b46f,#0e9c86);color:#fff">▶ เริ่ม</button><button onclick="swReset()" style="background:#e7f4ee;color:#12925f">รีเซ็ต</button></div></div>';
   return '<div class="cbwrap">'
-    +'<div class="cbtop"><div class="cbtt">📅 ปฏิทินรอบเลี้ยง<small>'+esc(farms[cf].name)+' · '+hs.length+' เล้า</small></div><div class="cbclock"><small>'+todayStr+' ·</small><span id="calClock">--:--:--</span></div></div>'
+    +'<div class="cbtop"><div class="cbtt">'+I.cal+' ปฏิทินรอบเลี้ยง<small>'+esc(farms[cf].name)+' · '+hs.length+' เล้า</small></div><div class="cbclock"><small>'+todayStr+' ·</small><span id="calClock">--:--:--</span></div></div>'
     +'<div>'+stepHTML+'</div>'
     +'<div class="cbsect"><div class="cbh">⏳ นับถอยหลังวันจับ</div><div class="cbgrid">'+(cdHTML||'<div style="color:#9aa097">ยังไม่มีเล้าในฟาร์มนี้</div>')+'</div></div>'
     +'<div class="cbsect"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px"><div class="cbh" style="margin:0">'+THM[calM]+' '+(calY+543)+'</div><div class="cbnav"><button onclick="calPrev()" style="width:34px">‹</button><button onclick="calGoToday()" style="padding:0 13px;font-size:13px">วันนี้</button><button onclick="calNext()" style="width:34px">›</button></div></div>'
