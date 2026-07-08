@@ -607,12 +607,9 @@
   .cc-clock{text-align:right;flex:none;line-height:1.2}
   .cc-clock b{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.5px}
   .cc-clock small{font-size:11.5px;color:var(--cc-sub);display:block}
-  .cc-health{display:flex;align-items:center;gap:11px;flex:none;padding:7px 14px 7px 9px;border-radius:14px;background:var(--cc-glass);border:1px solid var(--cc-line)}
   .cc-ring{position:relative;width:46px;height:46px;flex:none}
   .cc-ring svg{transform:rotate(-90deg)}
   .cc-ring b{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800}
-  .cc-health .hl{font-size:10.5px;color:var(--cc-sub);text-transform:uppercase;letter-spacing:.5px}
-  .cc-health .hs{font-size:14px;font-weight:700;color:var(--cc-emerald)}
 
   /* ---- Cycle strip ---- */
   .cc-cycle{display:flex;align-items:center;gap:10px 22px;flex-wrap:wrap;padding:13px 20px;margin-bottom:16px}
@@ -995,16 +992,16 @@
 
   /* -- Strategic weight: dial back the pervasive 800s to 600 -- */
   .cc-cyitem .v,.cc-ph .pt,.cc-tstat .v,.cc-pf .v,.cc-kpi .kv,.cc-ring b,
-  .cc-health .hs,.cc-clock b,.cc-rec .rt{font-weight:600}
+  .cc-clock b,.cc-rec .rt{font-weight:600}
   .cc-brand b{font-weight:700;letter-spacing:0}
   .cc-kpi .kv,.cc-pf .v,.cc-cyitem .v{letter-spacing:-.2px}
 
   /* -- Labels: quieter, sentence-case (no shouting ALL-CAPS) -- */
-  .cc-kpi .kt,.cc-cyitem .l,.cc-tstat .l,.cc-pf .l,.cc-health .hl,
+  .cc-kpi .kt,.cc-cyitem .l,.cc-tstat .l,.cc-pf .l,
   .cc-brand small,.cc-ph .badge,.cc-tstat .l,.cc-twin-legend,.cc-prog .pt{
     text-transform:none;letter-spacing:.2px}
   .cc-kpi .kt,.cc-pf .l{font-weight:500;color:var(--cc-dim)}
-  .cc-cyitem .l,.cc-tstat .l,.cc-health .hl{font-weight:500;color:var(--cc-dim)}
+  .cc-cyitem .l,.cc-tstat .l{font-weight:500;color:var(--cc-dim)}
   .cc-sel{font-weight:500} .cc-sel small{font-weight:400}
 
   /* -- Room to breathe (spec: cards should not feel cramped) -- */
@@ -1841,8 +1838,6 @@ function ccSetHouse(i){ccHouse=+i;renderCC();}
 function ccSetFarm(i){cf=+i;ccHouse=0;if(typeof renderChips==='function')renderChips();renderCC();}
 function renderCC(){const g=document.getElementById('grid');if(g){g.innerHTML=commandCenter();ccClockPaint();ccAnimateNumbers();if(ccTwinMode==='3d')ccRenderTwin();}}
 function ccClockPaint(){const el=document.getElementById('ccClock');if(!el)return;const d=new Date();const p=n=>String(n).padStart(2,'0');el.textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());const dd=document.getElementById('ccDate');if(dd){const TM2=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];dd.textContent=d.getDate()+' '+TM2[d.getMonth()]+' '+(d.getFullYear()+543);}}
-function ccHealthScore(hs){let s=100;hs.forEach(function(h){try{const r=calc(h);if(r.padNeeded)s-=6;const mort=h.birds>0?cumDead(h,h.age)/h.birds*100:0;if(mort>5)s-=9;else if(mort>3)s-=4;if(!h.placeDate)s-=2;if(h.age>42)s-=6;if(h.wtActual>0&&h.wtActual<bw(h.age)*0.95)s-=3;}catch(e){}});return Math.max(45,Math.min(100,Math.round(s)));}
-function ccScoreWord(s){return s>=90?'ดีเยี่ยม':s>=80?'ดี':s>=70?'เฝ้าระวัง':s>=60?'ต้องดูแล':'วิกฤต';}
 function ccFanTwinSVG(h,r){
   const nfans=Math.max(1,Math.min(24,h.fans||1)),nOn=Math.max(0,Math.min(nfans,r.ventMax));
   // fan wall grid on the right
@@ -2142,8 +2137,6 @@ function commandCenter(){
   const mort=birds>0?cumDead(h,h.age)/birds*100:0;
   const gain=((bw(age)-bw(Math.max(0,age-1)))/1000).toFixed(3);
   const fcrA=(h.wtActual>0&&age>=1)?(CUMF_STD[D(age)]/h.wtActual):null;
-  const health=ccHealthScore(hs), hword=ccScoreWord(health);
-  const circ=2*Math.PI*20, off=circ*(1-health/100);
   const inletPct=Math.round(r.ratio*100);
   // farm total alive
   let farmAlive=0;hs.forEach(function(x){try{farmAlive+=calc(x).alive;}catch(e){}});
@@ -2162,7 +2155,6 @@ function commandCenter(){
     +'<div class="cc-spacer"></div>'
     +'<button class="cc-cap" onclick="capDashboard(this)" title="แคปหน้าจอส่งผู้บริหาร">'+(I.download||'')+'<span>แคปส่งผู้บริหาร</span></button>'
     +'<div class="cc-clock"><b id="ccClock">--:--:--</b><small id="ccDate">—</small></div>'
-    +'<div class="cc-health"><div class="cc-ring"><svg width="46" height="46"><circle cx="23" cy="23" r="20" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="4"/><circle cx="23" cy="23" r="20" fill="none" stroke="#34D399" stroke-width="4" stroke-linecap="round" stroke-dasharray="'+circ.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg><b>'+health+'</b></div><div><div class="hl">AI Health</div><div class="hs">'+hword+'</div></div></div>'
   +'</div>'
   // ===== CYCLE STRIP =====
   +'<div class="cc-cycle cc-glass cc-fade" style="animation-delay:.05s">'
