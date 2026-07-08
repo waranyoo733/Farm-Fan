@@ -498,7 +498,7 @@
   .fanplan{margin:0;background:none;border:none;padding:0}
   .fpnobox{background:#fff;border:1px dashed var(--line);border-radius:var(--radius-md);padding:16px 14px;margin:12px 0;text-align:center}
   .fpwrap{background:none}
-  .fpwrap[open]{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;margin:12px 0}
+  .fpwrap[open]{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surf2);margin:12px 0}
   .fpwrap>summary{display:none}
   .fphd{display:flex;align-items:center;gap:11px;padding:2px 0 12px;margin-bottom:12px;border-bottom:1px solid var(--line)}
   .kpi6 .kfan{cursor:pointer}
@@ -1170,7 +1170,7 @@ function fanLifecycle(p,a){
   let rows='<div class="fptl-row done"><span class="fptl-dot"></span><div class="fptl-tx">วันแรก–7 · เปิดโช๊คตัวที่ <span class="fa">'+p.choke.join('·')+'</span> เดินเป็นจังหวะ (กก ระบายน้อย)</div></div>';
   const cumSet=new Set();
   ms.forEach(m=>{(m.fans||[]).forEach(f=>cumSet.add(f));(m.off||[]).forEach(f=>cumSet.delete(f));const cum=cumSet.size;const st=m.age<a?'done':(m.age===a?'now':'fut');
-    rows+='<div class="fptl-row '+st+'"><span class="fptl-dot"></span><div class="fptl-tx">อายุ <span class="fa">'+m.age+'</span> วัน · เปิดมือ'+((m.off&&m.off.length)?'':'เพิ่ม')+'ตัวที่ <span class="fa">'+m.fans.join('·')+'</span>'+((m.off&&m.off.length)?' <span style="color:#c0392b">(ปิดตัวที่ '+m.off.join('·')+')</span>':'')+' (รวมเปิดมือ '+cum+' ตัว)'+(m.age===a?'<span class="fptl-badge">วันนี้</span>':'')+'</div></div>';});
+    rows+='<div class="fptl-row '+st+'"><span class="fptl-dot"></span><div class="fptl-tx">อายุ <span class="fa">'+m.age+'</span> วัน · เปิดมือ'+((m.off&&m.off.length)?'':'เพิ่ม')+'ตัวที่ <span class="fa">'+m.fans.join('·')+'</span>'+((m.off&&m.off.length)?' <span style="color:#FB7185">(ปิดตัวที่ '+m.off.join('·')+')</span>':'')+' (รวมเปิดมือ '+cum+' ตัว)'+(m.age===a?'<span class="fptl-badge">วันนี้</span>':'')+'</div></div>';});
   rows+='<div class="fptl-row '+(a>=42?'now':'fut')+'"><span class="fptl-dot"></span><div class="fptl-tx">วันจับ (~42 วัน) · พัดลมเปิดสูงสุดตามอากาศ</div></div>';
   return '<div class="fptl-h">'+I.cal+' แผนทั้งรุ่น — วันแรก → วันจับ</div><div class="fptl">'+rows+'</div>';
 }
