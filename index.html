@@ -1128,7 +1128,11 @@ const choke=a=>{const x=D(a);if(x<=6){const on=[0.5,0.6,0.7,0.7,0.8,0.8,0.6][x];
 const chokeOnU=c=>c.on>=1?(c.on+' นาที'):(Math.round(c.on*60)+' วินาที');
 const chokeText=c=>'ทำ '+chokeOnU(c)+' หยุด '+c.off+' นาที';
 const chokeShort=c=>(c.on>=1?c.on+'น.':Math.round(c.on*60)+'วิ.')+' / '+c.off+'น.';
-function fanCFMof(h){const side=h.fan*2.54/30.48,area=side*side,avg=h.pts.reduce((a,b)=>a+(+b||0),0)/9;return area*avg;}
+/* ขนาดช่องลมพัดลมที่ "วัดได้จริง" — พัดลม 52 นิ้ว = 130.728 ซม. (ไม่ใช่ 132.08 ตามทฤษฎี 2.54)
+   ที่มา: Excel ของหมอ ชีต "หาประสิทธิภาพพัดลม.ต่อตัว" (ฟาร์มมั่งมี) → 4.289 ฟุต → 18.395 ตร.ฟุต
+   หมอยืนยันให้ใช้ค่าที่วัดจริง 31 ก.ค. 2026 · ค่าเดิม 2.54 ให้พื้นที่มากเกินจริง 2.1% */
+const IN2CM=2.514;
+function fanCFMof(h){const side=h.fan*IN2CM/30.48,area=side*side,avg=h.pts.reduce((a,b)=>a+(+b||0),0)/9;return area*avg;}
 const fmtMinT=m=>m<=0?'0':(m<1?Math.round(m*60)+' วินาที':Math.round(m)+' นาที'); // ปัดเป็นนาทีเต็ม (60 วินาที = 1 นาที)
 const fmtMc=m=>m<=0?'0':(m<1?Math.round(m*60)+'วิ':Math.round(m)+'น');
 // พัดลมขั้นต่ำ + เวลาทำงาน (สูตรหมอตั้ม): I = อากาศต้องการ ÷ ประสิทธิภาพพัดลม/ตัว · เดินโช๊คเป็นรอบ 5 นาที
@@ -1145,6 +1149,10 @@ const lightHr=a=>{const x=D(a);return x<=1?24:x<=7?20:x<=14?18:x<=21?16:x<=28?10
 /* ===== แผนการทำงานพัดลม (ฤดูร้อน) — ถอดจาก Excel "แผนการระบายอากาศ หมอวรัญญู" คงลำดับเดิมของแต่ละฟาร์ม =====
    choke = พัดลมโช๊ค (วิ่ง Cycle ตอน≤เป้า / ต่อเนื่องที่เป้า+1) · steps[].n = Step Auto (เปิดที่เป้า+(n-1)°C) · manual[] = เปิดมือตามอายุ (สะสม) */
 const FANPLANS={"chai34":{"farms":["ชัยนาท"],"size":"34×120","nf":24,"choke":[7,18],"steps":[{"n":2,"fans":[]},{"n":3,"fans":[5,20]},{"n":4,"fans":[3,22]}],"manual":[{"age":8,"fans":[2,23]},{"age":12,"fans":[9,16]},{"age":22,"fans":[11,14]},{"age":25,"fans":[6,19]},{"age":29,"fans":[4,21]},{"age":33,"fans":[1,24]},{"age":36,"fans":[8,17]},{"age":39,"fans":[10,12,13,15]}]},"chai28":{"farms":["ชัยนาท"],"size":"28×120","nf":18,"choke":[4,15],"steps":[{"n":2,"fans":[]},{"n":3,"fans":[6,13]},{"n":4,"fans":[2,17]}],"manual":[{"age":8,"fans":[8,11]},{"age":15,"fans":[3,16]},{"age":22,"fans":[1,18]},{"age":29,"fans":[5,14]},{"age":33,"fans":[7,12]},{"age":36,"fans":[9,10]}]},"thana":{"farms":["ธนวัฒน์"],"size":"28×120","nf":18,"choke":[2,17],"steps":[{"n":2,"fans":[4,15]},{"n":3,"fans":[6,13]},{"n":4,"fans":[8,11]}],"manual":[{"age":10,"fans":[9]},{"age":15,"fans":[1,18]},{"age":19,"fans":[10]},{"age":21,"fans":[7,12]},{"age":23,"fans":[5]},{"age":25,"fans":[14]},{"age":26,"fans":[3]},{"age":27,"fans":[16]},{"age":30,"fans":[8]},{"age":31,"fans":[11]},{"age":33,"fans":[6]},{"age":34,"fans":[13]},{"age":36,"fans":[2,4,15,17]}]},"phum":{"farms":["พุ่มวงษ์","พุ่มวงศ์","ยิ่งรวย"],"size":"28×120","nf":22,"choke":[2,21],"steps":[{"n":2,"fans":[4,19]},{"n":3,"fans":[6,17]},{"n":4,"fans":[8,15]}],"manual":[{"age":8,"fans":[11]},{"age":14,"fans":[1,22]},{"age":16,"fans":[14]},{"age":17,"fans":[9]},{"age":20,"fans":[10,18]},{"age":22,"fans":[3,5,7,16,20]},{"age":27,"fans":[13]},{"age":29,"fans":[8,12,15]},{"age":32,"fans":[6,17]},{"age":33,"fans":[4,19]}]},"money":{"farms":["มันนี่","สาธิต"],"size":"21×120","nf":16,"choke":[2,15],"steps":[{"n":2,"fans":[4,13]},{"n":3,"fans":[6,11]},{"n":4,"fans":[7,10]}],"manual":[{"age":12,"fans":[8]},{"age":15,"fans":[1,16]},{"age":21,"fans":[5,12]},{"age":24,"fans":[3,14]},{"age":28,"fans":[9]},{"age":30,"fans":[10]},{"age":32,"fans":[7]},{"age":34,"fans":[6]},{"age":35,"fans":[11]},{"age":37,"fans":[2,4,13,15]}]},"mk12":{"farms":["มั้งกี้1","มอส"],"size":"16×100","nf":12,"choke":[5],"steps":[{"n":2,"fans":[2,11]},{"n":3,"fans":[7]}],"manual":[{"age":13,"fans":[6]},{"age":16,"fans":[1,12]},{"age":22,"fans":[4,8]},{"age":26,"fans":[10]},{"age":29,"fans":[3]},{"age":31,"fans":[9]},{"age":34,"fans":[7]},{"age":36,"fans":[2,11]},{"age":38,"fans":[5]}]},"mk10":{"farms":["มั้งกี้2","มอส"],"size":"16×100","nf":10,"choke":[4],"steps":[{"n":2,"fans":[1,10]},{"n":3,"fans":[6]}],"manual":[{"age":13,"fans":[5]},{"age":22,"fans":[3,7]},{"age":26,"fans":[9]},{"age":29,"fans":[2]},{"age":31,"fans":[8]},{"age":34,"fans":[6]},{"age":36,"fans":[1,4,10]}]},"mos25":{"farms":["มอส","มั้งกี้3"],"size":"25×120","nf":14,"choke":[2,13],"steps":[{"n":2,"fans":[4,11]},{"n":3,"fans":[6,9]}],"manual":[{"age":10,"fans":[7]},{"age":14,"fans":[1,14]},{"age":18,"fans":[8]},{"age":21,"fans":[3,12]},{"age":23,"fans":[5,10]},{"age":26,"fans":[9]},{"age":27,"fans":[6]},{"age":29,"fans":[11]},{"age":31,"fans":[4]},{"age":33,"fans":[2,13]}]},"sriha":{"farms":["ศรีเหรา"],"size":"40×128","nf":26,"choke":[2,25],"steps":[{"n":2,"fans":[4,23]},{"n":3,"fans":[5,22]},{"n":4,"fans":[7,20]}],"manual":[{"age":7,"fans":[13]},{"age":11,"fans":[3,24]},{"age":16,"fans":[1,9,14,18,26]},{"age":20,"fans":[15]},{"age":21,"fans":[11]},{"age":22,"fans":[6,19,21]},{"age":25,"fans":[8,17]},{"age":26,"fans":[12]},{"age":27,"fans":[16]},{"age":29,"fans":[10]},{"age":30,"fans":[5,22]},{"age":31,"fans":[4]},{"age":32,"fans":[23]},{"age":33,"fans":[2,25]}]},"teng":{"farms":["เต็งหนึ่ง"],"size":"28×84","nf":20,"choke":[6,15],"steps":[{"n":2,"fans":[4,17]},{"n":3,"fans":[9,12]},{"n":4,"fans":[2,19]}],"manual":[{"age":7,"fans":[10]},{"age":12,"fans":[3,18]},{"age":17,"fans":[8,13]},{"age":22,"fans":[11]},{"age":24,"fans":[5,7,14,16]},{"age":32,"fans":[1,20]}]},"test8":{"farms":["ทดสอบ"],"size":"ทดสอบ 8 ตัว","nf":8,"choke":[4],"steps":[{"n":2,"fans":[5]},{"n":3,"fans":[3,6]}],"manual":[{"age":14,"fans":[2,7]},{"age":24,"fans":[1,8]}]},"rr36":{"farms":["รุ่งเรือง3-6","หนึ่งรุ่งเรือง"],"size":"32×120","nf":21,"choke":[2,20],"steps":[{"n":2,"fans":[4,18]},{"n":3,"fans":[6,16]},{"n":4,"fans":[8,14]}],"manual":[{"age":8,"fans":[11]},{"age":13,"fans":[1,21],"off":[11]},{"age":15,"fans":[11]},{"age":17,"fans":[7,15],"off":[11]},{"age":19,"fans":[5,11,17],"off":[7,15]},{"age":21,"fans":[9,13],"off":[11]},{"age":23,"fans":[7,11,15],"off":[9,13]},{"age":25,"fans":[9,13],"off":[11]},{"age":27,"fans":[3]},{"age":29,"fans":[11]},{"age":30,"fans":[10,12],"off":[11]},{"age":31,"fans":[8,11,14],"off":[10,12]},{"age":32,"fans":[10,12],"off":[11]},{"age":33,"fans":[11]}]},"rr2":{"farms":["รุ่งเรือง2","หนึ่งรุ่งเรือง"],"size":"16×100","nf":11,"choke":[],"steps":[],"manual":[{"age":13,"fans":[6]},{"age":18,"fans":[1,11],"off":[6]},{"age":21,"fans":[6]},{"age":22,"fans":[3]},{"age":25,"fans":[9]},{"age":28,"fans":[4,8],"off":[6]},{"age":30,"fans":[6]},{"age":33,"fans":[7]},{"age":35,"fans":[10]},{"age":37,"fans":[2,5]}]},"rr1":{"farms":["รุ่งเรือง1","หนึ่งรุ่งเรือง"],"size":"14×72","nf":8,"choke":[4],"steps":[],"manual":[{"age":15,"fans":[5]},{"age":22,"fans":[1,8],"off":[5]},{"age":24,"fans":[5]},{"age":28,"fans":[3]},{"age":33,"fans":[6]},{"age":37,"fans":[4]},{"age":38,"fans":[2,7]}]}};
+/* ฟาร์มเดียวกัน คนละชื่อในเอกสารแต่ละยุค — หมอยืนยัน 31 ก.ค. 2026
+   "PPF ดอนทอง" (ชื่อในแอป) = "มั่งมี" (ชื่อในไฟล์ Excel) = "มั้งกี้/มอส" (ชื่อในผังพัดลม)
+   เล้า 1 = 12 พัดลม (mk12) · เล้า 2 = 10 พัดลม (mk10) · เล้า 3-11 = 14 พัดลม (mos25) */
+['mk12','mk10','mos25'].forEach(function(k){ if(FANPLANS[k])FANPLANS[k].farms=FANPLANS[k].farms.concat(['ดอนทอง','มั่งมี']); });
 function resolvePlan(h,farmName){
   // เลือกแผนพัดลมให้ถูกอัตโนมัติ: 1) ที่หมอเลือกเอง 2) ชื่อฟาร์ม+ขนาดเล้า 3) ชื่อฟาร์ม+จำนวนพัดลม 4) ชื่อฟาร์มตัวเดียว
   if(h&&h.planKey&&FANPLANS[h.planKey])return{key:h.planKey,p:FANPLANS[h.planKey],byName:true};
@@ -1153,15 +1161,18 @@ function resolvePlan(h,farmName){
   const named=ent.filter(([k,p])=>p.farms.some(f=>fn&&(fn.indexOf(f)>=0||f.indexOf(fn)>=0)));
   const sz=h?(Math.round(h.W)+'×'+Math.round(h.L)):'';
   if(named.length){                                    // จับด้วยชื่อฟาร์มก่อนเสมอ (กันจับข้ามฟาร์ม เช่น ศรีเหรา→ชัยนาท)
-    const m=named.find(([k,p])=>p.size===sz)           // ตรงชื่อ + ขนาดเล้า
-         || named.find(([k,p])=>p.nf===(h&&h.fans))    // ตรงชื่อ + จำนวนพัดลม
+    // ลำดับสำคัญ: "จำนวนพัดลม" มาก่อน "ขนาดเล้า" — เพราะแผนคือใบสั่งว่าเปิดพัดลม "ตัวที่เท่าไร"
+    // ถ้าจำนวนพัดลมไม่เท่ากัน เบอร์ในแผนจะใช้ไม่ได้เลย (เช่น มั่งมี เล้า3-6 = 16×100 แต่ 14 พัดลม → ต้องได้แผน 14 ตัว ไม่ใช่แผน 12 ตัวที่ขนาดตรง)
+    const m=named.find(([k,p])=>p.size===sz&&p.nf===(h&&h.fans))   // ตรงทั้งขนาดและจำนวนพัดลม = แม่นที่สุด
+         || named.find(([k,p])=>p.nf===(h&&h.fans))    // ตรงจำนวนพัดลม
+         || named.find(([k,p])=>p.size===sz)           // ตรงขนาดเล้า
          || named[0];                                  // ชื่อฟาร์มตรงตัวเดียว/ตัวแรก
     return{key:m[0],p:m[1],byName:true};
   }
   const m=ent.filter(([k,p])=>p.nf===(h&&h.fans))[0];  // ไม่รู้จักชื่อ → เดาตามจำนวนพัดลม (ไม่มั่นใจ ไม่ซ่อมค่า)
   return m?{key:m[0],p:m[1],byName:false}:null;
 }
-function planFor(h,farmName){const r=resolvePlan(h,farmName);return r?{key:r.key,p:r.p}:null;}
+function planFor(h,farmName){const r=resolvePlan(h,farmName);return r?{key:r.key,p:r.p,byName:r.byName}:null;}
 function manualUpTo(p,a){const out=new Set();for(const s of p.manual)if(s.age<=a){(s.fans||[]).forEach(f=>out.add(f));(s.off||[]).forEach(f=>out.delete(f));}return[...out].sort((x,y)=>x-y);}
 function fanStateAt(p,age){
   const a=D(age),tgt=targetT(a);
@@ -1198,6 +1209,24 @@ function fanPlanHTML(h,farmName){
   const sel='<div class="fpsel">แผนที่ใช้: <select class="planpick"'+(canEdit?'':' disabled')+'><option value="">— อัตโนมัติตามฟาร์ม —</option>'+optList+'</select></div>';
   const head='<div class="tl">แผนการทำงานพัดลม</div>';
   if(!pm)return '<div class="fpnobox">'+head+'<div class="fpnote">ยังไม่มีแผนสำหรับ '+(h.fans)+' ตัว — เลือกแผนด้านล่าง</div>'+sel+'</div>';
+  // เตือนเมื่อแผนที่จับคู่ได้ "ไม่ตรงกับเล้าจริง" — ยืมจากฟาร์มอื่น / ขนาดเล้าไม่ตรง / จำนวนพัดลมไม่ตรง
+  const szNow=Math.round(h.W)+'×'+Math.round(h.L);
+  const mism=[];
+  // เตือนเฉพาะเรื่องที่ทำให้ "เบอร์พัดลมในแผนใช้ไม่ได้จริง" — ขนาดเล้าที่ต่างกันไม่เตือนเดี่ยว ๆ
+  // เพราะแผนให้แค่เบอร์พัดลม ส่วนการคำนวณลม/แพด ใช้ขนาดเล้าจริงของเล้านั้นอยู่แล้ว (แผนเดียวใช้ได้หลายขนาด)
+  if(pm.byName===false) mism.push('แผนนี้เป็นของ <b>'+esc(pm.p.farms.join('/'))+'</b> ไม่ใช่ฟาร์มนี้ — ระบบจับคู่ให้จากจำนวนพัดลมที่เท่ากันเท่านั้น');
+  if(pm.p.nf!==h.fans)  mism.push('จำนวนพัดลมไม่ตรง — แผนเป็น <b>'+pm.p.nf+'</b> ตัว แต่เล้านี้บันทึกไว้ <b>'+h.fans+'</b> ตัว'
+    +(pm.p.size!==szNow?' (แผนเป็นเล้า '+esc(pm.p.size)+' ม. · เล้านี้ '+szNow+' ม.)':'')+' — เบอร์พัดลมในแผนจะใช้ไม่ตรง');
+  const borrow=mism.length
+    ? '<div style="margin:10px 0 2px;padding:11px 13px;border-radius:10px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.38);color:#FCD34D;font-size:13px;line-height:1.65">'
+      +'⚠️ <b>แผนกับข้อมูลเล้ายังไม่ตรงกัน</b><ul style="margin:6px 0 0;padding-left:18px">'
+      +mism.map(function(x){return '<li style="margin:3px 0">'+x+'</li>';}).join('')
+      +'</ul><div style="margin-top:7px;opacity:.85">ตัวเลขข้างล่างจึงเป็นค่าอ้างอิง — แก้ข้อมูลเล้าในแท็บตั้งค่า หรือเลือกแผนให้ถูกด้านล่าง</div></div>'
+    : '';
+  // ขนาดเล้าต่างจากแผน แต่จำนวนพัดลมตรง = ใช้ได้ (แผนเดียวใช้ได้หลายขนาด) — แจ้งเบา ๆ ไว้ให้สังเกตได้ว่ากรอกขนาด/พัดลมผิดหรือเปล่า
+  const sizeNote=(!mism.length&&pm.p.size!==szNow)
+    ? '<div style="margin:8px 0 0;font-size:12px;color:#94A3B8;line-height:1.6">ℹ️ แผนนี้เขียนไว้สำหรับเล้า '+esc(pm.p.size)+' ม. · เล้านี้ '+szNow+' ม. — จำนวนพัดลมตรงกัน ('+h.fans+' ตัว) จึงใช้เบอร์พัดลมตามแผนได้ ส่วนการคำนวณลมใช้ขนาดจริงของเล้านี้</div>'
+    : '';
   const p=pm.p,st=fanStateAt(p,h.age),a=D(h.age);
   const mf=minFan(h,p.choke.length);
   const autoN=p.choke.length+p.steps.reduce((s,x)=>s+x.fans.length,0);
@@ -1234,7 +1263,8 @@ function fanPlanHTML(h,farmName){
   const tbl='<details><summary>ดูตารางเปิดมือทั้ง 1–42 วัน</summary><div class="inset"><div class="scroll"><table class="tt"><thead><tr><th>วัน</th><th>เปิดมือ</th><th>ตัวที่ (สะสม)</th></tr></thead><tbody>'+grows+'</tbody></table></div></div></details>';
   const lifecycle=fanLifecycle(p,a);
   const planHead='<div class="fphd"><span class="fpsum-ic">'+I.fan+'</span><span class="fpsum-tx"><b>แผนการทำงานพัดลม</b><small>อายุ '+h.age+' วัน · เปิดมือ '+st.man.length+' ตัว</small></span></div>';
-  return '<details class="fpwrap"><summary class="fpsum"></summary><div class="fpbody">'+planHead+'<div class="fpwho">'+esc(p.farms.join('/'))+' · '+p.size+' · '+p.nf+' ตัว</div>'+act+lifecycle+strip+lad+tbl+sel+legend+'</div></details>';
+  // มีจุดไม่ตรง → กางกล่องไว้เลย ไม่งั้นป้ายเตือนซ่อนอยู่ในกล่องที่ปิดอยู่ แต่ตัวเลขที่ผิดโชว์อยู่ข้างนอก
+  return '<details class="fpwrap"'+(mism.length?' open':'')+'><summary class="fpsum"></summary><div class="fpbody">'+planHead+'<div class="fpwho">'+esc(p.farms.join('/'))+' · '+p.size+' · '+p.nf+' ตัว</div>'+borrow+sizeNote+act+lifecycle+strip+lad+tbl+sel+legend+'</div></details>';
 }
 const TM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 function fmtThai(d){return d.getDate()+' '+TM[d.getMonth()]+' '+String((d.getFullYear()+543)%100).padStart(2,'0');}
@@ -1282,7 +1312,7 @@ let canEdit=false;   // รหัสแก้ไขตรวจที่เซ�
 
 function zeros(){return new Array(42).fill(0);}
 const PAD={padH:1.8,padFront:28,padLeft:20,padRight:20,padBlock:0.54};
-function house(name,o){return Object.assign({name:name,placeDate:'',W:24,L:120,H:2,fan:52,fans:18,birds:30000,age:21,pts:[1124,1263,1398,1307,871,1289,1539,1364,1150],initStock:0,recv:zeros(),dead:zeros(),wtActual:0,padH:1.8,padFront:28,padLeft:20,padRight:20,padBlock:0.54,padFans:14,padFansAuto:true},o||{});}
+function house(name,o){return Object.assign({name:name,placeDate:'',W:24,L:120,H:2,baffle:0,fan:52,fans:18,birds:30000,age:21,pts:[1124,1263,1398,1307,871,1289,1539,1364,1150],initStock:0,recv:zeros(),dead:zeros(),wtActual:0,padH:1.8,padFront:28,padLeft:20,padRight:20,padBlock:0.54,padFans:14,padFansAuto:true},o||{});}
 /* ===== นำเข้าจากไฟล์ "ใบหน้าเล้า" .xlsx: ดึงชื่อฟาร์ม+จำนวนเล้า+ไก่ลง+อายุ (ไม่แตะแรงลม/ขนาดเล้า) ===== */
 function faceFarmName(fn){
   if(/ชัยนาท/.test(fn))return'ฟาร์ม ชัยนาท';
@@ -1363,15 +1393,21 @@ function normalize(r){
     if(typeof h.name!=='string')h.name=String(h.name==null?'เล้า':h.name);
     if(typeof h.placeDate!=='string')h.placeDate='';
     h.W=nclamp(nnum(h.W,24),0.1,300); h.L=nclamp(nnum(h.L,120),0.1,2000); h.H=nclamp(nnum(h.H,2),0.1,20);
+    h.baffle=nclamp(nnum(h.baffle,0),0,Math.max(0,h.H*100-10));   // ชิ่งลมแนวดิ่ง (ซม.) · 0 = ยังไม่ระบุ · ต้องต่ำกว่าความสูงเล้าเสมอ
     h.fan=nclamp(nnum(h.fan,52),1,200); h.fans=nclamp(Math.round(nnum(h.fans,18)),1,300);
     h.birds=nclamp(Math.round(nnum(h.birds,0)),0,1e7); h.age=nclamp(Math.round(nnum(h.age,1)),0,60);
     try{ const _fn=(fm.name||'').replace(/ฟาร์ม|\s/g,'');                           // ซ่อมจำนวนพัดลมให้ตรงฐานข้อมูลแผนของฟาร์มอัตโนมัติ (เช่น ศรีเหรา 18→26)
       const _named=Object.values(FANPLANS).filter(p=>p.farms.some(f=>_fn&&(_fn.indexOf(f)>=0||f.indexOf(_fn)>=0)));
       if(_named.length){
         const _sz=Math.round(h.W)+'×'+Math.round(h.L);
-        const _bySize=_named.find(p=>p.size===_sz);                                  // ขนาดเล้าตรง = สัญญาณแรงสุด → ยึดตามนั้น
+        const _bySizeAll=_named.filter(p=>p.size===_sz);                             // ขนาดเล้าตรง = สัญญาณแรงสุด → ยึดตามนั้น
+        // ซ่อมได้เฉพาะเมื่อขนาดเล้านั้นมีแผนเดียว — ถ้าขนาดเดียวกันมีหลายแผน (เช่น มั่งมี 16×100 มีทั้ง 12 และ 10 พัดลม)
+        // การซ่อมอัตโนมัติจะเดาผิดและทับจำนวนพัดลมจริงของหมอ จึงปล่อยไว้ให้ผู้ใช้เลือกแผนเอง
+        const _bySize=(_bySizeAll.length===1)?_bySizeAll[0]:null;
         if(_bySize){ if(h.fans!==_bySize.nf)h.fans=nclamp(Math.round(_bySize.nf),1,300); }
-        else if(!_named.some(p=>p.nf===h.fans)){ const _pr=resolvePlan(h,fm.name); if(_pr&&_pr.byName)h.fans=nclamp(Math.round(_pr.p.nf),1,300); }
+        // ซ่อมจากชื่อฟาร์มได้เฉพาะเมื่อฟาร์มนั้นมีแผนเดียวเท่านั้น — ถ้ามีหลายแผน (ชัยนาท/รุ่งเรือง/มั่งมี)
+        // การหยิบแผนแรกมาทับ = เขียนทับจำนวนพัดลมจริงของหมอเงียบ ๆ (เช่น มั่งมี เล้า2=10, เล้า3-11=14 จะถูกทับเป็น 12 ทั้งหมด)
+        else if(_named.length===1&&!_named.some(p=>p.nf===h.fans)){ const _pr=resolvePlan(h,fm.name); if(_pr&&_pr.byName)h.fans=nclamp(Math.round(_pr.p.nf),1,300); }
       }
     }catch(_){}
     h.initStock=nclamp(Math.round(nnum(h.initStock,0)),0,1e7); h.wtActual=nclamp(nnum(h.wtActual,0),0,10000);
@@ -1439,6 +1475,51 @@ function _cloudDateStr(iso,ms){
   var p=function(n){return('0'+n).slice(-2);};
   return d.getDate()+' '+THMS[d.getMonth()]+' '+(d.getFullYear()+543)+' '+p(d.getHours())+':'+p(d.getMinutes());
 }
+/* ===== ซ่อมข้อมูลฟาร์มมั่งมี (= PPF ดอนทอง = มั้งกี้) =====
+   ที่มา: ตารางที่หมอวรัญญูยืนยัน 31 ก.ค. 2026
+     เล้า 1-6  : 16 × 100 × 2.00 ม. · ชิ่งลมแนวดิ่ง 25 ซม. (พื้นที่ 1,600 ตร.ม. · 11.56 ตัว/ตร.ม.)
+     เล้า 7-11 : 25.3 × 120 × 2.65 ม. · ชิ่งลมแนวดิ่ง 40 ซม. (พื้นที่ 3,036 ตร.ม. · 11.36 ตัว/ตร.ม.)
+     พัดลม: เล้า1 = 12 · เล้า2 = 10 · เล้า3-11 = 14
+   ⚠️ แก้เฉพาะขนาดเล้า/ชิ่งลม/จำนวนพัดลมเท่านั้น
+      ไม่แตะจำนวนไก่ อายุ วันลงไก่ ไก่ตาย น้ำหนัก หรือค่าแพด — เป็นข้อมูลที่เปลี่ยนทุกวัน */
+const MANGMEE_SPEC=(function(){const a=[];for(let i=1;i<=11;i++){const sm=(i<=6);
+  a.push({no:i,W:sm?16:25.3,L:sm?100:120,H:sm?2:2.65,baffle:sm?25:40,fans:(i===1)?12:(i===2)?10:14});}return a;})();
+const MANGMEE_FIELDS=[['W','กว้าง','ม.'],['L','ยาว','ม.'],['H','สูง','ม.'],['baffle','ชิ่งลม','ซม.'],['fans','พัดลม','ตัว']];
+// เทียบชื่อแบบ "ตรงตัว" หลังตัดคำนำหน้า — ห้ามใช้ substring ไม่งั้นฟาร์มชื่อ "ดอนทองพัฒนา" จะโดนปุ่มเขียนทับข้อมูลด้วย
+const MANGMEE_NAMES=['ดอนทอง','มั่งมี','มั้งกี้','มังกี้'];
+function isMangmee(name){const n=(name||'').replace(/ฟาร์ม|\s|PPF/gi,'');return MANGMEE_NAMES.indexOf(n)>=0;}
+// จับคู่ตาม "เลขเล้า" ที่อ่านจากชื่อ ไม่ใช่ลำดับใน array — ถ้าเล้าถูกลบ/สลับ/นำเข้าไม่ครบ ลำดับจะเลื่อนแล้วเขียนทับผิดเล้า
+function mangmeeNo(h){const m=String(h&&h.name||'').match(/(\d+)/);return m?+m[1]:0;}
+function mangmeeDiff(fm){
+  if(!fm||!isMangmee(fm.name)||!Array.isArray(fm.houses))return [];
+  const rows=[];
+  fm.houses.forEach(function(h,i){
+    const no=mangmeeNo(h);
+    const s=MANGMEE_SPEC.find(function(x){return x.no===no;});
+    if(!s)return;                                             // อ่านเลขเล้าไม่ได้ / นอกช่วง 1-11 → ไม่แตะ ปลอดภัยไว้ก่อน
+    const ch=[];
+    MANGMEE_FIELDS.forEach(function(f){ if(Math.abs((+h[f[0]]||0)-s[f[0]])>0.001) ch.push(f[1]+' '+(+h[f[0]]||0)+' → '+s[f[0]]+' '+f[2]); });
+    if(ch.length)rows.push({i:i,no:no,name:h.name,ch:ch});
+  });
+  return rows;
+}
+function applyMangmeeFix(){
+  if(!canEdit){alert('🔒 ต้องปลดล็อกแก้ไขก่อน — กดกุญแจมุมขวาบน');return;}
+  const fm=farms[cf], rows=mangmeeDiff(fm);
+  if(!rows.length){alert('✅ ข้อมูลขนาดเล้าและจำนวนพัดลมถูกต้องอยู่แล้ว ไม่มีอะไรต้องแก้');return;}
+  const lines=rows.map(function(r){return '• '+r.name+'\n     '+r.ch.join('\n     ');}).join('\n');
+  if(!confirm('แก้ข้อมูล "'+fm.name+'" ตามตารางที่หมอยืนยัน\n\n'
+    +'จะแก้ '+rows.length+' เล้า:\n\n'+lines
+    +'\n\n──────────────────────\nไม่แตะ: จำนวนไก่ · อายุ · วันลงไก่ · ไก่ตาย · น้ำหนัก\n\nตกลงเพื่อแก้ (กู้กลับได้ด้วยปุ่ม "กู้กลับ")'))return;
+  try{localStorage.setItem('ppf_farms_v3_prev',JSON.stringify(farms));}catch(_){}   // สำรองก่อนแก้เสมอ
+  rows.forEach(function(r){const h=fm.houses[r.i],s=MANGMEE_SPEC.find(function(x){return x.no===r.no;});
+    if(!s)return;
+    MANGMEE_FIELDS.forEach(function(f){h[f[0]]=s[f[0]];});
+    h.padFans=nclamp(Math.round(+h.padFans||0),1,h.fans);      // กันค่าแพดค้างเกินจำนวนพัดลมใหม่
+  });
+  save();renderChips();render();
+  alert('✅ แก้เรียบร้อย '+rows.length+' เล้า\n\nแผนพัดลมจะจับคู่ถูกต้องเองแล้ว — ถ้ายังมีป้ายเตือนสีเหลือง แปลว่ายังมีจุดที่ไม่ตรง');
+}
 function openCloudRestore(){
   if(!syncCfg){alert('ยังไม่ได้เชื่อมต่อคลาวด์');return;}
   var m=document.getElementById('cloudmodal');if(!m)return;
@@ -1471,10 +1552,13 @@ function doCloudRestore(i,nf,nh){
 }
 
 function calc(h){
-  const side=h.fan*2.54/30.48,area=side*side,avg=h.pts.reduce((a,b)=>a+(+b||0),0)/9,fanCFM=area*avg;
+  const side=h.fan*IN2CM/30.48,area=side*side,avg=h.pts.reduce((a,b)=>a+(+b||0),0)/9,fanCFM=area*avg;
   const wkg=bw(h.age)/1000,ck=cfmkg(h.age),reqAir=ck*wkg*h.birds;
   const need=fanCFM>0?reqAir/fanCFM:0,needMin=fanCFM>0?(MINRATE*wkg*h.birds)/fanCFM:0;
-  const cross=h.W*h.H,fm=fanCFM*CFM_TO_M3S,comfort=maxWind(h.age);
+  /* หน้าตัดลม = กว้าง × สูงที่ลมผ่านได้จริง (สูงเฉลี่ย − ชิ่งลมแนวดิ่ง) — หมอยืนยัน 31 ก.ค. 2026
+     ชิ่งลมเก็บเป็น ซม. · 0 = ยังไม่ได้ระบุ (คำนวณเหมือนเดิม ไม่เดาค่าแทนหมอ) */
+  const secH=Math.max(0.1,h.H-(+h.baffle||0)/100);
+  const cross=h.W*secH,fm=fanCFM*CFM_TO_M3S,comfort=maxWind(h.age);
   let ventMax,ventMin;
   // ถ้าจับคู่แผนพัดลม (Excel) ได้ → ใช้ค่าต่ออายุจากแผน: ต่ำ = Manual สะสม + โช๊ค · สูง = Manual สะสม + Auto ทั้งหมด
   const _pm=planFor(h,(typeof farms!=='undefined'&&farms[cf])?farms[cf].name:'');
@@ -1578,7 +1662,7 @@ function feedCard(h,i){
 function setCard(h,i){
   return `<div class="card" data-i="${i}"><div class="chead"><span class="badge">${i+1}</span><input class="nm hname" value="${esc(h.name)}" aria-label="ชื่อโรงเรือน"><span class="editic" title="แตะเพื่อแก้ไขชื่อ">${I.edit}</span>`+(houses().length>1?`<button class="xbtn" data-del="${i}" title="ลบโรงเรือน">&times;</button>`:'')+`</div><div class="body">
     <div class="sublab">ขนาดโรงเรือน &amp; พัดลม</div>
-    <div class="row">${fI('กว้างเล้า (ม.)','W',h.W,0.5)}${fI('ยาวเล้า (ม.)','L',h.L,1)}${fI('สูงเฉลี่ย (ม.)','H',h.H,0.1)}${fI('ขนาดพัดลม (นิ้ว)','fan',h.fan,1)}${fI('จำนวนพัดลม (ตัว)','fans',h.fans,1)}${fI('จำนวนไก่ (ตัว)','birds',h.birds,100)}</div>
+    <div class="row">${fI('กว้างเล้า (ม.)','W',h.W,0.5)}${fI('ยาวเล้า (ม.)','L',h.L,1)}${fI('สูงเฉลี่ย (ม.)','H',h.H,0.1)}${fI('ชิ่งลมแนวดิ่ง (ซม.) · ลมผ่านสูง '+Math.max(0.1,(+h.H||0)-(+h.baffle||0)/100).toFixed(2)+' ม.','baffle',h.baffle,1)}${fI('ขนาดพัดลม (นิ้ว)','fan',h.fan,1)}${fI('จำนวนพัดลม (ตัว)','fans',h.fans,1)}${fI('จำนวนไก่ (ตัว)','birds',h.birds,100)}</div>
     <div class="sublab">ขนาด Cooling pad (เมตร)</div>
     <div class="row">${fI('หน้า','padFront',h.padFront,0.5)}${fI('ซ้าย','padLeft',h.padLeft,0.5)}${fI('ขวา','padRight',h.padRight,0.5)}${fI('สูง pad (ม.)','padH',h.padH,0.1)}</div>
     <div class="sublab">แรงลมที่วัดได้ 9 จุด (ft/min) — ใช้หาประสิทธิภาพพัดลม</div>
@@ -1772,15 +1856,18 @@ function applyLock(){
 }
 function tryUnlock(){
   if(canEdit){canEdit=false;applyLock();return;}
+  // ต้องเช็กประตูก่อนทุกกรณี — ถ้าเช็ก wcode ก่อน เครื่องที่ถูกเพิกถอนสิทธิ์จะปลดล็อกแก้ไขได้อยู่ดี
+  if(!hasAccess()){ gateShow('ใส่รหัสเข้าใช้งานก่อน แล้วจึงปลดล็อกแก้ไขได้'); return; }
   if(syncCfg&&syncCfg.wcode){canEdit=true;applyLock();return;}          // มีรหัสแก้ไขในเครื่องแล้ว → ปลดล็อกได้เลย
-  const p=prompt('🔒 ใส่รหัสสำหรับ "แก้ไข" ข้อมูล\n(เป็นคนละตัวกับรหัสดู 5671 — ถ้าไม่ทราบ ถามหมอวรัญญู)');
+  const p=prompt('🔒 ใส่รหัสสำหรับ "แก้ไข" ข้อมูล\n(เป็นคนละตัวกับรหัสเข้าใช้งาน — ถ้าไม่ทราบ ถามหมอวรัญญู)');
   if(p===null||p==='')return;
-  if(!syncCfg){ syncCfg={url:SYNC_DEFAULT_URL,code:'5671'}; try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){} }  // ไม่มีรหัสลับฝังในแอป → ตรวจกับเซิร์ฟเวอร์เสมอ
   syncStat('กำลังตรวจรหัส…');
   // ตรวจรหัสกับเซิร์ฟเวอร์แบบปลอดภัย: ดึงข้อมูลปัจจุบันจากคลาวด์ แล้วเขียนกลับด้วยข้อมูล+เวลาเดิม (ไม่ทับข้อมูลใคร)
   fetch(syncCfg.url+'?code='+encodeURIComponent(syncCfg.code)+'&t='+Date.now())
    .then(r=>r.json()).then(cur=>{
-     const data=(cur&&cur.data&&cur.data.length>2)?cur.data:JSON.stringify(farms), ts=(cur&&+cur.updatedAt)||syncTs();
+     // ถ้าอ่านคลาวด์ไม่สำเร็จ ต้องยกเลิก — ห้ามเอาข้อมูลในเครื่อง (อาจเก่าหลายชั่วโมง) ไปทับของจริงตอนแค่กดปลดล็อก
+     if(!cur||!cur.ok||!cur.data||cur.data.length<=2) throw new Error('อ่านข้อมูลคลาวด์ไม่ได้ — ยกเลิกเพื่อกันข้อมูลทับกัน');
+     const data=cur.data, ts=(+cur.updatedAt)||syncTs();
      return fetch(syncCfg.url,{method:'POST',body:JSON.stringify({code:p,data:data,updatedAt:ts})}).then(r=>r.json());
    })
    .then(j=>{
@@ -1790,7 +1877,7 @@ function tryUnlock(){
    .catch(()=>{alert('เชื่อมต่อไม่ได้ ลองใหม่'); syncStat('เชื่อมต่อไม่ได้','err');});
 }
 let copySrc=-1;
-const COPY_KEYS=['W','L','H','fan','fans','padFront','padLeft','padRight','padBlock','padH'];
+const COPY_KEYS=['W','L','H','baffle','fan','fans','padFront','padLeft','padRight','padBlock','padH'];
 function openCopyModal(i){
   copySrc=i;const src=houses()[i];if(!src)return;
   document.getElementById('copyFrom').innerHTML='จาก <b>'+esc(src.name)+'</b> ('+esc(farms[cf].name)+') → เลือกเล้าปลายทาง:';
@@ -2417,7 +2504,7 @@ function render(){
   document.getElementById('tabName').textContent=t.label;
   document.getElementById('tabDesc').textContent=t.id==='guide'?t.desc:t.desc+' — '+farms[cf].name;
   const tb=document.getElementById('toolbar');
-  tb.innerHTML = tab==='set'?`<div class="setbar1"><span class="editic" title="แตะเพื่อแก้ไขชื่อฟาร์ม">${I.edit}</span><input class="farmname" value="${esc(farms[cf].name)}" aria-label="ชื่อฟาร์ม"></div><div class="setbar2"><button class="btn primary" id="addHouse">+ เพิ่มโรงเรือน</button><button class="btn" id="addFarm">+ เพิ่มฟาร์ม</button><button class="btn" id="importXlsx">${I.download} นำเข้าจาก Excel</button><button class="btn" id="expBackup">${I.download} สำรองข้อมูล</button><button class="btn" id="impBackup">${I.upload} กู้คืนจากไฟล์</button><button class="btn" id="cloudBackup">☁️ กู้จากคลาวด์</button>`+(localStorage.getItem('ppf_farms_v3_prev')?`<button class="btn" id="undoBackup">${I.undo} กู้กลับ</button>`:'')+(farms.length>1?`<button class="btn warn" id="delFarm">ลบฟาร์มนี้</button>`:'')+`</div>`:(tab==='vent'?`<button class="btn" id="openHI" type="button">${I.temp} คำนวณ Heat Index</button>`:'');
+  tb.innerHTML = tab==='set'?`<div class="setbar1"><span class="editic" title="แตะเพื่อแก้ไขชื่อฟาร์ม">${I.edit}</span><input class="farmname" value="${esc(farms[cf].name)}" aria-label="ชื่อฟาร์ม"></div><div class="setbar2"><button class="btn primary" id="addHouse">+ เพิ่มโรงเรือน</button><button class="btn" id="addFarm">+ เพิ่มฟาร์ม</button><button class="btn" id="importXlsx">${I.download} นำเข้าจาก Excel</button><button class="btn" id="expBackup">${I.download} สำรองข้อมูล</button><button class="btn" id="impBackup">${I.upload} กู้คืนจากไฟล์</button><button class="btn" id="cloudBackup">☁️ กู้จากคลาวด์</button>`+((mangmeeDiff(farms[cf])||[]).length?`<button class="btn primary" id="fixMangmee" title="ตั้งขนาดเล้า ชิ่งลม และจำนวนพัดลม ตามตารางที่หมอยืนยัน">🛠 แก้ข้อมูลเล้าให้ถูกต้อง (${mangmeeDiff(farms[cf]).length} เล้า)</button>`:'')+(localStorage.getItem('ppf_farms_v3_prev')?`<button class="btn" id="undoBackup">${I.undo} กู้กลับ</button>`:'')+(farms.length>1?`<button class="btn warn" id="delFarm">ลบฟาร์มนี้</button>`:'')+`</div>`:(tab==='vent'?`<button class="btn" id="openHI" type="button">${I.temp} คำนวณ Heat Index</button>`:'');
   const g=document.getElementById('grid');
   if(tab==='guide'){g.style.gridTemplateColumns='1fr';g.innerHTML=guideCard();const pm=document.getElementById('printManual');if(pm)pm.onclick=buildManual;applyLock();return;}
   if(tab==='cal'){g.style.gridTemplateColumns='1fr';calStyleInject();g.innerHTML=calendarView();_swPaint();calClockPaint();if(!calClkTimer)calClkTimer=setInterval(calClockPaint,1000);applyLock();return;}
@@ -2434,6 +2521,7 @@ function render(){
   const eb=document.getElementById('expBackup');if(eb)eb.onclick=exportBackup;
   const ib=document.getElementById('impBackup');if(ib)ib.onclick=()=>document.getElementById('backupFile').click();
   const clb=document.getElementById('cloudBackup');if(clb)clb.onclick=openCloudRestore;
+  const fmg=document.getElementById('fixMangmee');if(fmg)fmg.onclick=applyMangmeeFix;
   const ub=document.getElementById('undoBackup');if(ub)ub.onclick=undoRestore;
   const hib=document.getElementById('openHI');if(hib)hib.onclick=openHI;
   applyLock();
@@ -2463,7 +2551,13 @@ document.querySelector('.wrap').addEventListener('input',e=>{
   else if(t.classList.contains('hname'))h.name=t.value;
   else if(t.classList.contains('initstock'))h.initStock=+t.value||0;
   else if(t.classList.contains('wtact'))h.wtActual=+t.value||0;
-  else if(t.dataset.k){let v=+t.value||0;if(t.dataset.k==='padFans'){v=Math.max(0,Math.min(h.fans,v));if(v!=(+t.value))t.value=v;}h[t.dataset.k]=v;}
+  else if(t.dataset.k){let v=+t.value||0;
+    if(t.dataset.k==='padFans'){v=Math.max(0,Math.min(h.fans,v));if(v!=(+t.value))t.value=v;}
+    // ชิ่งลมต้องไม่สูงเท่า/เกินความสูงเล้า ไม่งั้นหน้าตัดลมยุบเหลือ 0.1 ม. แล้วความเร็วลมพุ่งเป็นสิบเท่าแบบเงียบ ๆ
+    if(t.dataset.k==='baffle'){const mx=Math.max(0,Math.round((+h.H||0)*100)-10);v=Math.max(0,Math.min(mx,v));if(v!=(+t.value))t.value=v;
+      const lb=t.closest('.f')&&t.closest('.f').querySelector('label');   // โชว์ผลลัพธ์ทันที ผู้ใช้จะเห็นเองถ้าพิมพ์ผิดหลัก
+      if(lb)lb.textContent='ชิ่งลมแนวดิ่ง (ซม.) · ลมผ่านสูง '+Math.max(0.1,(+h.H||0)-v/100).toFixed(2)+' ม.';}
+    h[t.dataset.k]=v;}
   else if(t.dataset.pt!==undefined)h.pts[+t.dataset.pt]=+t.value||0;
   else if(t.dataset.recv!==undefined)h.recv[(+t.dataset.recv)-1]=+t.value||0;
   else if(t.dataset.dead!==undefined)h.dead[(+t.dataset.dead)-1]=+t.value||0;
@@ -2505,12 +2599,13 @@ const SYNC_KEY='ppf_sync', TS_KEY='ppf_updatedAt';
 let syncCfg=null, syncTimer=null, syncApplying=false;
 try{syncCfg=JSON.parse(localStorage.getItem(SYNC_KEY)||'null');}catch(e){}
 if(syncCfg&&syncCfg.url!==SYNC_DEFAULT_URL){syncCfg.url=SYNC_DEFAULT_URL;try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){}}  // ย้ายเครื่องเก่าไป backend ใหม่อัตโนมัติ
+const HAD_CODE=!!(syncCfg&&syncCfg.code);   // เครื่องนี้เคยเชื่อมต่อสำเร็จมาก่อนหรือไม่ (ใช้ตัดสินว่าจะถามรวมข้อมูลไหมตอนใส่รหัสใหม่)
 function syncTs(){return +localStorage.getItem(TS_KEY)||0;}
 function syncSetTs(t){try{localStorage.setItem(TS_KEY,String(t));}catch(e){}}
 function syncStat(msg,cls){const e=document.getElementById('syncStat');if(e){e.textContent=msg;e.className='syncstat'+(cls?(' '+cls):'');}}
 function syncNowStr(){const d=new Date();return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
-function syncTouch(){ if(syncApplying||!syncCfg)return; syncSetTs(Date.now()); clearTimeout(syncTimer); syncTimer=setTimeout(syncPush,800); }
-function syncPush(){ if(!syncCfg)return;
+function syncTouch(){ if(syncApplying||!hasAccess())return; syncSetTs(Date.now()); clearTimeout(syncTimer); syncTimer=setTimeout(syncPush,800); }
+function syncPush(){ if(!hasAccess())return;                     // ไม่ผ่านประตู = ห้ามเขียนคลาวด์เด็ดขาด
   if(!syncCfg.wcode){ syncStat('👁️ โหมดดูอย่างเดียว — กดกุญแจใส่รหัสเพื่อแก้ไข'); return; }   // ไม่มีรหัสเขียน → ไม่ push (กันเครื่องคนอื่นทับ)
   syncStat('กำลังส่งขึ้นชีท…');
   fetch(syncCfg.url,{method:'POST',body:JSON.stringify({code:syncCfg.wcode,data:JSON.stringify(farms),updatedAt:syncTs()})})
@@ -2523,6 +2618,7 @@ function syncPush(){ if(!syncCfg)return;
 function syncPull(opts){ if(!syncCfg)return; opts=opts||{}; syncStat('กำลังดึงจากชีท…');
   fetch(syncCfg.url+'?code='+encodeURIComponent(syncCfg.code)+'&t='+Date.now())
    .then(r=>r.json()).then(j=>{
+     if(j&&!j.ok&&/bad code/i.test(j.error||'')){ accessDenied(); return; }        // รหัสเข้าใช้งานถูกเปลี่ยน/เพิกถอน → กลับไปหน้าใส่รหัส
      if(!j||!j.ok){syncStat('เชื่อมต่อไม่ได้: '+((j&&j.error)||'รหัสผิด?'),'err');return;}
      const rts=+j.updatedAt||0, lts=syncTs(), hasR=j.data&&j.data.length>2;
      if(hasR&&(opts.force||rts>lts)){
@@ -2531,11 +2627,85 @@ function syncPull(opts){ if(!syncCfg)return; opts=opts||{}; syncStat('กำล�
        else syncStat('ข้อมูลในชีทไม่ถูกต้อง','err');
      } else { syncPush(); }
    }).catch(()=>syncStat('เชื่อมต่อไม่ได้ (เน็ต/ลิงก์?)','err')); }
+/* ── ประตูเข้าใช้งาน (Access Gate) ─────────────────────────────────────────────
+   เดิมแอปฝัง "รหัสดู" ไว้ในหน้าเว็บสาธารณะ → ใครเปิด DevTools ก็ดึงข้อมูลทุกฟาร์มได้
+   ตอนนี้ไม่ฝังรหัสใด ๆ ในโค้ดแล้ว — เครื่องที่ยังไม่เคยใส่รหัส ดึงข้อมูลจากคลาวด์ไม่ได้เลย
+   ใส่ครั้งเดียวต่อเครื่อง → จำไว้ใน localStorage → เปิดครั้งต่อไป/ใช้ออฟไลน์ ได้ตามปกติ */
+function hasAccess(){ return !!(syncCfg&&syncCfg.code); }
+function gateEl(){
+  var g=document.getElementById('accessGate'); if(g)return g;
+  g=document.createElement('div'); g.id='accessGate';
+  // สร้างมาแบบซ่อนไว้ก่อน — ให้ gateShow เป็นคนเปิด ไม่งั้น gateShow จะเข้าใจผิดว่า "เปิดอยู่แล้ว" แล้วข้ามการโฟกัส/ปุ่มออฟไลน์
+  g.setAttribute('style','position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;padding:24px;background:#0B1220;color:#F8FAFC');
+  g.innerHTML='<div style="width:100%;max-width:340px;text-align:center">'
+   +'<div style="font-size:32px;margin-bottom:12px">🔒</div>'
+   +'<div style="font-size:19px;font-weight:600;letter-spacing:.5px;margin-bottom:6px">FARM FAN</div>'
+   +'<div id="gateMsg" style="font-size:14px;color:#94A3B8;line-height:1.6;margin-bottom:22px">ใส่รหัสเข้าใช้งาน</div>'
+   +'<input id="gateCode" type="password" inputmode="numeric" autocomplete="off" placeholder="รหัสเข้าใช้งาน" style="width:100%;box-sizing:border-box;padding:14px 16px;font-size:17px;text-align:center;letter-spacing:3px;border:1px solid #334155;border-radius:12px;background:#111C2E;color:#F8FAFC;outline:none">'
+   +'<button id="gateGo" type="button" style="width:100%;box-sizing:border-box;margin-top:12px;padding:14px;font-size:16px;font-weight:600;border:0;border-radius:12px;background:#0EA5A4;color:#04211F;cursor:pointer">เข้าใช้งาน</button>'
+   +'<div id="gateErr" style="min-height:20px;margin-top:12px;font-size:13px;color:#94A3B8"></div>'
+   +'<div style="margin-top:14px;font-size:12px;color:#64748B;line-height:1.6">ไม่ทราบรหัส — ติดต่อผู้ดูแลระบบ</div></div>';
+  document.body.appendChild(g);
+  g.querySelector('#gateGo').onclick=gateSubmit;
+  g.querySelector('#gateCode').onkeydown=function(e){ if(e.key==='Enter')gateSubmit(); };
+  return g;
+}
+function gateShow(msg){
+  var g=gateEl(), already=(g.style.display==='flex');
+  if(msg){var m=g.querySelector('#gateMsg'); if(m)m.textContent=msg;}
+  g.style.display='flex';
+  try{document.body.style.overflow='hidden';}catch(_){}          // กันแอปเลื่อน/โผล่ข้างหลังประตู
+  if(already)return;                       // เปิดอยู่แล้ว → ห้ามล้างช่องหรือแย่งโฟกัส (ไม่งั้นผู้ใช้พิมพ์รหัสไม่ได้)
+  var i=g.querySelector('#gateCode'); if(i){i.value=''; setTimeout(function(){try{i.focus();}catch(_){}} ,80);}
+  gateOffline();
+}
+/* ออฟไลน์: ถ้าเครื่องนี้เคยมีข้อมูลอยู่แล้ว (เคยผ่านประตูมาก่อน) ให้ใช้งานต่อได้โดยไม่ต้องต่อเน็ต
+   เครื่องที่ไม่เคยมีข้อมูล = ไม่มีอะไรให้ดูอยู่แล้ว จึงไม่เปิดช่องนี้ให้ */
+function gateOffline(){
+  var g=gateEl(); if(g.querySelector('#gateOff'))return;
+  if(!localStorage.getItem('ppf_farms_v3'))return;
+  var b=document.createElement('button'); b.id='gateOff'; b.type='button';
+  b.textContent='ใช้งานต่อแบบออฟไลน์ (ข้อมูลในเครื่อง)';
+  b.setAttribute('style','width:100%;box-sizing:border-box;margin-top:10px;padding:12px;font-size:14px;border:1px solid #334155;border-radius:12px;background:transparent;color:#94A3B8;cursor:pointer');
+  b.onclick=function(){ gateHide(); syncStat('📴 ออฟไลน์ — ใช้ข้อมูลในเครื่อง ยังไม่ได้ซิงค์'); };
+  g.querySelector('#gateErr').parentNode.insertBefore(b,g.querySelector('#gateErr'));
+}
+function gateHide(){ var g=document.getElementById('accessGate'); if(g)g.style.display='none'; try{document.body.style.overflow='';}catch(_){} }
+function gateSubmit(){
+  var g=gateEl(), inp=g.querySelector('#gateCode'), err=g.querySelector('#gateErr'), btn=g.querySelector('#gateGo');
+  var p=(inp.value||'').trim();
+  if(!p){ err.style.color='#F87171'; err.textContent='กรุณาใส่รหัส'; return; }
+  btn.disabled=true; err.style.color='#94A3B8'; err.textContent='กำลังตรวจสอบ…';
+  fetch(SYNC_DEFAULT_URL+'?code='+encodeURIComponent(p)+'&t='+Date.now())
+   .then(function(r){return r.json();})
+   .then(function(j){
+     btn.disabled=false;
+     if(j&&j.ok){
+       syncCfg=syncCfg||{}; syncCfg.url=SYNC_DEFAULT_URL; syncCfg.code=p;
+       try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){}
+       // เครื่องที่เคยเชื่อมต่อแล้ว (เช่น หมอเปลี่ยนรหัสแล้วใส่ใหม่) → ดึงตามปกติ
+       // ห้ามเข้า syncFirstConnect เพราะจะถาม "ใช้คลาวด์ หรือ ใช้เครื่องนี้" แล้วถ้ากดยกเลิก = ดันข้อมูลเก่าทับของทุกคน
+       gateHide(); if(HAD_CODE)syncPull(); else syncFirstConnect();
+     } else { err.style.color='#F87171'; err.textContent='รหัสไม่ถูกต้อง'; inp.value=''; try{inp.focus();}catch(_){} }
+   })
+   .catch(function(){ btn.disabled=false; err.style.color='#F87171'; err.textContent='เชื่อมต่อไม่ได้ — ตรวจอินเทอร์เน็ต'; });
+}
+function accessDenied(){                              // เซิร์ฟเวอร์ปฏิเสธรหัสที่เครื่องนี้จำไว้ (ถูกเปลี่ยน/เพิกถอน)
+  if(syncCfg){
+    syncCfg.code=null;
+    syncCfg.wcode=null;                              // เพิกถอนสิทธิ์ "เขียน" ด้วย — ไม่งั้นเครื่องที่ถูกตัดสิทธิ์อ่านยังทับข้อมูลคลาวด์ได้
+    try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){}
+  }
+  clearTimeout(syncTimer);                           // ยกเลิก push ที่ค้างอยู่ (syncTouch ตั้งไว้ 800ms) กันทับข้อมูลคนอื่นตอนถูกตัดสิทธิ์
+  if(canEdit){canEdit=false;applyLock();}
+  gateShow('รหัสเข้าใช้งานถูกเปลี่ยน — กรุณาใส่รหัสใหม่');
+}
 function syncAutoInit(){
-  if(syncCfg){ syncPull(); return; }                 // เชื่อมไว้แล้ว → ดึงตามปกติ
   if(!SYNC_DEFAULT_URL) return;                       // ไม่มีลิงก์ฝัง → ไม่ทำอะไร
-  syncCfg={url:SYNC_DEFAULT_URL,code:'5671'};          // เชื่อมอัตโนมัติด้วยลิงก์ที่ฝังไว้
-  try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(e){}
+  if(!hasAccess()){ gateShow('ใส่รหัสเข้าใช้งาน'); return; }   // ยังไม่เคยใส่รหัสในเครื่องนี้ → ไม่ดึงข้อมูลใด ๆ
+  syncPull();                                         // เคยใส่รหัสแล้ว → ดึงตามปกติ (ออฟไลน์ก็ยังใช้ข้อมูลในเครื่องได้)
+}
+function syncFirstConnect(){                          // เชื่อมต่อครั้งแรกของเครื่องนี้ (หลังใส่รหัสผ่านประตู)
   const freshDevice=!localStorage.getItem('ppf_farms_v3');   // ยังไม่เคยมีข้อมูลในเครื่องนี้
   fetch(syncCfg.url+'?code='+encodeURIComponent(syncCfg.code)+'&t='+Date.now())
    .then(r=>r.json()).then(j=>{
@@ -2554,10 +2724,11 @@ function syncAutoInit(){
 let syncBusy=false, _syncFails=0;
 function isTyping(){const a=document.activeElement;return!!a&&(a.tagName==='INPUT'||a.tagName==='SELECT'||a.tagName==='TEXTAREA');}
 function syncTick(){           // ซิงค์กับชีททุก 3 วิ (ทำงานเฉพาะตอนเปิดแอปดูอยู่ — ประหยัด quota/แบต)
-  if(!syncCfg||syncApplying||syncBusy||document.visibilityState!=='visible')return;
+  if(!hasAccess()||syncApplying||syncBusy||document.visibilityState!=='visible')return;   // ถูกตัดสิทธิ์แล้ว → หยุดยิง ไม่งั้นวนเรียก accessDenied ทุก 3 วิ จนพิมพ์รหัสใหม่ไม่ได้
   syncBusy=true;
   fetch(syncCfg.url+'?code='+encodeURIComponent(syncCfg.code)+'&t='+Date.now())
    .then(r=>r.json()).then(j=>{
+     if(j&&!j.ok&&/bad code/i.test(j.error||'')){ accessDenied(); return; }        // รหัสเข้าใช้งานถูกเปลี่ยน/เพิกถอน → กลับไปหน้าใส่รหัส
      if(!j||!j.ok){_syncFails++; if(_syncFails>=3)syncStat('⚠️ ซิงค์ไม่สำเร็จหลายครั้ง — ข้อมูลอาจไม่อัปเดต','err'); return;}
      _syncFails=0;
      const rts=+j.updatedAt||0, lts=syncTs(), hasR=j.data&&j.data.length>2;
