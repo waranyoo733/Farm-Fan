@@ -1243,7 +1243,7 @@ const I={
  upload:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" style="vertical-align:-.15em"><path d="M12 21V9"/><path d="M7 14l5-5 5 5"/><path d="M4 19h16"/></svg>',
  undo:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" style="vertical-align:-.15em"><path d="M4 12a8 8 0 1 1 2.6 5.9"/><path d="M4 12V6M4 12h6"/></svg>'
 };
-const TABS=[{id:'home',icon:'home',label:'หน้าแรก',desc:'ภาพรวมระบบฟาร์มอัจฉริยะ'},{id:'vent',icon:'fan',label:'ระบายอากาศ',desc:'อุณหภูมิ · พัดลม · ผ้าม่าน · อาหาร'},{id:'fanplan',icon:'fan',label:'แผนพัดลม',desc:'แผนเปิดพัดลมรายฟาร์ม · เปิดเบอร์ไหนก่อน'},{id:'cal',icon:'cal',label:'ปฏิทิน',desc:'รอบเลี้ยง · นับถอยหลังวันจับ · จับเวลา'},{id:'feed',icon:'feed',label:'อาหาร',desc:'รับเข้า / กิน / คงเหลือ รายวัน'},{id:'guide',icon:'guide',label:'คู่มือ',desc:'การจัดการ · หลักการ & สูตร · ความรู้ระบายอากาศ'},{id:'set',icon:'set',label:'ตั้งค่า',desc:'ขนาดเล้า · พัดลม · แรงลม 9 จุด'},{id:'analytics',icon:'chart',label:'วิเคราะห์',desc:'แดชบอร์ดวิเคราะห์ (อัปโหลดไฟล์ Excel)'},{id:'mortality',icon:'alert',label:'ไก่ตาย',desc:'แดชบอร์ดไก่ตายรายวัน'}];
+const TABS=[{id:'home',icon:'home',label:'หน้าแรก',desc:'ภาพรวมระบบฟาร์มอัจฉริยะ'},{id:'vent',icon:'fan',label:'ระบายอากาศ',desc:'อุณหภูมิ · พัดลม · ผ้าม่าน · อาหาร'},{id:'fanplan',icon:'fan',label:'แผนพัดลม',desc:'แผนเปิดพัดลมรายฟาร์ม · เปิดเบอร์ไหนก่อน'},{id:'cal',icon:'cal',label:'ปฏิทิน',desc:'รอบเลี้ยง · นับถอยหลังวันจับ · จับเวลา'},{id:'feed',icon:'feed',label:'อาหาร',desc:'รับเข้า / กิน / คงเหลือ รายวัน'},{id:'guide',icon:'guide',label:'คู่มือ',desc:'การจัดการ · หลักการ & สูตร · ความรู้ระบายอากาศ'},{id:'set',icon:'set',label:'ตั้งค่า',desc:'ขนาดเล้า · พัดลม · แรงลม 9 จุด'},{id:'analytics',icon:'chart',label:'วิเคราะห์',desc:'แดชบอร์ดวิเคราะห์ (อัปโหลดไฟล์ Excel)'},{id:'mortality',icon:'alert',label:'ไก่ตาย',desc:'แดชบอร์ดไก่ตายรายวัน'},{id:'ctrl',icon:'mgmt',label:'คู่มือตู้คอนโทรล',desc:'ตั้งค่าตู้ 8 หัวข้อ + แก้ปัญหาเฉพาะหน้า ตามรุ่นตู้ของฟาร์ม'}];
 let tab='home', cf=0;
 let canEdit=false;   // รหัสแก้ไขตรวจที่เซิร์ฟเวอร์ (Apps Script) เท่านั้น — ไม่ฝังรหัสลับในโค้ดสาธารณะ
 
@@ -2532,6 +2532,7 @@ function sbItems(){return [
   {go:'analytics',key:'analytics',ic:'chart',lb:'วิเคราะห์'},
   {go:'mortality',key:'mortality',ic:'alert',lb:'ไก่ตาย'},
   {go:'home',key:'__twin',ic:'zoom',lb:'Digital Twin'},
+  {go:'ctrl',key:'ctrl',ic:'mgmt',lb:'คู่มือตู้คอนโทรล'},
   {t:'cat',lb:'ระบบ'},
   {go:'guide',key:'guide',ic:'guide',lb:'คู่มือ / SOP'},
   {go:'set',key:'set',ic:'set',lb:'ตั้งค่า'},
@@ -2558,7 +2559,7 @@ function render(){
   renderSidebar();
   try{localStorage.setItem('ppf_ui',JSON.stringify({tab:tab,cf:cf}));}catch(e){}
   const t=TABS.find(x=>x.id===tab);
-  const IFRAME_TABS={analytics:{src:'analytics.html',title:'แดชบอร์ดวิเคราะห์'},mortality:{src:'mortality.html',title:'แดชบอร์ดไก่ตายรายวัน'},fanplan:{src:'fan-plan.html',title:'แผนเปิดพัดลมรายฟาร์ม'}};
+  const IFRAME_TABS={analytics:{src:'analytics.html',title:'แดชบอร์ดวิเคราะห์'},mortality:{src:'mortality.html',title:'แดชบอร์ดไก่ตายรายวัน'},fanplan:{src:'fan-plan.html',title:'แผนเปิดพัดลมรายฟาร์ม'},ctrl:{src:'ctrl-manual.html',title:'คู่มือตู้คอนโทรลรายฟาร์ม'}};
   const ift=IFRAME_TABS[tab],isFrame=!!ift,isHome=(tab==='home'),isAi=(tab==='ai');
   ['chips','lockbar'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=(isFrame||isHome||isAi)?'none':'';});
   {const _wp=document.querySelector('.wrap');if(_wp)_wp.style.padding=(isHome||isAi)?'0':'';document.body.style.paddingBottom=(isHome||isAi)?'0':'';}

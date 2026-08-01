@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>คู่มือตู้คอนโทรล — PPF Smart Farm</title>
+<style>
+:root{--bg:#080D18;--card:#101A2B;--ink:#F8FAFC;--muted:#94A3B8;--dim:#64748B;--brand:#34D399;--brand2:#7DD3FC;--line:rgba(255,255,255,.10);--amber:#FCD34D;--red:#FCA5A5;--key:#0EA5A4}
+*{box-sizing:border-box;margin:0;padding:0}
+@font-face{font-family:'LINE Seed Sans TH';font-style:normal;font-weight:300 500;font-display:swap;src:url('vendor/line-seed/LINESeedSansTH-Regular.woff2') format('woff2')}
+@font-face{font-family:'LINE Seed Sans TH';font-style:normal;font-weight:600 700;font-display:swap;src:url('vendor/line-seed/LINESeedSansTH-Bold.woff2') format('woff2')}
+body{font-family:'LINE Seed Sans TH','Segoe UI','Leelawadee UI',system-ui,sans-serif;background:linear-gradient(170deg,#0B1120,#080D18 65%);background-attachment:fixed;color:var(--ink);padding-bottom:50px;line-height:1.65;-webkit-font-smoothing:antialiased}
+.hero{background:linear-gradient(135deg,#0d3b2a,#0f5c3f 55%,#0e7490);padding:16px 16px 13px;border-radius:0 0 20px 20px;box-shadow:0 8px 22px rgba(0,0,0,.4)}
+.hero h1{font-size:18px;font-weight:700;color:#fff}
+.hero .sub{font-size:12.5px;color:rgba(255,255,255,.85);margin-top:3px;line-height:1.6}
+.wrap{max-width:840px;margin:0 auto;padding:0 12px}
+.crumb{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:13px 0 2px;font-size:13px;color:var(--muted)}
+.crumb button{border:1px solid var(--line);background:var(--card);color:var(--brand2);border-radius:99px;padding:5px 13px;font-size:12.5px;cursor:pointer;font-family:inherit}
+.crumb button:hover{border-color:rgba(52,211,153,.5)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 16px;margin-top:12px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.fname{font-size:16px;font-weight:700}
+.fsub{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.7}
+.grp{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px solid var(--line);border-radius:12px;padding:10px 13px;margin-top:9px;cursor:pointer;transition:.15s}
+.grp:hover{border-color:rgba(52,211,153,.55);background:rgba(52,211,153,.06)}
+.grp b{font-size:14.5px}
+.model{font-size:11.5px;font-weight:700;background:rgba(34,211,238,.14);color:var(--brand2);border-radius:99px;padding:3px 11px;white-space:nowrap}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-top:10px}
+.mbtn{text-align:left;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--ink);border-radius:12px;padding:10px 12px;cursor:pointer;font-family:inherit;transition:.15s}
+.mbtn:hover{border-color:rgba(52,211,153,.6);background:rgba(52,211,153,.08)}
+.mbtn b{font-size:14px;display:block}
+.mbtn small{display:block;font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
+.lnk{border:0;background:transparent;color:var(--brand2);font-size:12.5px;cursor:pointer;font-family:inherit;margin-top:8px;padding:0}
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:10px;margin-top:11px}
+.tcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;cursor:pointer;transition:.15s;position:relative;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.tcard:hover{border-color:rgba(52,211,153,.55)}
+.tcard .no{position:absolute;top:9px;right:12px;font-size:20px;font-weight:800;color:rgba(255,255,255,.08)}
+.tcard .ic{font-size:20px}
+.tcard .tt{font-size:14.5px;font-weight:700;margin-top:4px}
+.tcard .td{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.55}
+.tcard.tr{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.06)}
+.tcard.tr:hover{border-color:rgba(248,113,113,.8)}
+.tcard.rq{border-color:rgba(251,191,36,.35)}
+.sech{font-size:14px;font-weight:700;margin:18px 0 2px}
+.sech small{font-weight:500;color:var(--muted)}
+.howto{background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);border-radius:12px;padding:10px 13px;margin-top:10px;font-size:13px;color:#BAE6FD;line-height:1.85}
+.step{display:flex;gap:11px;border:1px solid var(--line);border-radius:12px;padding:11px 13px;margin-top:8px;align-items:flex-start}
+.step .n{flex:0 0 26px;height:26px;border-radius:50%;background:rgba(52,211,153,.15);color:var(--brand);font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.step .b{font-size:14px;line-height:1.7}
+.step .b small{display:block;color:var(--muted);font-size:12px;line-height:1.65;margin-top:2px}
+kbd{display:inline-block;background:var(--key);color:#04211F;font-weight:800;font-size:12.5px;border-radius:7px;padding:2px 9px;font-family:inherit;margin:0 2px;white-space:nowrap}
+code{background:rgba(125,211,252,.12);color:var(--brand2);border-radius:6px;padding:1px 7px;font-size:13px;font-weight:700;font-family:inherit;white-space:nowrap}
+.warn{border-radius:12px;padding:10px 13px;margin-top:9px;font-size:13px;line-height:1.75}
+.warn.d{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.45);color:var(--red)}
+.warn.w{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.4);color:var(--amber)}
+.warn.ok{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.4);color:var(--brand)}
+.twrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin-top:8px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:430px}
+th{background:rgba(34,211,238,.14);color:#7DD3FC;padding:7px 9px;font-weight:600;font-size:11.5px;text-align:left;white-space:nowrap}
+td{padding:6px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.tcap{font-size:12px;color:var(--brand);font-weight:700;margin-top:12px}
+.ref{font-size:11.5px;color:var(--dim);margin-top:10px;line-height:1.7}
+.pgact{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.pgact button{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:10px;padding:8px 15px;font-size:13px;cursor:pointer;font-family:inherit}
+.pgact button.pri{background:rgba(52,211,153,.14);border-color:rgba(52,211,153,.45);color:var(--brand)}
+.foot{font-size:11px;color:var(--dim);text-align:center;margin-top:22px;line-height:1.9}
+@media print{
+  body{background:#fff;color:#000;padding:0}
+  .hero,.crumb,.pgact,.foot{display:none!important}
+  .card,.step,.twrap{border-color:#bbb;box-shadow:none;background:#fff}
+  .warn.d{background:#fdeaea;color:#8a1f1f}.warn.w{background:#fdf6e3;color:#7a5300}.warn.ok{background:#eaf7f0;color:#14532d}
+  th{background:#eef;color:#000}kbd{background:#ddd;color:#000}code{background:#eee;color:#000}
+  .howto{background:#f0f7fb;color:#123}
+  .step .b small,.fsub,.td,.ref{color:#555}
+}
+</style>
+</head>
+<body>
+<div class="hero"><div class="wrap">
+  <h1>📟 คู่มือตู้คอนโทรล</h1>
+  <div class="sub">เลือกฟาร์ม → กดเล้า/รุ่นตู้ที่ฟาร์มคุณมี → ตั้งค่าพื้นฐาน 8 หัวข้อ กดตามได้ทีละปุ่ม · มีหน้าแก้ปัญหาเฉพาะหน้า และพิมพ์แปะหน้าเล้าได้</div>
+</div></div>
+<div class="wrap">
+  <div class="crumb" id="crumb"></div>
+  <div id="app"></div>
+  <div class="foot">สกัดจากคู่มือ Waterflame ฉบับจริง ~520 หน้า (Temp 1200 V2.6U/V2.9–3.3 · Temp 1200Plus V2.5.x · Chickatron 20 V1.10.x · TF716) + ไฟล์ค่าตั้งจริงของฟาร์ม<br>📘 = ตามคู่มือ (มีหน้ากำกับ) · 📊 = ค่าจริงของฟาร์ม · 💡 = มาตรฐาน Ross/Cobb/Aviagen · 🔴 = ห้ามพลาด<br>เจอเมนู/ตัวเลขไม่ตรงของจริง → กด "แจ้งแก้หน้านี้" ที่ท้ายหน้านั้น</div>
+</div>
+<script src="ctrl-manual-data.js"></script>
+</body>
+</html>
