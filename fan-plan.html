@@ -106,122 +106,140 @@ a.back{color:#7DE9FF}
 <div class="hero"><div class="wrap">
   <a class="back" href="index.html">← กลับหน้าหลัก PPF Smart Farm</a>
   <h1>🌀 แผนเปิดพัดลมรายฟาร์ม</h1>
-  <div class="sub">เลือกฟาร์ม → เห็นทันทีว่าแต่ละวัน เปิดพัดลมกี่ตัว · เบอร์ไหนก่อน-หลัง · ผ้าม่านหน้าแพดกี่ ซม. · แรงลม · อาหาร — ตามแผนการระบายอากาศของหมอวรัญญู (อัปเดต 3 ก.ค. 2569)</div>
+  <div class="sub">เลือกฟาร์ม → เล้า → เห็นทันทีว่าแต่ละวัน เปิดพัดลมกี่ตัว · เบอร์ไหนก่อน-หลัง · ผ้าม่านหน้าแพดกี่ ซม. · แรงลม · อาหาร — อ่านข้อมูลจริงจากแอปหลัก · สูตรชุดเดียวกับแท็บระบายอากาศ</div>
 </div></div>
 <div class="wrap">
   <div class="chips" id="chips"></div>
   <div id="content"></div>
-  <div class="foot">สูตร: ลมที่ไก่ต้องการ = cfm/kg (3 วัน0–13 · 4 วัน14–27 · 5 วัน28–42) × น้ำหนัก STD × จำนวนไก่ · ผ้าม่านหน้าแพด = สูงแพด × (พัดลมที่เปิด ÷ พัดลมทั้งหมด) · แรงลม = ลมรวม(m³/h) ÷ 3600 ÷ (กว้าง × สูงหน้าตัด) · เส้นผ่าศูนย์กลางพัดลม นิ้ว × 2.54 = ซม. · FCR = อาหารสะสม ÷ น้ำหนักตัว (วันจับ 42 = 1.68) · %อาหารสะสม = อาหารสะสมต่อตัว ÷ ถุงอาหาร 30 กก./กระสอบ (วัน16 = 2.33)<br>สีตามรหัสในไฟล์แผนของหมอ: <span style="color:#22C55E">■ เขียว = เปิดมือ</span> · <span style="color:#EC7CA8">■ ชมพู = โช้ค (Cycle)</span> · <span style="color:#8593AB">■ ดำ = ออโต้ตู้คุม</span> · น้ำหนัก STD วัน31 = 2,094 ก. · cap พัดลมชัยนาทคำนวณด้วย 2.54 (6-7 = 27,359 · 1-5 = 27,976) · เบอร์พัดลมถอดจากไฟล์แผนการระบายอากาศ + รูปผังรุ่งเรือง (หมอยืนยัน 3 ก.ค. 2569)</div>
+  <div class="foot">สูตร (ชุดเดียวกับแท็บระบายอากาศในแอปหลัก): ลมที่ไก่ต้องการ = cfm/kg (3 วัน0–13 · 4 วัน14–27 · 5 วัน28–42) × น้ำหนัก STD × จำนวนไก่ · พัดลมสูงสุด = ค่าที่มากกว่าระหว่างแผนของหมอกับสูตร · อายุ ≥ 35 วันเปิดครบทุกตัว (กฎหมอ 31 ก.ค. 2569) · ประสิทธิภาพพัดลม/ตัว = พื้นที่ช่องลม (นิ้ว × 2.514 = ซม. — ค่าที่วัดจริง ไม่ใช่ 2.54) × ค่าเฉลี่ยลมที่วัด 9 จุด · แรงลม = ลมรวม ÷ (กว้าง × (สูง − ชิ่งลม)) · ผ้าม่านหน้าแพด = สูงแพด × (พัดลมที่เปิด ÷ ทั้งหมด) · FCR วันจับ 42 = 1.68 · %อาหารสะสม = อาหารสะสมต่อตัว ÷ ถุง 30 กก.<br>สีตามรหัสในไฟล์แผนของหมอ: <span style="color:#22C55E">■ เขียว = เปิดมือ</span> · <span style="color:#EC7CA8">■ ชมพู = โช้ค (Cycle)</span> · <span style="color:#8593AB">■ ดำ = ออโต้ตู้คุม</span> · เบอร์พัดลม/แผนถอดจากไฟล์แผนการระบายอากาศของหมอ (FANPLANS ใน calc-core.js — ที่เดียวกับแอปหลัก)</div>
 </div>
+<script src="calc-core.js"></script>
 <script>
-const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2094,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278];
-const FEED=[0,14,18,21,24,27,31,34,38,42,47,51,56,61,66,71,76,82,87,93,98,104,109,115,120,125,130,135,140,145,150,154,159,163,167,171,175,178,182,185,188,192,194];
-// FCR สะสมมาตรฐาน (As-Hatched Performance) — วัน42 = 1.68
-const FCR=[0,0.23,0.42,0.57,0.68,0.77,0.84,0.90,0.96,1.01,1.05,1.10,1.13,1.15,1.17,1.18,1.19,1.21,1.22,1.24,1.25,1.26,1.28,1.30,1.32,1.34,1.36,1.38,1.40,1.42,1.44,1.46,1.48,1.50,1.51,1.53,1.55,1.57,1.59,1.61,1.63,1.65,1.68];
-// %อาหารสะสม ตาราง STD = อาหารสะสมต่อตัว ÷ ถุงอาหาร 30 กก./กระสอบ (÷30000×100=÷300) — วัน16=2.33, วัน42=15.95
-const FPCT=[0.00,0.04,0.10,0.17,0.25,0.34,0.44,0.56,0.69,0.83,0.99,1.17,1.37,1.58,1.81,2.06,2.33,2.62,2.93,3.25,3.60,3.97,4.36,4.77,5.21,5.65,6.12,6.62,7.12,7.65,8.19,8.76,9.34,9.94,10.54,11.17,11.82,12.47,13.14,13.83,14.52,15.23,15.95];
-const cfmkg=d=>d<=13?3:(d<=27?4:5);
-// ev: {d, add:[], off:[]} — off = สลับปิด (แผนรุ่งเรือง)
-const FARMS=[
- {k:'srihera',name:'ศรีเหรา',W:40,L:128,fans:26,cap:28400,birds:64000,choke:[2,25],autos:[[4,23],[5,22],[7,20]],ev:[[7,[13]],[11,[3,24]],[16,[1,9,14,18,26]],[20,[15]],[21,[11]],[22,[6,19,21]],[25,[8,17]],[26,[12]],[27,[16]],[28,[7,20]],[29,[10]],[30,[5,22]],[31,[4]],[32,[23]],[33,[2,25]]]},
- {k:'chai67',name:'ชัยนาท 6-7',W:34,L:120,fans:24,cap:27359,birds:49000,choke:[7,18],autos:[[5,20],[3,22]],ev:[[8,[2,23]],[12,[9,16]],[22,[11,14]],[25,[6,19]],[29,[4,21]],[33,[1,24]],[36,[8,17]],[39,[10,12,13,15]]]},
- {k:'rr36',name:'รุ่งเรือง 3-6',W:32,L:120,fans:21,cap:24800,birds:45000,choke:[2,20],autos:[[4,18],[6,16],[8,14]],ev:[[8,[11]],[13,[1,21],[11]],[15,[11]],[17,[7,15],[11]],[19,[5,11,17],[7,15]],[21,[9,13],[11]],[23,[7,11,15],[9,13]],[25,[9,13],[11]],[27,[3]],[29,[11]],[30,[10,12],[11]],[31,[8,11,14],[10,12]],[32,[10,12],[11]],[33,[11]]],src:'จากรูปผัง (หมอยืนยัน) · พัดลมเบอร์ 19 ไม่อยู่ในแผน (สำรอง)'},
- {k:'phum',name:'พุ่มวงศ์/หมอตั้ม',W:28,L:120,fans:22,cap:24000,birds:38000,choke:[2,21],autos:[[4,19],[6,17],[8,15]],ev:[[8,[11]],[14,[1,22]],[16,[14]],[17,[9]],[20,[10,18]],[22,[3,5,7,16,20]],[27,[13]],[29,[8,12,15]],[32,[6,17]],[33,[4,19]]]},
- {k:'ying',name:'ยิ่งรวย',W:28,L:120,fans:22,cap:24000,birds:38500,choke:[2,21],autos:[[4,19],[6,17],[8,15]],ev:[[8,[11]],[14,[1,22]],[16,[14]],[17,[9]],[20,[10,18]],[22,[3,5,7,16,20]],[27,[13]],[29,[8,12,15]],[32,[6,17]],[33,[4,19]]],src:'ใช้ผังเดียวกับพุ่มวงศ์ (หมอยืนยัน)'},
- {k:'chai15',name:'ชัยนาท 1-5',W:28,L:120,fans:18,cap:27976,birds:39500,choke:[4,15],autos:[[6,13],[2,17]],ev:[[8,[8,11]],[15,[3,16]],[22,[1,18]],[29,[5,14]],[33,[7,12]],[36,[9,10]]]},
- {k:'thana',name:'ธนวัฒน์',W:28,L:120,fans:18,cap:28400,birds:35000,choke:[2,17],autos:[[4,15],[6,13],[8,11]],ev:[[10,[9]],[15,[1,18]],[19,[10]],[21,[7,12]],[23,[5]],[25,[14]],[26,[3]],[27,[16]],[30,[8]],[31,[11]],[33,[6]],[34,[13]],[36,[2,4,15,17]]]},
- {k:'teng',name:'เต็งหนึ่ง (Rotem)',W:28,L:84,fans:20,cap:26400,birds:26500,choke:[6,15],autos:[[4,17],[9,12],[2,19]],ev:[[7,[10]],[12,[3,18]],[17,[8,13]],[22,[11]],[24,[5,7,14,16]],[32,[1,20]]]},
- {k:'mos',name:'มอส (มั้งกี้ 7-11)',W:25,L:120,fans:14,cap:24800,birds:34500,choke:[2,13],autos:[[4,11],[6,9]],ev:[[10,[7]],[14,[1,14]],[18,[8]],[21,[3,12]],[23,[5,10]],[26,[9]],[27,[6]],[29,[11]],[31,[4]],[33,[2,13]]]},
- {k:'money',name:'มันนี่',W:21,L:120,fans:16,cap:26400,birds:26250,choke:[2,15],autos:[[4,13],[6,11],[7,10]],ev:[[12,[8]],[15,[1,16]],[21,[5,12]],[24,[3,14]],[28,[9]],[30,[10]],[32,[7]],[34,[6]],[35,[11]],[37,[2,4,13,15]]]},
- {k:'satit',name:'สาธิต',W:21,L:120,fans:16,cap:26400,birds:26250,choke:[2,15],autos:[[4,13],[6,11],[7,10]],ev:[[12,[8]],[15,[1,16]],[21,[5,12]],[24,[3,14]],[28,[9]],[30,[10]],[32,[7]],[34,[6]],[35,[11]],[37,[2,4,13,15]]]},
- {k:'rr2',name:'รุ่งเรือง 2',W:16,L:100,fans:11,cap:24800,birds:18500,choke:[],autos:[],ev:[[13,[6]],[18,[1,11],[6]],[21,[6]],[22,[3]],[25,[9]],[28,[4,8],[6]],[30,[6]],[33,[7]],[35,[10]],[37,[2,5]]],src:'จากรูปผัง (หมอยืนยัน) · เบอร์โช้ค/ออโต้ไม่ระบุในรูป'},
- {k:'mk1',name:'มั้งกี้ 1',W:16,L:100,fans:12,cap:24500,birds:18500,choke:[5],autos:[[2,11],[7]],ev:[[13,[6]],[16,[1,12]],[22,[4,8]],[26,[10]],[29,[3]],[31,[9]],[34,[7]],[36,[2,11]],[38,[5]]]},
- {k:'mk2',name:'มั้งกี้ 2',W:16,L:100,fans:10,cap:24500,birds:18500,choke:[4],autos:[[1,10],[6]],ev:[[13,[5]],[22,[3,7]],[26,[9]],[29,[2]],[31,[8]],[34,[6]],[36,[1,4,10]]]},
- {k:'mk3',name:'มั้งกี้ 3',W:16,L:100,fans:14,cap:29500,birds:18500,choke:[2,13],autos:[[4,11],[6,9]],ev:[[10,[7]],[14,[1,14]],[18,[8]],[21,[3,12]],[23,[5,10]],[26,[9]],[27,[6]],[29,[11]],[31,[4]],[33,[2,13]]],src:'ใช้ผังชุด 14 พัดลมเดียวกับมอส (หมอยืนยัน)'},
- {k:'rr1',name:'รุ่งเรือง 1',W:14,L:72,fans:8,cap:24800,birds:10000,choke:[4],autos:[],ev:[[15,[5]],[22,[1,8],[5]],[24,[5]],[28,[3]],[33,[6]],[37,[4]],[38,[2,7]]],src:'จากรูปผัง (หมอยืนยัน)'},
-];
-const PADH=1.8, SECH=2.0;
-let cur='srihera', day=21;
+/* ── อ่านข้อมูลจริงจากแอปหลัก + สูตรร่วมจาก calc-core.js ─────────────────────
+   เดิมหน้านี้ใช้ตาราง FARMS แช่แข็ง (3 ก.ค. 2569) + สูตร 2.54 + SECH=2.0 ของตัวเอง
+   → ตัวเลขต่างจากแท็บระบายอากาศ 2–14% และมีฟาร์มที่ไม่มีจริงแล้ว — เลิกใช้ทั้งหมด
+   ตอนนี้: ข้อมูลเล้า = localStorage ppf_farms_v3 (ชุดเดียวกับแอปหลัก ทุกครั้งที่แอปซิงค์จะสดตาม)
+   สูตร/แผนพัดลม = calc-core.js (IN2CM 2.514 · หักชิ่งลม baffle · กฎ ventMax ของหมอ) */
+let FARMS=[];
+function loadFarms(){ try{const s=localStorage.getItem('ppf_farms_v3');FARMS=s?(JSON.parse(s)||[]):[];}catch(e){FARMS=[];} if(!Array.isArray(FARMS))FARMS=[]; }
+loadFarms();
+let cf=0, hIdx=0, day=21, dayTouched=false;
+function curFarm(){return FARMS[cf]||null;}
+function curHouse(){const f=curFarm();return f&&f.houses&&f.houses[hIdx]?f.houses[hIdx]:null;}
 
-function manualAt(f,d){
-  const s=new Set();
-  for(const e of f.ev){ if(e[0]<=d){ (e[1]||[]).forEach(x=>s.add(x)); (e[2]||[]).forEach(x=>s.delete(x)); } }
-  return [...s].sort((a,b)=>a-b);
-}
-function calc(f,d,padH,secH){
-  const need=cfmkg(d)*BW[d]/1000*f.birds;
-  const raw=need/f.cap;
-  const open=Math.max(1,Math.min(Math.ceil(raw),f.fans));
-  const cur=padH*100*open/f.fans;
-  const wind=open*f.cap/0.5886/3600/(f.W*secH);
-  const fd=FEED[d], fp=FPCT[d], fh=fd*f.birds/1000, fcr=FCR[d];
-  return {need,raw,open,cur,wind,fd,fp,fh,fcr,full:Math.ceil(raw)>f.fans};
-}
+/* ventAt / crossOf / velOf / curtainCm อยู่ใน calc-core.js (ใช้ร่วมกับ view.html) */
 function bubbles(arr,cls){return arr.length?arr.map(n=>'<span class="bub '+cls+'">'+n+'</span>').join(''):'<span style="color:var(--muted);font-size:12.5px">—</span>';}
+function setDay(d){day=d;dayTouched=true;render();}
+function pick(i){cf=i;hIdx=0;dayTouched=false;render();}
+function pickH(i){hIdx=i;dayTouched=false;render();}
+
 function render(){
-  const f=FARMS.find(x=>x.k===cur);
-  const padH=+(document.getElementById('padh')?.value||PADH);
-  const secH=+(document.getElementById('sech')?.value||SECH);
-  const c=calc(f,day,padH,secH);
-  const man=manualAt(f,day);
-  const autoFlat=f.autos.flat();
-  // fan wall
+  const chipsEl=document.getElementById('chips'), contentEl=document.getElementById('content');
+  if(!FARMS.length){
+    chipsEl.innerHTML='';
+    contentEl.innerHTML='<div class="card"><div class="spec">📭 <b>ยังไม่มีข้อมูลฟาร์มในเครื่องนี้</b><br>เปิดแอปหลัก (index.html) แล้วใส่รหัสเข้าใช้งานให้ดึงข้อมูลก่อน จากนั้นกลับมาหน้านี้อีกครั้ง — หน้านี้อ่านข้อมูลชุดเดียวกับแอปหลัก ไม่มีตารางฝังของตัวเองแล้ว</div></div>';
+    return;
+  }
+  if(cf>=FARMS.length)cf=0;
+  const f=curFarm();
+  if(!f.houses||!f.houses.length){ contentEl.innerHTML='<div class="card"><div class="spec">ฟาร์มนี้ยังไม่มีข้อมูลเล้า</div></div>'; }
+  if(hIdx>=(f.houses||[]).length)hIdx=0;
+  const h=curHouse();
+  chipsEl.innerHTML=FARMS.map((x,i)=>'<button class="chip'+(i===cf?' on':'')+'" onclick="pick('+i+')">'+esc(x.name)+'<small>'+((x.houses&&x.houses.length)||0)+' เล้า</small></button>').join('');
+  if(!h)return;
+  if(!dayTouched)day=Math.max(1,Math.min(42,Math.round(+h.age||21)));
+
+  const v=ventAt(h,f.name,day);
+  const man=v.pm?manualUpTo(v.pm.p,D(day)):[];
+  const choke=v.pm?v.pm.p.choke:[];
+  const autoFlat=v.pm?v.pm.p.steps.reduce((a,s)=>a.concat(s.fans),[]):[];
+  const cx=crossOf(h), vel=velOf(h,v.fc,v.vmax), cur=curtainCm(h,v.vmax);
+  const alive=aliveAt(h,Math.min(day,D(+h.age||day)));
+  const fd=FEED[D(day)], fp=FPCT[D(day)], fh=fd*alive/1000, fcr=FCR_STD[D(day)];
+
+  /* ป้ายเตือนแบบเดียวกับแท็บระบายอากาศ */
+  let warn='';
+  if(!v.pm) warn+='<div style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.45);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13px;color:#FCD34D">⚠️ ไม่พบแผนพัดลมของฟาร์มนี้ — ตัวเลขมาจากสูตรความต้องการลมล้วน (ไม่มีเบอร์พัดลม/ไทม์ไลน์)</div>';
+  else{
+    const sz=Math.round(h.W)+'×'+Math.round(h.L);
+    const mism=[];
+    if(!v.pm.byName)mism.push('จับคู่จากจำนวนพัดลมเท่านั้น (ไม่รู้จักชื่อฟาร์มนี้)');
+    if(v.pm.p.nf!==h.fans)mism.push('แผนมี '+v.pm.p.nf+' ตัว แต่เล้านี้มี '+h.fans+' ตัว — เบอร์พัดลมในแผนอาจไม่ตรง');
+    if(v.pm.p.size!==sz)mism.push('แผนออกแบบสำหรับเล้า '+esc(v.pm.p.size)+' ม. แต่เล้านี้ '+sz+' ม.');
+    if(mism.length)warn+='<div style="background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.45);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13px;color:#FCD34D">⚠️ <b>ยืมแผน '+esc(v.pm.key)+'</b> · '+mism.join(' · ')+'</div>';
+  }
+  if(v.vmax>v.planMaxRaw){
+    const why=D(day)>=35?'กฎอายุ ≥ 35 วัน เปิดครบทุกตัว':'ความต้องการลมของไก่วันนี้ ('+Math.round(cfmkg(day)*(BW[D(day)]/1000)*h.birds).toLocaleString()+' cfm) เกินแผน';
+    warn+='<div style="background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.45);border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13px;color:#FCA5A5">🔺 <b>เปิดเพิ่มอีก '+(v.vmax-v.planMaxRaw)+' ตัว — รวมเป็น '+v.vmax+' ตัว</b> · แผนเดิมระบุ '+v.planMaxRaw+' ตัว · '+why+'</div>';
+  }
+
+  /* ผังพัดลม */
   let wall='';
-  for(let n=1;n<=f.fans;n++){
+  for(let n=1;n<=h.fans;n++){
     let cls='';
-    if(man.includes(n))cls='man'; else if(f.choke.includes(n))cls='ck'; else if(autoFlat.includes(n))cls='au';
+    if(man.includes(n))cls='man'; else if(choke.includes(n))cls='ck'; else if(autoFlat.includes(n))cls='au';
     wall+='<div class="fw '+cls+'"><div class="d">'+n+'</div></div>';
   }
-  // timeline
-  let tl='<div class="tlr '+(day>=1?'done':'')+'">วันแรก–'+((f.ev[0]&&f.ev[0][0]-1)||7)+' · '+(f.choke.length?'โช้คตัวที่ <b class="f">'+f.choke.join('·')+'</b> เดินเป็นจังหวะตามตู้คุม':'พัดลมขั้นต่ำเดินตามตู้คุม')+' (ช่วงกก)</div>';
-  for(const e of f.ev){
-    const st=e[0]<day?'done':(e[0]===day?'now':'');
-    tl+='<div class="tlr '+st+'">อายุ <b class="f">'+e[0]+'</b> วัน · เปิดมือ'+((e[2]&&e[2].length)?'':'เพิ่ม')+'ตัวที่ <b class="f">'+e[1].join('·')+'</b>'
-      +((e[2]&&e[2].length)?' <span class="off">(ปิดตัวที่ '+e[2].join('·')+')</span>':'')
-      +(e[0]===day?'<span class="badge">วันนี้</span>':'')+'</div>';
+
+  /* ไทม์ไลน์จากแผน */
+  let tl='';
+  if(v.pm){
+    const p=v.pm.p;
+    tl='<div class="tlr '+(day>=1?'done':'')+'">วันแรก–'+((p.manual[0]&&p.manual[0].age-1)||7)+' · '+(p.choke.length?'โช้คตัวที่ <b class="f">'+p.choke.join('·')+'</b> เดินเป็นจังหวะตามตู้คุม':'พัดลมขั้นต่ำเดินตามตู้คุม')+' (ช่วงกก)</div>';
+    for(const e of p.manual){
+      const st=e.age<day?'done':(e.age===day?'now':'');
+      tl+='<div class="tlr '+st+'">อายุ <b class="f">'+e.age+'</b> วัน · เปิดมือ'+((e.off&&e.off.length)?'':'เพิ่ม')+'ตัวที่ <b class="f">'+(e.fans||[]).join('·')+'</b>'
+        +((e.off&&e.off.length)?' <span class="off">(ปิดตัวที่ '+e.off.join('·')+')</span>':'')
+        +(e.age===day?'<span class="badge">วันนี้</span>':'')+'</div>';
+    }
+    tl+='<div class="tlr">อายุ <b class="f">35</b> วันขึ้นไป · เปิดครบ '+h.fans+' ตัวทุกฟาร์ม (กฎที่หมอกำหนด)</div>';
   }
-  tl+='<div class="tlr">วันจับ (~42 วัน) · เปิดสูงสุดตามสภาพอากาศ + cooling pad</div>';
-  // table all days
+
+  /* ตารางทั้งรุ่น */
   let rows='';
   for(let d=1;d<=42;d++){
-    const x=calc(f,d,padH,secH);
-    const m=manualAt(f,d);
+    const x=ventAt(h,f.name,d);
+    const m=x.pm?manualUpTo(x.pm.p,D(d)):[];
+    const al=aliveAt(h,Math.min(d,D(+h.age||d)));
     const cls=(d===day?'cur':(d%7===0?'wk':''));
-    rows+='<tr class="'+cls+'" onclick="setDay('+d+')" style="cursor:pointer"><td>'+d+'</td><td>'+(BW[d]/1000).toFixed(2)+'</td><td>'+x.open+(x.full?' ⚠':'')+'</td><td style="text-align:left">'+(m.length?m.join(', '):'—')+'</td><td>'+x.cur.toFixed(0)+'</td><td>'+x.wind.toFixed(2)+'</td><td>'+x.fd+'</td><td>'+x.fp.toFixed(2)+'%</td><td>'+Math.round(x.fh).toLocaleString()+'</td><td>'+x.fcr.toFixed(2)+'</td></tr>';
+    rows+='<tr class="'+cls+'" onclick="setDay('+d+')" style="cursor:pointer"><td>'+d+'</td><td>'+(BW[D(d)]/1000).toFixed(2)+'</td><td>'+(x.vmin===x.vmax?x.vmax:x.vmin+'–'+x.vmax)+(x.vmax>x.planMaxRaw?' 🔺':'')+'</td><td style="text-align:left">'+(m.length?m.join(', '):'—')+'</td><td>'+curtainCm(h,x.vmax).toFixed(0)+'</td><td>'+velOf(h,x.fc,x.vmax).toFixed(2)+'</td><td>'+FEED[D(d)]+'</td><td>'+FPCT[D(d)].toFixed(2)+'%</td><td>'+Math.round(FEED[D(d)]*al/1000).toLocaleString()+'</td><td>'+FCR_STD[D(d)].toFixed(2)+'</td></tr>';
   }
-  document.getElementById('content').innerHTML=`
+
+  const houseChips=(f.houses||[]).map((x,i)=>'<button class="chip'+(i===hIdx?' on':'')+'" onclick="pickH('+i+')">'+esc(x.name)+'<small>'+x.fans+' พัดลม</small></button>').join('');
+  contentEl.innerHTML=`
   <div class="card">
-    <div class="spec"><b>${f.name}</b> · เล้า <b>${f.W}×${f.L} ม.</b> · พัดลม <b>${f.fans} ตัว</b> × ${f.cap.toLocaleString()} cfm · ไก่ลง <b>${f.birds.toLocaleString()} ตัว</b>${f.src?' · <span style="color:#a06a00">'+f.src+'</span>':''}</div>
+    <div class="chips" style="margin:0 0 10px">${houseChips}</div>
+    <div class="spec"><b>${esc(f.name)} · ${esc(h.name)}</b> · เล้า <b>${h.W}×${h.L} ม.</b> สูง ${h.H} ม.${(+h.baffle||0)>0?' (ชิ่งลม '+h.baffle+' ซม. → หน้าตัด '+cx.toFixed(1)+' ตร.ม.)':''} · พัดลม <b>${h.fans} ตัว</b> × ${Math.round(v.fc).toLocaleString()} cfm (จากค่าวัดจริง) · ไก่คงเหลือ <b>${alive.toLocaleString()} ตัว</b> · อายุวันนี้ ${h.age} วัน${v.pm?' · แผน <b>'+esc(v.pm.key)+'</b>':''}</div>
+    ${warn}
     <div class="dayrow"><label>อายุไก่</label><input type="range" min="1" max="42" value="${day}" oninput="setDay(+this.value)"><div class="dayval">วัน ${day}</div></div>
     <div class="kpis">
-      <div class="kpi k-fan"><div class="t">พัดลมที่ควรเปิด (คำนวณ)</div><div class="v">${c.open} / ${f.fans} ตัว</div><div class="s">ต้องการ ${Math.round(c.need).toLocaleString()} cfm (ขั้นต่ำ ${c.raw.toFixed(2)} ตัว)${c.full?' · ⚠ เต็มกำลัง พึ่ง cooling pad':''}</div></div>
-      <div class="kpi k-cur"><div class="t">เปิดผ้าม่านหน้าแพด</div><div class="v">${c.cur.toFixed(0)} ซม.</div><div class="s">สูงแพด ${padH} ม. × (${c.open}÷${f.fans})</div></div>
-      <div class="kpi k-wind"><div class="t">แรงลมในเล้า</div><div class="v">${c.wind.toFixed(2)} m/s</div><div class="s">หน้าตัด ${f.W}×${secH} ม.</div></div>
-      <div class="kpi k-feed"><div class="t">อาหารวันนี้</div><div class="v">${c.fd} g/ตัว</div><div class="s">%อาหารสะสม (STD) ${c.fp.toFixed(2)}% (÷ ถุง 30 กก.) · ทั้งเล้า ${Math.round(c.fh).toLocaleString()} kg</div></div>
-      <div class="kpi k-fcr"><div class="t">FCR เป้าหมาย (สะสม)</div><div class="v">${c.fcr.toFixed(2)}</div><div class="s">อาหารสะสม ÷ น้ำหนักตัว · วันจับ 42 = 1.68</div></div>
+      <div class="kpi k-fan"><div class="t">พัดลม ต่ำ–สูง (ตามแท็บระบายอากาศ)</div><div class="v">${v.vmin===v.vmax?v.vmax:v.vmin+'–'+v.vmax} / ${h.fans}</div><div class="s">ต้องการ ${Math.round(cfmkg(day)*(BW[D(day)]/1000)*h.birds).toLocaleString()} cfm · สูตรล้วน ${v.needFans} ตัว</div></div>
+      <div class="kpi k-cur"><div class="t">เปิดผ้าม่านหน้าแพด (ที่พัดลมสูงสุด)</div><div class="v">${cur.toFixed(0)} ซม.</div><div class="s">สูงแพด ${(+h.padH||0)} ม. × (${v.vmax}÷${h.fans})</div></div>
+      <div class="kpi k-wind"><div class="t">แรงลมในเล้า (ที่พัดลมสูงสุด)</div><div class="v">${vel.toFixed(2)} m/s</div><div class="s">หน้าตัด ${h.W}×${(h.H-(+h.baffle||0)/100).toFixed(2)} ม.</div></div>
+      <div class="kpi k-feed"><div class="t">อาหารวันนี้</div><div class="v">${fd} g/ตัว</div><div class="s">%อาหารสะสม (STD) ${fp.toFixed(2)}% · ทั้งเล้า ${Math.round(fh).toLocaleString()} kg</div></div>
+      <div class="kpi k-fcr"><div class="t">FCR เป้าหมาย (สะสม)</div><div class="v">${fcr.toFixed(2)}</div><div class="s">อาหารสะสม ÷ น้ำหนักตัว · วันจับ 42 = 1.68</div></div>
     </div>
-    <div class="inps">ปรับได้: สูงแพด (ม.) <input id="padh" type="number" step="0.1" value="${padH}" onchange="render()"> · สูงหน้าตัดลม (ม.) <input id="sech" type="number" step="0.1" value="${secH}" onchange="render()"> <span>(ใช้ชิ่งลม = 1.8)</span></div>
+    ${v.pm?`
     <div class="order">
       <div class="oh">📋 วัน ${day} — เปิดพัดลมตามนี้</div>
       <div>🟢 เปิดมือ ${man.length} ตัว: ${bubbles(man,'man')}</div>
-      ${f.choke.length?'<div style="margin-top:6px">🩷 โช้ค (ตู้คุมเดินเอง): '+bubbles(f.choke,'ck')+'</div>':''}
-      ${f.autos.length?'<div style="margin-top:6px">⬛ ออโต้ตามอุณหภูมิ Step2–4: '+f.autos.map(a=>bubbles(a,'au')).join('<span style="color:var(--muted)"> · </span>')+'</div>':''}
+      ${choke.length?'<div style="margin-top:6px">🩷 โช้ค (ตู้คุมเดินเอง): '+bubbles(choke,'ck')+'</div>':''}
+      ${v.pm.p.steps.length?'<div style="margin-top:6px">⬛ ออโต้ตามอุณหภูมิ: '+v.pm.p.steps.filter(s=>s.fans.length).map(s=>'Step'+s.n+' ('+(targetT(day)+(s.n-1)).toFixed(1)+'°C) '+bubbles(s.fans,'au')).join('<span style="color:var(--muted)"> · </span>')+'</div>':''}
       <div class="legend"><span><i style="background:var(--man)"></i>เขียว = เปิดมือ</span><span><i style="background:var(--ck)"></i>ชมพู = โช้ค</span><span><i style="background:var(--au)"></i>ดำ = ออโต้ตู้คุม</span><span><i style="background:rgba(255,255,255,.09);border:1px solid var(--line)"></i>เทา = ยังไม่เปิด</span></div>
       <div class="fanwall">${wall}</div>
     </div>
     <div class="secH">🗓 แผนทั้งรุ่น — เปิดเบอร์ไหนก่อน</div>
-    <div class="tl">${tl}</div>
+    <div class="tl">${tl}</div>`:''}
     <div class="secH">📊 ตารางรวมทั้งรุ่น (แตะแถวเพื่อเลือกวัน)</div>
     <div class="tblwrap"><table>
-      <thead><tr><th>วัน</th><th>นน. STD (kg)</th><th>พัดลม (ตัว)</th><th>เบอร์เปิดมือ</th><th>ผ้าม่าน (ซม.)</th><th>ลม (m/s)</th><th>อาหาร g/ตัว</th><th>%อาหาร STD</th><th>อาหาร kg/เล้า</th><th>FCR เป้า</th></tr></thead>
+      <thead><tr><th>วัน</th><th>นน. STD (kg)</th><th>พัดลม ต่ำ–สูง</th><th>เบอร์เปิดมือ</th><th>ผ้าม่าน (ซม.)</th><th>ลม (m/s)</th><th>อาหาร g/ตัว</th><th>%อาหาร STD</th><th>อาหาร kg/เล้า</th><th>FCR เป้า</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>
-    <div class="note">⚠ = ความต้องการลมเกินพัดลมที่ติดตั้ง — เปิดครบทุกตัวและพึ่ง cooling pad · จำนวน "พัดลมที่ควรเปิด" มาจากการคำนวณความต้องการลมของไก่ ส่วน "เบอร์เปิดมือ" มาจากแผนของหมอ (โช้ค+ออโต้ทำงานผ่านตู้คุมเพิ่มเติมจากเปิดมือ) · อาหาร kg/เล้า คิดจากไก่ลงเต็มจำนวน ถ้าต้องการหักไก่ตายรายวันใช้แอปหลัก</div>
+    <div class="note">🔺 = เปิดมากกว่าแผนเดิม (ความต้องการลมของไก่มาก่อนแผน / อายุ ≥ 35 วันเปิดครบทุกตัว — กฎที่หมอกำหนด 31 ก.ค. 2569) · ตัวเลขทุกช่องคำนวณจากข้อมูลจริงของเล้านี้ (ขนาด/ชิ่งลม/พัดลม/ค่าวัดลม/ไก่คงเหลือ) — ชุดเดียวกับแท็บระบายอากาศในแอปหลัก · อาหาร kg/เล้า คิดจากไก่คงเหลือหลังหักตายรายวัน</div>
   </div>`;
 }
-function setDay(d){day=d;render();}
-function pick(k){cur=k;render();document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c.dataset.k===k));}
-document.getElementById('chips').innerHTML=FARMS.map(f=>'<button class="chip'+(f.k===cur?' on':'')+'" data-k="'+f.k+'" onclick="pick(\''+f.k+'\')">'+f.name+'<small>'+f.fans+' ตัว</small></button>').join('');
+/* ข้อมูลในแอปหลักเปลี่ยน (ซิงค์/แก้ไข) → หน้านี้อัปเดตตามทันที */
+window.addEventListener('storage',e=>{ if(e.key==='ppf_farms_v3'){ loadFarms(); render(); } });
 render();
 </script>
 </body>

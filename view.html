@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>PPF Smart Farm — รายงานฟาร์ม</title>
+<style>
+/* หน้า "ดูอย่างเดียว" สำหรับเจ้าของฟาร์ม — ไม่มีปุ่มแก้ ไม่มีโค้ดแก้ ไม่มีรหัสใด ๆ ฝังอยู่
+   ความปลอดภัยจริงอยู่ที่เซิร์ฟเวอร์: token ในลิงก์ → ได้เฉพาะฟาร์มของตัวเอง (docs/05_AUTH_AND_ROLES.md) */
+:root{--bg:#080D18;--card:#101A2B;--ink:#F8FAFC;--muted:#94A3B8;--dim:#64748B;--brand:#34D399;--brand2:#7DD3FC;--line:rgba(255,255,255,.10);--amber:#FCD34D;--red:#FCA5A5}
+*{box-sizing:border-box;margin:0;padding:0}
+@font-face{font-family:'LINE Seed Sans TH';font-style:normal;font-weight:300 500;font-display:swap;src:url('vendor/line-seed/LINESeedSansTH-Regular.woff2') format('woff2')}
+@font-face{font-family:'LINE Seed Sans TH';font-style:normal;font-weight:600 700;font-display:swap;src:url('vendor/line-seed/LINESeedSansTH-Bold.woff2') format('woff2')}
+body{font-family:'LINE Seed Sans TH',system-ui,sans-serif;background:linear-gradient(170deg,#0B1120,#080D18 65%);background-attachment:fixed;color:var(--ink);padding-bottom:56px;-webkit-font-smoothing:antialiased}
+.hero{background:linear-gradient(135deg,#0d3b2a,#0f5c3f 55%,#0e7490);padding:20px 16px 16px;border-radius:0 0 22px 22px;box-shadow:0 8px 22px rgba(0,0,0,.4)}
+.hero h1{font-size:19px;font-weight:700;display:flex;gap:8px;align-items:center;color:#fff}
+.hero .sub{font-size:12.5px;color:rgba(255,255,255,.85);margin-top:4px;line-height:1.6}
+.wrap{max-width:760px;margin:0 auto;padding:0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:12px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.center{text-align:center;padding:48px 16px;color:var(--muted);line-height:2}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-top:12px}
+.kpi{border-radius:14px;padding:11px 12px;border:1px solid var(--line)}
+.kpi .t{font-size:11.5px;color:var(--muted)}
+.kpi .v{font-size:20px;font-weight:700;margin-top:2px}
+.kpi .v small{font-size:12px;font-weight:500;color:var(--muted)}
+.kpi .s{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5}
+.k1{background:rgba(52,211,153,.12)}.k2{background:rgba(96,165,250,.12)}.k3{background:rgba(167,139,250,.14)}.k4{background:rgba(251,146,60,.12)}.k5{background:rgba(251,113,133,.12)}
+.hname{font-size:16.5px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hname .age{font-size:12px;font-weight:600;background:rgba(34,211,238,.14);color:var(--brand2);border-radius:99px;padding:3px 10px}
+.spec{font-size:12.5px;color:var(--muted);line-height:1.7;margin-top:6px}
+.spec b{color:var(--brand2)}
+.secH{font-size:14px;font-weight:700;margin:16px 0 6px;color:var(--ink)}
+.nodata{color:var(--dim);font-style:normal}
+.warn{background:rgba(251,191,36,.12);border:1px solid rgba(251,191,36,.45);border-radius:12px;padding:9px 12px;margin-top:10px;font-size:12.5px;color:var(--amber);line-height:1.6}
+.fanwall{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.fw{width:32px;text-align:center}
+.fw .d{width:29px;height:29px;border-radius:50%;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;background:rgba(255,255,255,.06);color:var(--muted);border:1.5px solid var(--line)}
+.fw.man .d{background:#22C55E;color:#fff;border-color:#22C55E}
+.fw.ck .d{background:#EC7CA8;color:#3a1116;border-color:#EC7CA8}
+.fw.au .d{background:#8593AB;color:#fff;border-color:#8593AB}
+.legend{font-size:11px;color:var(--muted);margin-top:8px;display:flex;gap:12px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.bars{display:flex;align-items:flex-end;gap:2px;height:64px;margin-top:8px}
+.bars .b{flex:1;min-width:2px;background:rgba(251,113,133,.65);border-radius:2px 2px 0 0}
+.bars .b.zero{background:rgba(255,255,255,.07);height:2px!important}
+.barcap{display:flex;justify-content:space-between;font-size:10.5px;color:var(--dim);margin-top:3px}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+th{background:rgba(34,211,238,.14);color:#7DD3FC;padding:6px 5px;font-weight:600;font-size:11px;position:sticky;top:0}
+td{padding:5px;border-bottom:1px solid var(--line);text-align:center;color:var(--ink)}
+tr.cur td{background:rgba(52,211,153,.14);font-weight:600}
+.tblwrap{max-height:380px;overflow:auto;border:1px solid var(--line);border-radius:12px;margin-top:8px}
+details summary{cursor:pointer;font-size:13px;color:var(--brand2);margin-top:12px}
+input.pin{width:100%;padding:14px 16px;font-size:18px;text-align:center;letter-spacing:6px;border:1px solid #334155;border-radius:12px;background:#111C2E;color:var(--ink);outline:none;margin-top:14px}
+button.go{width:100%;margin-top:12px;padding:13px;font-size:15px;font-weight:700;border:0;border-radius:12px;background:#0EA5A4;color:#04211F;cursor:pointer;font-family:inherit}
+button.rf{border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:10px;padding:7px 14px;font-size:12.5px;cursor:pointer;font-family:inherit}
+.foot{font-size:11px;color:var(--dim);text-align:center;margin-top:22px;line-height:1.9}
+.err{color:var(--red)}
+</style>
+</head>
+<body>
+<div class="hero"><div class="wrap">
+  <h1>🐔 PPF SMART FARM</h1>
+  <div class="sub" id="heroSub">รายงานฟาร์ม — สำหรับเจ้าของฟาร์ม (อ่านอย่างเดียว)</div>
+</div></div>
+<div class="wrap" id="app"><div class="center">⏳ กำลังโหลดข้อมูลฟาร์มของคุณ…</div></div>
+<script src="calc-core.js"></script>
+<script>
+/* URL เดียวกับแอปหลัก — หน้านี้เรียกได้เฉพาะ action=view (เซิร์ฟเวอร์กรองฟาร์มตาม token ให้เอง) */
+const SYNC_URL='https://script.google.com/macros/s/AKfycbzQoQ8AtIHq4S6HB29B4JzfWQpURs8sLGlpPHd9NUcEhjE3UUiPngjm6ijAF1jN3YJS/exec';
+const app=document.getElementById('app');
+function devId(){
+  let d=null;try{d=localStorage.getItem('ppf_view_dev');}catch(_){}
+  if(!d){d='';const r=new Uint8Array(12);(window.crypto||{getRandomValues:a=>{for(let i=0;i<a.length;i++)a[i]=Math.random()*256|0;return a;}}).getRandomValues(r);
+    for(const x of r)d+='abcdefghijklmnopqrstuvwxyz0123456789'[x%36];
+    try{localStorage.setItem('ppf_view_dev',d);}catch(_){}}
+  return d;
+}
+function tokenOf(){const m=/[#&]t=([A-Za-z0-9_-]{22,64})/.exec(location.hash||'');return m?m[1]:'';}
+function todayAge(pd){if(!pd)return null;const t=new Date();t.setHours(0,0,0,0);const p=new Date(pd+'T00:00:00');if(isNaN(p.getTime()))return null;return Math.floor((t-p)/86400000)+1;}
+function ageOf(h){const ta=todayAge(h.placeDate);return Math.max(1,Math.min(42,ta!==null?ta:Math.round(+h.age||1)));}
+function nowStr(){const d=new Date(),p=n=>('0'+n).slice(-2);const TM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];return d.getDate()+' '+TM[d.getMonth()]+' '+(d.getFullYear()+543)+' '+p(d.getHours())+':'+p(d.getMinutes());}
+
+function load(pin){
+  const t=tokenOf();
+  if(!t){app.innerHTML='<div class="card center">ลิงก์ไม่สมบูรณ์ — ต้องเปิดจากลิงก์ที่ผู้ดูแลส่งให้เท่านั้น<br>ถ้าคัดลอกลิงก์มา ให้คัดลอกทั้งบรรทัดรวมส่วนท้าย #t=…</div>';return;}
+  app.innerHTML='<div class="center">⏳ กำลังโหลดข้อมูลฟาร์มของคุณ…</div>';
+  fetch(SYNC_URL+'?action=view&t='+encodeURIComponent(t)+'&d='+encodeURIComponent(devId())+(pin?'&pin='+encodeURIComponent(pin):'')+'&_='+Date.now())
+   .then(r=>r.json()).then(j=>{
+     if(j&&j.ok){render(j);return;}
+     if(j&&j.need==='pin'){renderPin(j.error||'');return;}
+     app.innerHTML='<div class="card center err">🔒 '+esc((j&&j.error)||'เชื่อมต่อไม่ได้')+'</div>';
+   })
+   .catch(()=>{app.innerHTML='<div class="card center err">เชื่อมต่อไม่ได้ — ตรวจอินเทอร์เน็ตแล้วลองใหม่<br><br><button class="go" style="max-width:220px" onclick="load()">ลองอีกครั้ง</button></div>';});
+}
+function renderPin(msg){
+  app.innerHTML='<div class="card" style="max-width:340px;margin:24px auto;text-align:center">'
+   +'<div style="font-size:30px">🔐</div><div style="font-weight:700;margin-top:6px">ลิงก์นี้มีรหัส PIN</div>'
+   +'<div style="font-size:12.5px;color:var(--muted);margin-top:4px">ใส่ PIN ที่ผู้ดูแลแจ้งไว้ (ครั้งแรกครั้งเดียวต่อเครื่อง)</div>'
+   +(msg?'<div class="err" style="font-size:12.5px;margin-top:8px">'+esc(msg)+'</div>':'')
+   +'<input class="pin" id="pinIn" inputmode="numeric" maxlength="8" placeholder="••••">'
+   +'<button class="go" id="pinGo">ดูข้อมูลฟาร์ม</button></div>';
+  const go=()=>{const v=(document.getElementById('pinIn').value||'').trim();if(v){try{localStorage.setItem('ppf_view_pin_'+tokenOf(),v);}catch(_){}load(v);}};
+  document.getElementById('pinGo').onclick=go;
+  document.getElementById('pinIn').onkeydown=e=>{if(e.key==='Enter')go();};
+  try{document.getElementById('pinIn').focus();}catch(_){}
+}
+function deadBars(h,age){
+  let mx=1;for(let d=1;d<=age;d++)mx=Math.max(mx,+h.dead[d-1]||0);
+  let out='<div class="bars">';
+  for(let d=1;d<=age;d++){const v=+h.dead[d-1]||0;out+='<div class="b'+(v?'':' zero')+'" style="height:'+Math.max(3,Math.round(v/mx*100))+'%" title="วัน '+d+': '+v+'"></div>';}
+  out+='</div><div class="barcap"><span>วัน 1</span><span>ตายรายวัน (สูงสุด '+mx.toLocaleString()+' ตัว/วัน)</span><span>วัน '+age+'</span></div>';
+  return out;
+}
+function houseCard(f,h){
+  const age=ageOf(h);
+  const died=cumDead(h,age), alive=aliveAt(h,age);
+  const pctD=h.birds>0?(died/h.birds*100):0;
+  const v=ventAt(h,f.name,age);
+  const vel=velOf(h,v.fc,v.vmax), cur=curtainCm(h,v.vmax), cx=crossOf(h);
+  const man=v.pm?manualUpTo(v.pm.p,D(age)):[];
+  const chokeFans=v.pm?v.pm.p.choke:[], autoFlat=v.pm?v.pm.p.steps.reduce((a,s)=>a.concat(s.fans),[]):[];
+  let wall='';
+  for(let n=1;n<=h.fans;n++){let c='';if(man.includes(n))c='man';else if(chokeFans.includes(n))c='ck';else if(autoFlat.includes(n))c='au';
+    wall+='<div class="fw '+c+'"><div class="d">'+n+'</div></div>';}
+  let rows='';
+  for(let d=1;d<=42;d++){const x=ventAt(h,f.name,d);
+    rows+='<tr class="'+(d===age?'cur':'')+'"><td>'+d+'</td><td>'+(x.vmin===x.vmax?x.vmax:x.vmin+'–'+x.vmax)+'</td><td>'+curtainCm(h,x.vmax).toFixed(0)+'</td><td>'+velOf(h,x.fc,x.vmax).toFixed(2)+'</td><td>'+FEED[D(d)]+'</td><td>'+(BW[D(d)]/1000).toFixed(2)+'</td></tr>';}
+  return `<div class="card">
+    <div class="hname">🏠 ${esc(h.name)} <span class="age">อายุ ${age} วัน</span></div>
+    <div class="spec">เล้า <b>${h.W}×${h.L} ม.</b> สูง ${h.H} ม.${(+h.baffle||0)>0?' (ชิ่งลม '+h.baffle+' ซม.)':''} · พัดลม <b>${h.fans} ตัว</b>${h.placeDate?' · ลงไก่ '+esc(h.placeDate):''}</div>
+    <div class="secH">🐤 ผลการเลี้ยง (รุ่นปัจจุบัน)</div>
+    <div class="kpis">
+      <div class="kpi k1"><div class="t">ไก่คงเหลือ</div><div class="v">${alive.toLocaleString()}</div><div class="s">ลง ${h.birds.toLocaleString()} ตัว</div></div>
+      <div class="kpi k5"><div class="t">ตายสะสม</div><div class="v">${died.toLocaleString()}</div><div class="s">${pctD.toFixed(2)}% ของไก่ลง</div></div>
+      <div class="kpi k4"><div class="t">น้ำหนักชั่งจริงล่าสุด</div><div class="v">${(+h.wtActual||0)>0?(+h.wtActual).toLocaleString()+' <small>g</small>':'<span class="nodata" style="font-size:13px">ยังไม่มีข้อมูลอ้างอิง</span>'}</div><div class="s">มาตรฐานวันนี้ ${bw(age).toLocaleString()} g</div></div>
+      <div class="kpi k2"><div class="t">อาหารวันนี้ (มาตรฐาน)</div><div class="v">${FEED[D(age)]} <small>g/ตัว</small></div><div class="s">ทั้งเล้า ~${Math.round(FEED[D(age)]*alive/1000).toLocaleString()} kg</div></div>
+    </div>
+    ${deadBars(h,age)}
+    <div class="secH">🌀 แผนระบายอากาศวันนี้</div>
+    <div class="kpis">
+      <div class="kpi k1"><div class="t">พัดลมที่เปิด (ต่ำ–สูง)</div><div class="v">${v.vmin===v.vmax?v.vmax:v.vmin+'–'+v.vmax} <small>/ ${h.fans} ตัว</small></div><div class="s">${v.vmax>v.planMaxRaw?'เปิดเพิ่มจากแผนเดิม '+(v.vmax-v.planMaxRaw)+' ตัว (ตามความต้องการลมของไก่)':'ตามแผนของสัตวแพทย์'}</div></div>
+      <div class="kpi k3"><div class="t">แรงลมในเล้า</div><div class="v">${vel.toFixed(2)} <small>m/s</small></div><div class="s">เป้าหมายอายุนี้ ~${targetWind(age).toFixed(2)} · ไก่ทนได้ ${maxWind(age).toFixed(1)} m/s</div></div>
+      <div class="kpi k2"><div class="t">เปิดผ้าม่านหน้าแพด</div><div class="v">${cur.toFixed(0)} <small>ซม.</small></div><div class="s">แพดสูง ${(+h.padH||0)} ม.</div></div>
+      <div class="kpi k4"><div class="t">อุณหภูมิเป้าหมาย</div><div class="v">${targetT(age).toFixed(1)} <small>°C</small></div><div class="s">เปิดปั๊มแพดที่ ${pumpT(age).toFixed(1)} °C</div></div>
+    </div>
+    ${v.pm?'<div style="font-size:12.5px;color:var(--muted);margin-top:10px">เบอร์พัดลมที่เปิดวันนี้ (ตามแผน '+esc(v.pm.key)+')</div><div class="fanwall">'+wall+'</div><div class="legend"><span><i style="background:#22C55E"></i>เปิดมือ</span><span><i style="background:#EC7CA8"></i>โช้ค</span><span><i style="background:#8593AB"></i>ออโต้ตู้คุม</span><span><i style="background:rgba(255,255,255,.09);border:1px solid var(--line)"></i>ยังไม่เปิด</span></div>':''}
+    <details><summary>📊 ดูแผนทั้งรุ่น (วัน 1–42)</summary>
+      <div class="tblwrap"><table><thead><tr><th>วัน</th><th>พัดลม ต่ำ–สูง</th><th>ผ้าม่าน ซม.</th><th>ลม m/s</th><th>อาหาร g/ตัว</th><th>นน.มฐ. kg</th></tr></thead><tbody>${rows}</tbody></table></div>
+    </details>
+  </div>`;
+}
+function render(j){
+  const farms=Array.isArray(j.farms)?j.farms:[];
+  if(!farms.length){app.innerHTML='<div class="card center">ยังไม่มีข้อมูลฟาร์มในลิงก์นี้ — ติดต่อผู้ดูแล</div>';return;}
+  let html='';
+  for(const f of farms){
+    const houses=Array.isArray(f.houses)?f.houses:[];
+    const birds=houses.reduce((s,h)=>s+aliveAt(h,ageOf(h)),0);
+    html+='<div class="card" style="background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.3)">'
+      +'<div style="font-size:17px;font-weight:700">🚜 '+esc(f.name)+'</div>'
+      +'<div class="spec">'+houses.length+' เล้า · ไก่คงเหลือรวม <b>'+birds.toLocaleString()+'</b> ตัว'+(j.label?' · ลิงก์สำหรับ: '+esc(j.label):'')+'</div></div>';
+    for(const h of houses)html+=houseCard(f,h);
+  }
+  html+='<div style="text-align:center;margin-top:14px"><button class="rf" onclick="load(savedPin())">↻ โหลดข้อมูลใหม่</button></div>';
+  html+='<div class="foot">ข้อมูล ณ '+nowStr()+' · หน้านี้ดูได้อย่างเดียว แก้ไขไม่ได้<br>สูตร/แผนชุดเดียวกับระบบหลักของสัตวแพทย์ · PPF Smart Farm</div>';
+  app.innerHTML=html;
+  document.getElementById('heroSub').textContent='รายงานฟาร์ม '+farms.map(f=>f.name).join(' · ')+' (อ่านอย่างเดียว)';
+}
+function savedPin(){try{return localStorage.getItem('ppf_view_pin_'+tokenOf())||'';}catch(_){return '';}}
+window.addEventListener('hashchange',()=>load(savedPin()));
+load(savedPin());
+</script>
+</body>
+</html>

@@ -1104,83 +1104,9 @@
     <div class="modal-note" style="margin-top:12px">ระยะเปิด = สูง pad × (พัดลมที่ใช้ ÷ พัดลมทั้งหมด) · เปิดจาก<b>ด้านบนลงมา</b> ลมเย็นจะเลียดเพดานก่อนแล้วค่อยตกหาไก่ ไม่เป่าใส่ตัวตรง ๆ</div>
   </div>
 </div>
+<script src="calc-core.js"></script>
 <script>
-const BW=[42,55,71,90,112,138,168,202,240,283,330,382,440,503,570,639,711,786,864,945,1029,1116,1205,1296,1390,1486,1583,1682,1783,1886,1989,2094,2200,2306,2413,2521,2629,2738,2846,2954,3062,3170,3278];
-const FEED=[0,14,18,21,24,27,31,34,38,42,47,51,56,61,66,71,76,82,87,93,98,104,109,115,120,125,130,135,140,145,150,154,159,163,167,171,175,178,182,185,188,192,194];
-// %อาหาร ตามตาราง STD (As-Hatched) = อาหารสะสมต่อตัว(ก.) ÷ ถุงอาหาร 30 กก./กระสอบ (÷30000×100 = ÷300) · วัน16=2.33, วัน42=15.95
-const FPCT=[0.00,0.04,0.10,0.17,0.25,0.34,0.44,0.56,0.69,0.83,0.99,1.17,1.37,1.58,1.81,2.06,2.33,2.62,2.93,3.25,3.60,3.97,4.36,4.77,5.21,5.65,6.12,6.62,7.12,7.65,8.19,8.76,9.34,9.94,10.54,11.17,11.82,12.47,13.14,13.83,14.52,15.23,15.95];
-// FCR & อาหารสะสม ตามตาราง STD (As-Hatched Performance) — วัน42: FCR 1.68, อาหารสะสม 4,786 g (หมอยืนยันใช้ 1.68)
-const FCR_STD=[0,0.23,0.42,0.57,0.68,0.77,0.84,0.90,0.96,1.01,1.05,1.10,1.13,1.15,1.17,1.18,1.19,1.21,1.22,1.24,1.25,1.26,1.28,1.30,1.32,1.34,1.36,1.38,1.40,1.42,1.44,1.46,1.48,1.50,1.51,1.53,1.55,1.57,1.59,1.61,1.63,1.65,1.68];
-const CUMF_STD=[0,13,30,51,74,101,132,167,206,250,298,352,410,474,542,617,698,785,878,976,1081,1192,1309,1432,1562,1696,1837,1985,2137,2295,2458,2627,2801,2981,3163,3352,3545,3742,3943,4148,4357,4570,4786];
-const D=a=>Math.max(0,Math.min(42,Math.round(a)));
-const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const bw=a=>BW[D(a)],feedG=d=>FEED[D(d)];
-const targetT=a=>{const x=D(a);return x<1?33:Math.max(27.6,33-0.3*(x-1));};
-const pumpT=a=>{const x=D(a);return x<1?36:Math.max(30.6,36-0.3*(x-1));};
-const cfmkg=a=>a<=13?3:(a<=27?4:5);
-const maxWind=a=>a<=7?0.3:a<=14?0.7:a<=21?1.2:a<=28?1.8:a<=35?2.3:2.8;
-// ความเร็วลมเป้าหมายที่ไก่ต้องการต่ออายุ (UGA Poultry Extension, m/s) — แสดงผลเป็นไกด์ ไม่กระทบ logic เปิดแพด
-const targetWind=a=>a<=7?0.25:a<=14?0.5:a<=21?1.0:a<=28?1.75:a<=35?2.5:3.0;
-function vmaxRaw(fc,birds,fans,age){const reqAir=cfmkg(age)*(BW[D(age)]/1000)*birds;return Math.min(fans,Math.max(1,Math.ceil(fc>0?reqAir/fc:0)));}
-function vmaxCurve(fc,birds,fans,age){const MS=[7,14,21,28,35,42];const vals=[4];for(let k=1;k<6;k++)vals.push(Math.max(vals[k-1],vmaxRaw(fc,birds,fans,MS[k])));if(age<=7)return 4;if(age>=42)return vals[5];for(let k=0;k<5;k++)if(age<=MS[k+1]){const t=(age-MS[k])/(MS[k+1]-MS[k]);const ts=t*t*(3-2*t);return Math.round(vals[k]+ts*(vals[k+1]-vals[k]));}return vals[5];}
-const choke=a=>{const x=D(a);if(x<=6){const on=[0.5,0.6,0.7,0.7,0.8,0.8,0.6][x];return{on:on>0.6?1:on,off:[10,9,8,7,6,5,3][x]};}return{on:3,off:2};};
-// แสดงเวลาโช้ค (รอบเปิด-ปิดพัดลม) มีหน่วย — ถ้าเวลาทำ < 1 นาที แปลงเป็นวินาที
-const chokeOnU=c=>c.on>=1?(c.on+' นาที'):(Math.round(c.on*60)+' วินาที');
-const chokeText=c=>'ทำ '+chokeOnU(c)+' หยุด '+c.off+' นาที';
-const chokeShort=c=>(c.on>=1?c.on+'น.':Math.round(c.on*60)+'วิ.')+' / '+c.off+'น.';
-/* ขนาดช่องลมพัดลมที่ "วัดได้จริง" — พัดลม 52 นิ้ว = 130.728 ซม. (ไม่ใช่ 132.08 ตามทฤษฎี 2.54)
-   ที่มา: Excel ของหมอ ชีต "หาประสิทธิภาพพัดลม.ต่อตัว" (ฟาร์มมั่งมี) → 4.289 ฟุต → 18.395 ตร.ฟุต
-   หมอยืนยันให้ใช้ค่าที่วัดจริง 31 ก.ค. 2026 · ค่าเดิม 2.54 ให้พื้นที่มากเกินจริง 2.1% */
-const IN2CM=2.514;
-function fanCFMof(h){const side=h.fan*IN2CM/30.48,area=side*side,avg=h.pts.reduce((a,b)=>a+(+b||0),0)/9;return area*avg;}
-const fmtMinT=m=>m<=0?'0':(m<1?Math.round(m*60)+' วินาที':Math.round(m)+' นาที'); // ปัดเป็นนาทีเต็ม (60 วินาที = 1 นาที)
-const fmtMc=m=>m<=0?'0':(m<1?Math.round(m*60)+'วิ':Math.round(m)+'น');
-// พัดลมขั้นต่ำ + เวลาทำงาน (สูตรหมอตั้ม): I = อากาศต้องการ ÷ ประสิทธิภาพพัดลม/ตัว · เดินโช๊คเป็นรอบ 5 นาที
-function minFan(h,nck){
-  const fc=fanCFMof(h),wkg=bw(h.age)/1000,q=cfmkg(h.age)*wkg*(+h.birds||0),I=fc>0?q/fc:0,TC=5;
-  let on,off,cont=false,duty;
-  if(nck>0&&I>=nck){cont=true;duty=1;on=TC;off=0;}
-  else if(nck>0){duty=I/nck;on=Math.max(1,Math.min(TC-1,Math.round(TC*duty)));off=TC-on;} // ปัดเวลาทำเป็นนาทีเต็ม · on+off = TC (5 นาที) เสมอ
-  else{duty=0;on=0;off=0;}
-  return {q:q,fanCFM:fc,I:I,nck:nck,duty:duty,on:on,off:off,cont:cont};
-}
-const lux=a=>{const x=D(a);return x<=1?40:x<=14?30:x<=21?20:10;};
-const lightHr=a=>{const x=D(a);return x<=1?24:x<=7?20:x<=14?18:x<=21?16:x<=28?10:12;};
-/* ===== แผนการทำงานพัดลม (ฤดูร้อน) — ถอดจาก Excel "แผนการระบายอากาศ หมอวรัญญู" คงลำดับเดิมของแต่ละฟาร์ม =====
-   choke = พัดลมโช๊ค (วิ่ง Cycle ตอน≤เป้า / ต่อเนื่องที่เป้า+1) · steps[].n = Step Auto (เปิดที่เป้า+(n-1)°C) · manual[] = เปิดมือตามอายุ (สะสม) */
-const FANPLANS={"chai34":{"farms":["ชัยนาท"],"size":"34×120","nf":24,"choke":[7,18],"steps":[{"n":2,"fans":[]},{"n":3,"fans":[5,20]},{"n":4,"fans":[3,22]}],"manual":[{"age":8,"fans":[2,23]},{"age":12,"fans":[9,16]},{"age":22,"fans":[11,14]},{"age":25,"fans":[6,19]},{"age":29,"fans":[4,21]},{"age":33,"fans":[1,24]},{"age":36,"fans":[8,17]},{"age":39,"fans":[10,12,13,15]}]},"chai28":{"farms":["ชัยนาท"],"size":"28×120","nf":18,"choke":[4,15],"steps":[{"n":2,"fans":[]},{"n":3,"fans":[6,13]},{"n":4,"fans":[2,17]}],"manual":[{"age":8,"fans":[8,11]},{"age":15,"fans":[3,16]},{"age":22,"fans":[1,18]},{"age":29,"fans":[5,14]},{"age":33,"fans":[7,12]},{"age":36,"fans":[9,10]}]},"thana":{"farms":["ธนวัฒน์"],"size":"28×120","nf":18,"choke":[2,17],"steps":[{"n":2,"fans":[4,15]},{"n":3,"fans":[6,13]},{"n":4,"fans":[8,11]}],"manual":[{"age":10,"fans":[9]},{"age":15,"fans":[1,18]},{"age":19,"fans":[10]},{"age":21,"fans":[7,12]},{"age":23,"fans":[5]},{"age":25,"fans":[14]},{"age":26,"fans":[3]},{"age":27,"fans":[16]},{"age":30,"fans":[8]},{"age":31,"fans":[11]},{"age":33,"fans":[6]},{"age":34,"fans":[13]},{"age":36,"fans":[2,4,15,17]}]},"phum":{"farms":["พุ่มวงษ์","พุ่มวงศ์","ยิ่งรวย"],"size":"28×120","nf":22,"choke":[2,21],"steps":[{"n":2,"fans":[4,19]},{"n":3,"fans":[6,17]},{"n":4,"fans":[8,15]}],"manual":[{"age":8,"fans":[11]},{"age":14,"fans":[1,22]},{"age":16,"fans":[14]},{"age":17,"fans":[9]},{"age":20,"fans":[10,18]},{"age":22,"fans":[3,5,7,16,20]},{"age":27,"fans":[13]},{"age":29,"fans":[8,12,15]},{"age":32,"fans":[6,17]},{"age":33,"fans":[4,19]}]},"money":{"farms":["มันนี่","สาธิต"],"size":"21×120","nf":16,"choke":[2,15],"steps":[{"n":2,"fans":[4,13]},{"n":3,"fans":[6,11]},{"n":4,"fans":[7,10]}],"manual":[{"age":12,"fans":[8]},{"age":15,"fans":[1,16]},{"age":21,"fans":[5,12]},{"age":24,"fans":[3,14]},{"age":28,"fans":[9]},{"age":30,"fans":[10]},{"age":32,"fans":[7]},{"age":34,"fans":[6]},{"age":35,"fans":[11]},{"age":37,"fans":[2,4,13,15]}]},"mk12":{"farms":["มั้งกี้1","มอส"],"size":"16×100","nf":12,"choke":[5],"steps":[{"n":2,"fans":[2,11]},{"n":3,"fans":[7]}],"manual":[{"age":13,"fans":[6]},{"age":16,"fans":[1,12]},{"age":22,"fans":[4,8]},{"age":26,"fans":[10]},{"age":29,"fans":[3]},{"age":31,"fans":[9]},{"age":34,"fans":[7]},{"age":36,"fans":[2,11]},{"age":38,"fans":[5]}]},"mk10":{"farms":["มั้งกี้2","มอส"],"size":"16×100","nf":10,"choke":[4],"steps":[{"n":2,"fans":[1,10]},{"n":3,"fans":[6]}],"manual":[{"age":13,"fans":[5]},{"age":22,"fans":[3,7]},{"age":26,"fans":[9]},{"age":29,"fans":[2]},{"age":31,"fans":[8]},{"age":34,"fans":[6]},{"age":36,"fans":[1,4,10]}]},"mos25":{"farms":["มอส","มั้งกี้3"],"size":"25×120","nf":14,"choke":[2,13],"steps":[{"n":2,"fans":[4,11]},{"n":3,"fans":[6,9]}],"manual":[{"age":10,"fans":[7]},{"age":14,"fans":[1,14]},{"age":18,"fans":[8]},{"age":21,"fans":[3,12]},{"age":23,"fans":[5,10]},{"age":26,"fans":[9]},{"age":27,"fans":[6]},{"age":29,"fans":[11]},{"age":31,"fans":[4]},{"age":33,"fans":[2,13]}]},"sriha":{"farms":["ศรีเหรา"],"size":"40×128","nf":26,"choke":[2,25],"steps":[{"n":2,"fans":[4,23]},{"n":3,"fans":[5,22]},{"n":4,"fans":[7,20]}],"manual":[{"age":7,"fans":[13]},{"age":11,"fans":[3,24]},{"age":16,"fans":[1,9,14,18,26]},{"age":20,"fans":[15]},{"age":21,"fans":[11]},{"age":22,"fans":[6,19,21]},{"age":25,"fans":[8,17]},{"age":26,"fans":[12]},{"age":27,"fans":[16]},{"age":29,"fans":[10]},{"age":30,"fans":[5,22]},{"age":31,"fans":[4]},{"age":32,"fans":[23]},{"age":33,"fans":[2,25]}]},"teng":{"farms":["เต็งหนึ่ง"],"size":"28×84","nf":20,"choke":[6,15],"steps":[{"n":2,"fans":[4,17]},{"n":3,"fans":[9,12]},{"n":4,"fans":[2,19]}],"manual":[{"age":7,"fans":[10]},{"age":12,"fans":[3,18]},{"age":17,"fans":[8,13]},{"age":22,"fans":[11]},{"age":24,"fans":[5,7,14,16]},{"age":32,"fans":[1,20]}]},"test8":{"farms":["ทดสอบ"],"size":"ทดสอบ 8 ตัว","nf":8,"choke":[4],"steps":[{"n":2,"fans":[5]},{"n":3,"fans":[3,6]}],"manual":[{"age":14,"fans":[2,7]},{"age":24,"fans":[1,8]}]},"rr36":{"farms":["รุ่งเรือง3-6","หนึ่งรุ่งเรือง"],"size":"32×120","nf":21,"choke":[2,20],"steps":[{"n":2,"fans":[4,18]},{"n":3,"fans":[6,16]},{"n":4,"fans":[8,14]}],"manual":[{"age":8,"fans":[11]},{"age":13,"fans":[1,21],"off":[11]},{"age":15,"fans":[11]},{"age":17,"fans":[7,15],"off":[11]},{"age":19,"fans":[5,11,17],"off":[7,15]},{"age":21,"fans":[9,13],"off":[11]},{"age":23,"fans":[7,11,15],"off":[9,13]},{"age":25,"fans":[9,13],"off":[11]},{"age":27,"fans":[3]},{"age":29,"fans":[11]},{"age":30,"fans":[10,12],"off":[11]},{"age":31,"fans":[8,11,14],"off":[10,12]},{"age":32,"fans":[10,12],"off":[11]},{"age":33,"fans":[11]}]},"rr2":{"farms":["รุ่งเรือง2","หนึ่งรุ่งเรือง"],"size":"16×100","nf":11,"choke":[],"steps":[],"manual":[{"age":13,"fans":[6]},{"age":18,"fans":[1,11],"off":[6]},{"age":21,"fans":[6]},{"age":22,"fans":[3]},{"age":25,"fans":[9]},{"age":28,"fans":[4,8],"off":[6]},{"age":30,"fans":[6]},{"age":33,"fans":[7]},{"age":35,"fans":[10]},{"age":37,"fans":[2,5]}]},"rr1":{"farms":["รุ่งเรือง1","หนึ่งรุ่งเรือง"],"size":"14×72","nf":8,"choke":[4],"steps":[],"manual":[{"age":15,"fans":[5]},{"age":22,"fans":[1,8],"off":[5]},{"age":24,"fans":[5]},{"age":28,"fans":[3]},{"age":33,"fans":[6]},{"age":37,"fans":[4]},{"age":38,"fans":[2,7]}]}};
-/* ฟาร์มเดียวกัน คนละชื่อในเอกสารแต่ละยุค — หมอยืนยัน 31 ก.ค. 2026
-   "PPF ดอนทอง" (ชื่อในแอป) = "มั่งมี" (ชื่อในไฟล์ Excel) = "มั้งกี้/มอส" (ชื่อในผังพัดลม)
-   เล้า 1 = 12 พัดลม (mk12) · เล้า 2 = 10 พัดลม (mk10) · เล้า 3-11 = 14 พัดลม (mos25) */
-['mk12','mk10','mos25'].forEach(function(k){ if(FANPLANS[k])FANPLANS[k].farms=FANPLANS[k].farms.concat(['ดอนทอง','มั่งมี']); });
-function resolvePlan(h,farmName){
-  // เลือกแผนพัดลมให้ถูกอัตโนมัติ: 1) ที่หมอเลือกเอง 2) ชื่อฟาร์ม+ขนาดเล้า 3) ชื่อฟาร์ม+จำนวนพัดลม 4) ชื่อฟาร์มตัวเดียว
-  if(h&&h.planKey&&FANPLANS[h.planKey])return{key:h.planKey,p:FANPLANS[h.planKey],byName:true};
-  const fn=(farmName||'').replace(/ฟาร์ม|\s/g,'');
-  const ent=Object.entries(FANPLANS);
-  const named=ent.filter(([k,p])=>p.farms.some(f=>fn&&(fn.indexOf(f)>=0||f.indexOf(fn)>=0)));
-  const sz=h?(Math.round(h.W)+'×'+Math.round(h.L)):'';
-  if(named.length){                                    // จับด้วยชื่อฟาร์มก่อนเสมอ (กันจับข้ามฟาร์ม เช่น ศรีเหรา→ชัยนาท)
-    // ลำดับสำคัญ: "จำนวนพัดลม" มาก่อน "ขนาดเล้า" — เพราะแผนคือใบสั่งว่าเปิดพัดลม "ตัวที่เท่าไร"
-    // ถ้าจำนวนพัดลมไม่เท่ากัน เบอร์ในแผนจะใช้ไม่ได้เลย (เช่น มั่งมี เล้า3-6 = 16×100 แต่ 14 พัดลม → ต้องได้แผน 14 ตัว ไม่ใช่แผน 12 ตัวที่ขนาดตรง)
-    const m=named.find(([k,p])=>p.size===sz&&p.nf===(h&&h.fans))   // ตรงทั้งขนาดและจำนวนพัดลม = แม่นที่สุด
-         || named.find(([k,p])=>p.nf===(h&&h.fans))    // ตรงจำนวนพัดลม
-         || named.find(([k,p])=>p.size===sz)           // ตรงขนาดเล้า
-         || named[0];                                  // ชื่อฟาร์มตรงตัวเดียว/ตัวแรก
-    return{key:m[0],p:m[1],byName:true};
-  }
-  const m=ent.filter(([k,p])=>p.nf===(h&&h.fans))[0];  // ไม่รู้จักชื่อ → เดาตามจำนวนพัดลม (ไม่มั่นใจ ไม่ซ่อมค่า)
-  return m?{key:m[0],p:m[1],byName:false}:null;
-}
-function planFor(h,farmName){const r=resolvePlan(h,farmName);return r?{key:r.key,p:r.p,byName:r.byName}:null;}
-function manualUpTo(p,a){const out=new Set();for(const s of p.manual)if(s.age<=a){(s.fans||[]).forEach(f=>out.add(f));(s.off||[]).forEach(f=>out.delete(f));}return[...out].sort((x,y)=>x-y);}
-function fanStateAt(p,age){
-  const a=D(age),tgt=targetT(a);
-  const man=manualUpTo(p,a);
-  const steps=p.steps.filter(s=>s.fans.length).map(s=>({n:s.n,fans:s.fans,temp:+(tgt+(s.n-1)).toFixed(1)}));
-  let next=null;for(const s of p.manual)if(s.age>a){next=s;break;}
-  return{man,steps,tgt:+tgt.toFixed(1),chokeTemp:+(tgt+1).toFixed(1),pumpTemp:+pumpT(a).toFixed(1),next};
-}
+/* ตาราง STD + สูตรระบายอากาศ + FANPLANS + resolvePlan ถูกย้ายไปไฟล์ร่วม calc-core.js (แหล่งความจริงเดียว — index.html / fan-plan.html / view.html ใช้ชุดเดียวกัน) */
 function fanStrip(p,st){
   let fans='';
   for(let n=1;n<=p.nf;n++){
@@ -1281,7 +1207,7 @@ const TM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.�
 function fmtThai(d){return d.getDate()+' '+TM[d.getMonth()]+' '+String((d.getFullYear()+543)%100).padStart(2,'0');}
 function todayAge(pd){if(!pd)return null;const t=new Date();t.setHours(0,0,0,0);const p=new Date(pd+'T00:00:00');if(isNaN(p.getTime()))return null;return Math.floor((t-p)/86400000)+1;}
 function dateForAge(pd,age){const p=new Date(pd+'T00:00:00');p.setDate(p.getDate()+(age-1));return p;}
-const CFM_TO_M3S=0.00047195, MINRATE=1, GAP=4;
+/* CFM_TO_M3S / MINRATE / GAP อยู่ใน calc-core.js */
 const I={
  chart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" style="vertical-align:-.15em"><path d="M3 3v18h18"/><rect x="7" y="11" width="3" height="6" rx="1"/><rect x="12" y="6" width="3" height="11" rx="1"/><rect x="17" y="13" width="3" height="4" rx="1"/></svg>',
  temp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="1em" height="1em" style="vertical-align:-.15em"><path d="M14 14.5V5a2 2 0 0 0-4 0v9.5a3.5 3.5 0 1 0 4 0z"/><path d="M12 9v6"/></svg>',
@@ -1381,14 +1307,30 @@ function importFaceSheets(fileList){
     fr.readAsArrayBuffer(file);
   });
 }
-function cumDead(h,upto){let s=0;for(let d=1;d<=upto;d++)s+=(+h.dead[d-1]||0);return s;}
-function aliveAt(h,age){return Math.max(0,h.birds-cumDead(h,Math.max(0,age-1)));}
 const DEFAULTS=[
  {name:'ฟาร์มธนวัฒน์',houses:[house('เล้า 1',{W:24,fans:18,birds:32000,age:21,padFans:6}),house('เล้า 2',{W:24,fans:18,birds:32000,age:14,padFans:4}),house('เล้า 3',{W:24,fans:18,birds:30000,age:7,padFans:3})]},
  {name:'ฟาร์ม ชัยนาท',houses:[house('เล้า 1',{W:26,fans:22,birds:28000,age:34,padFans:11})]},
  {name:'ฟาร์ม หนึ่งฟาร์มรุ่งเรือง',houses:[house('เล้า 1',{W:26,fans:18,birds:26000,age:28,padFans:8})]}
 ];
 let farms=load();
+/* ── v3 sync: ประทับเวลาแก้ไขรายฟาร์ม (_u) ─────────────────────────────
+   backend v3 เก็บ 1 ฟาร์ม = 1 แถว แล้ว merge รายฟาร์มด้วยเวลาแก้ล่าสุด (_u)
+   → หลายเครื่องแก้คนละฟาร์มพร้อมกันไม่ทับกันอีก · fid เป็นรหัสถาวรที่เซิร์ฟเวอร์แจก (ห้ามสร้างเองฝั่งแอป) */
+const _uRep=(k,v)=>k==='_u'?undefined:v;                  // เทียบเนื้อหาโดยไม่นับ _u เอง (กันวนประทับซ้ำ)
+let _uShadow=null;
+function _uSnap(){_uShadow={};farms.forEach(f=>{_uShadow[f.fid||('n:'+(f.name||''))]=JSON.stringify(f,_uRep);});}
+function _uStamp(){                                        // เรียกเฉพาะตอนผู้ใช้แก้เอง — ห้ามเรียกตอนรับข้อมูลจากคลาวด์
+  if(!_uShadow){_uSnap();return;}
+  farms.forEach(f=>{const k=f.fid||('n:'+(f.name||''));const j=JSON.stringify(f,_uRep);
+    if(_uShadow[k]!==j){f._u=Date.now();_uShadow[k]=j;}});
+}
+function _uForceAll(){const t=Date.now();farms.forEach(f=>f._u=t);_uSnap();}   // กู้จากไฟล์/กู้กลับ = ตั้งใจทับทุกฟาร์ม
+_uSnap();
+/* คิวรอลบฟาร์มบนคลาวด์ (ส่งเฉพาะเมื่อ backend เป็น v3 — v2 ลบด้วยการทับทั้งก้อนอยู่แล้ว) */
+function _delQRaw(){try{const q=JSON.parse(localStorage.getItem('ppf_del_q')||'[]');return Array.isArray(q)?q:[];}catch(_){return[];}}
+function _delQ(){return localStorage.getItem('ppf_backend_v3')==='1'?_delQRaw():[];}
+function _delQAdd(fid){if(!fid)return;try{const q=_delQRaw();if(q.indexOf(fid)<0)q.push(fid);localStorage.setItem('ppf_del_q',JSON.stringify(q));}catch(_){}}
+function _delQClear(sent){try{localStorage.setItem('ppf_del_q',JSON.stringify(_delQRaw().filter(f=>sent.indexOf(f)<0)));}catch(_){}}
 function syncAgesToToday(){let chg=false;farms.forEach(fm=>fm.houses.forEach(h=>{if(h.placeDate){const ta=todayAge(h.placeDate);if(ta!==null){const na=Math.max(1,Math.min(42,ta));if(h.age!==na){h.age=na;chg=true;}}}}));return chg;}
 function backfillDates(){let chg=false;farms.forEach(fm=>fm.houses.forEach(h=>{if((!h.placeDate)&&h.age>=1){h.placeDate=pdFromAge(h.age);chg=true;}}));return chg;}  // เติมวันลงไก่ให้เล้าที่มีอายุแต่ช่องวันที่ว่าง
 backfillDates();
@@ -1462,7 +1404,7 @@ function importBackup(file){
     const cf0=farms.length,ch0=farms.reduce((s,f)=>s+f.houses.length,0);
     if(!confirm('⚠️ กู้คืนข้อมูลจากไฟล์นี้?\n\nไฟล์สำรอง: '+nf+' ฟาร์ม · '+nh+' เล้า\nข้อมูลในเครื่องตอนนี้: '+cf0+' ฟาร์ม · '+ch0+' เล้า\n\nการกู้คืนจะ "ทับ" ข้อมูลในเครื่องทั้งหมด แล้วอัปขึ้นคลาวด์ให้ทุกเครื่อง\n(ระบบจะสำรองข้อมูลปัจจุบันไว้ให้ก่อนทับ — กดปุ่ม "↩️ กู้กลับ" ยกเลิกได้)'))return;
     try{localStorage.setItem('ppf_farms_v3_prev',JSON.stringify(farms));}catch(_){}
-    farms=normalize(arr);cf=0;backfillDates();syncAgesToToday();save();renderChips();render();
+    farms=normalize(arr);_uForceAll();cf=0;backfillDates();syncAgesToToday();save();renderChips();render();
     try{syncSetTs(Date.now());if(typeof syncPush==='function')syncPush();}catch(_){}
     alert('✅ กู้คืนข้อมูลสำเร็จ ('+nf+' ฟาร์ม · '+nh+' เล้า)');
   };
@@ -1474,7 +1416,7 @@ function undoRestore(){
   if(!prev){alert('ไม่มีข้อมูลให้กู้กลับ');return;}
   let d;try{d=JSON.parse(prev);}catch(e){alert('ข้อมูลสำรองเสีย');return;}
   if(!confirm('↩️ กู้กลับไปใช้ข้อมูล "ก่อนการกู้คืน/เขียนทับล่าสุด" ?'))return;
-  farms=normalize(d);cf=0;backfillDates();syncAgesToToday();save();renderChips();render();
+  farms=normalize(d);_uForceAll();cf=0;backfillDates();syncAgesToToday();save();renderChips();render();
   try{syncSetTs(Date.now());if(typeof syncPush==='function')syncPush();}catch(_){}
   alert('↩️ กู้กลับสำเร็จ');
 }
@@ -1543,7 +1485,10 @@ function openCloudRestore(){
      if(!j.history.length){document.getElementById('cloudList').innerHTML='<div class="cloud-empty">ยังไม่มีข้อมูลสำรองบนคลาวด์</div>';return;}
      document.getElementById('cloudList').innerHTML=j.history.map(function(s){
        var nf=+s.farms||0,nh=+s.houses||0;
-       return '<div class="cloud-row"><div><div class="cloud-when">'+_cloudDateStr(s.savedAt,s.updatedAt)+'</div><div class="cloud-meta">'+nf+' ฟาร์ม · '+nh+' เล้า</div></div>'
+       var meta=nf+' ฟาร์ม · '+nh+' เล้า';                                             // backend v3 บอกเพิ่ม: ใครแก้ + ฟาร์มไหน
+       if(s.who)meta+=' · ✏️ '+esc(s.who);
+       if(Array.isArray(s.changed)&&s.changed.length)meta+=' · '+esc(s.changed.slice(0,3).join(', '))+(s.changed.length>3?' +'+(s.changed.length-3):'');
+       return '<div class="cloud-row"><div><div class="cloud-when">'+_cloudDateStr(s.savedAt,s.updatedAt)+'</div><div class="cloud-meta">'+meta+'</div></div>'
          +'<button class="btn primary cloud-pick" type="button" onclick="doCloudRestore('+(+s.i)+','+nf+','+nh+')"'+(canEdit?'':' disabled')+'>กู้คืน</button></div>';
      }).join('');
    }).catch(function(){document.getElementById('cloudList').innerHTML='<div class="cloud-empty">เชื่อมต่อไม่ได้ (เน็ต/ลิงก์?)</div>';});
@@ -1562,6 +1507,106 @@ function doCloudRestore(i,nf,nh){
    }).catch(function(){alert('เชื่อมต่อไม่ได้ ลองใหม่');syncStat('เชื่อมต่อไม่ได้','err');});
 }
 
+/* ===== 🔗 ลิงก์ดูเฉพาะฟาร์ม (view.html) — ตามแบบ docs/05_AUTH_AND_ROLES.md =====
+   token เก็บฝั่งเซิร์ฟเวอร์ (ชีต VIEW_LINKS) · ที่นี่แค่สั่ง สร้าง/ดูรายการ/เพิกถอน ด้วยรหัสแก้ไข
+   ใช้ได้เมื่อ backend เป็น v3 และฟาร์มได้รับรหัสถาวร fid แล้ว (ซิงค์ครั้งแรกหลังอัปเกรด) */
+function _viewBase(){return location.href.split(/[?#]/)[0].replace(/index\.html?$/i,'')+'view.html';}
+function lmEl(){
+  var m=document.getElementById('linkmgr'); if(m)return m;
+  m=document.createElement('div'); m.id='linkmgr';
+  m.setAttribute('style','position:fixed;inset:0;z-index:9000;display:none;align-items:flex-start;justify-content:center;padding:16px;background:rgba(4,8,16,.72);overflow:auto');
+  m.innerHTML='<div style="width:100%;max-width:560px;background:#101A2B;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:16px;margin:16px 0">'
+   +'<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:16px;color:#F8FAFC">🔗 ลิงก์ดูเฉพาะฟาร์ม</b><button id="lmClose" type="button" style="border:0;background:transparent;color:#94A3B8;font-size:18px;cursor:pointer">✕</button></div>'
+   +'<div style="font-size:12.5px;color:#94A3B8;line-height:1.7;margin-top:6px">ส่งให้เจ้าของฟาร์มเปิดดู<b>เฉพาะฟาร์มของตัวเอง</b>โดยไม่ต้องล็อกอิน · ⚠️ ลิงก์ = รหัสผ่าน ใครถือลิงก์คนนั้นดูได้ — ถ้าหลุดให้กด "เพิกถอน" แล้วออกลิงก์ใหม่ · ทุกการเปิดถูกบันทึก (จำนวนครั้ง/เครื่อง)</div>'
+   +'<div style="margin-top:12px;padding:12px;border:1px solid rgba(255,255,255,.1);border-radius:12px">'
+     +'<div style="font-weight:600;font-size:13.5px;color:#F8FAFC;margin-bottom:8px">➕ ออกลิงก์ใหม่</div>'
+     +'<div style="display:grid;gap:8px">'
+     +'<select id="lmFarm" style="padding:9px 10px;border:1px solid #334155;border-radius:10px;background:#0C1522;color:#F8FAFC;font-family:inherit;font-size:13.5px"></select>'
+     +'<input id="lmLabel" placeholder="ส่งให้ใคร (เช่น เจ้าของฟาร์มชัยนาท — พี่ต้น)" style="padding:9px 10px;border:1px solid #334155;border-radius:10px;background:#0C1522;color:#F8FAFC;font-family:inherit;font-size:13.5px">'
+     +'<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="lmPin" placeholder="PIN 4 หลัก (เว้นว่าง = ไม่ใช้)" inputmode="numeric" maxlength="8" style="flex:1;min-width:150px;padding:9px 10px;border:1px solid #334155;border-radius:10px;background:#0C1522;color:#F8FAFC;font-family:inherit;font-size:13.5px">'
+     +'<input id="lmExp" type="date" title="วันหมดอายุ (เว้นว่าง = ไม่หมดอายุ)" style="flex:1;min-width:150px;padding:8px 10px;border:1px solid #334155;border-radius:10px;background:#0C1522;color:#F8FAFC;font-family:inherit;font-size:13.5px"></div>'
+     +'<button id="lmCreate" type="button" class="btn primary" style="justify-content:center">สร้างลิงก์</button>'
+     +'<div id="lmMsg" style="font-size:12.5px;color:#94A3B8;line-height:1.6;word-break:break-all"></div>'
+   +'</div></div>'
+   +'<div style="font-weight:600;font-size:13.5px;color:#F8FAFC;margin:14px 0 6px">📋 ลิงก์ที่ออกไปแล้ว</div>'
+   +'<div id="lmList" style="font-size:13px;color:#CBD5E1">⏳ กำลังโหลด…</div>'
+   +'</div>';
+  document.body.appendChild(m);
+  m.addEventListener('click',function(e){if(e.target===m)lmHide();});
+  m.querySelector('#lmClose').onclick=lmHide;
+  m.querySelector('#lmCreate').onclick=lmCreate;
+  m.querySelector('#lmList').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return;
+    if(b.dataset.copy)lmCopy(b.dataset.copy);
+    if(b.dataset.revoke)lmRevoke(b.dataset.revoke,b.dataset.label||'');
+  });
+  return m;
+}
+function lmHide(){var m=document.getElementById('linkmgr');if(m)m.style.display='none';}
+function _fidName(fid){var f=farms.find(function(x){return x.fid===fid;});return f?f.name:fid;}
+function openLinkMgr(){
+  if(!canEdit||!syncCfg||!syncCfg.wcode){alert('🔒 ต้องปลดล็อกแก้ไขก่อน — กดกุญแจมุมขวาบน ใส่รหัสแก้ไข');return;}
+  var m=lmEl(); m.style.display='flex';
+  var withFid=farms.filter(function(f){return f.fid;});
+  var sel=m.querySelector('#lmFarm');
+  if(!withFid.length){
+    sel.innerHTML='<option value="">— ฟาร์มยังไม่มีรหัสถาวร (fid) —</option>';
+    m.querySelector('#lmMsg').innerHTML='⚠️ ต้องอัปเกรดระบบซิงค์เป็น <b>v3</b> ก่อน (ไฟล์ Code_v3.gs) แล้วเปิดแอปให้ซิงค์ 1 ครั้ง ฟาร์มจะได้รหัส F01, F02, … จากเซิร์ฟเวอร์เองอัตโนมัติ';
+  }else{
+    sel.innerHTML=withFid.map(function(f){return '<option value="'+esc(f.fid)+'">'+esc(f.name)+' ('+f.fid+')</option>';}).join('');
+    m.querySelector('#lmMsg').textContent='';
+  }
+  lmLoad();
+}
+function lmLoad(){
+  var box=document.getElementById('lmList'); if(!box)return;
+  box.innerHTML='⏳ กำลังโหลด…';
+  fetch(syncCfg.url,{method:'POST',body:JSON.stringify({code:syncCfg.wcode,links:'list'})})
+   .then(function(r){return r.json();}).then(function(j){
+     if(!j||!j.ok){box.innerHTML='โหลดไม่ได้: '+esc((j&&j.error)||'?')+(/(unknown links|not a valid)/i.test((j&&j.error)||'')?'<br>⚠️ backend ยังเป็น v2 — ต้องอัปเกรดเป็น Code_v3.gs ก่อน':'');return;}
+     if(!j.links||!j.links.length){box.innerHTML='ยังไม่เคยออกลิงก์';return;}
+     box.innerHTML=j.links.map(function(L){
+       var st=L.status==='ACTIVE'?'<span style="color:#34D399">● ใช้งานได้</span>':'<span style="color:#FB7185">● '+esc(L.status)+'</span>';
+       var names=String(L.farm_ids||'').split(',').map(function(x){return esc(_fidName(x.trim()));}).join(', ');
+       return '<div style="border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;margin-bottom:8px">'
+        +'<div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><b style="color:#F8FAFC">'+esc(L.label||'(ไม่มีชื่อ)')+'</b>'+st+'</div>'
+        +'<div style="font-size:12px;color:#94A3B8;margin-top:3px">'+names+(L.pin?' · 🔐 มี PIN':'')+(L.expires_at?' · หมดอายุ '+esc(L.expires_at):'')
+        +' · เปิด '+(L.opens||0)+' ครั้ง / '+(L.devices||0)+' เครื่อง'+(L.last_open?' · ล่าสุด '+_cloudDateStr(L.last_open):'')+'</div>'
+        +(L.status==='ACTIVE'?'<div style="display:flex;gap:8px;margin-top:8px"><button type="button" class="btn" data-copy="'+esc(L.token)+'">📋 คัดลอกลิงก์</button><button type="button" class="btn warn" data-revoke="'+esc(L.token)+'" data-label="'+esc(L.label||'')+'">🚫 เพิกถอน</button></div>':'')
+        +'</div>';
+     }).join('');
+   }).catch(function(){box.innerHTML='เชื่อมต่อไม่ได้';});
+}
+function lmCreate(){
+  var m=lmEl(), fid=m.querySelector('#lmFarm').value, label=(m.querySelector('#lmLabel').value||'').trim();
+  var pin=(m.querySelector('#lmPin').value||'').trim(), exp=m.querySelector('#lmExp').value||'';
+  var msg=m.querySelector('#lmMsg');
+  if(!fid){msg.textContent='เลือกฟาร์มก่อน';return;}
+  if(!label){msg.textContent='ใส่ชื่อผู้รับก่อน — ไว้จำว่าลิงก์นี้ส่งให้ใคร';return;}
+  if(pin&&!/^\d{4,8}$/.test(pin)){msg.textContent='PIN ต้องเป็นตัวเลข 4–8 หลัก';return;}
+  msg.textContent='⏳ กำลังสร้างลิงก์…';
+  var body={code:syncCfg.wcode,links:'create',farm_ids:fid,label:label};
+  if(pin)body.pin=pin; if(exp)body.expires_at=exp; if(syncCfg.who)body.who=syncCfg.who;
+  fetch(syncCfg.url,{method:'POST',body:JSON.stringify(body)})
+   .then(function(r){return r.json();}).then(function(j){
+     if(j&&j.ok&&j.token){
+       var url=_viewBase()+'#t='+j.token;
+       msg.innerHTML='✅ สร้างแล้ว — ส่งลิงก์นี้ให้ '+esc(label)+(pin?' พร้อมบอก PIN แยกอีกช่องทาง':'')+'<br><b style="color:#7DD3FC">'+esc(url)+'</b>';
+       lmCopy(j.token); lmLoad();
+     } else msg.textContent='สร้างไม่สำเร็จ: '+((j&&j.error)||'เชื่อมต่อไม่ได้');
+   }).catch(function(){msg.textContent='เชื่อมต่อไม่ได้';});
+}
+function lmCopy(tok){
+  var url=_viewBase()+'#t='+tok;
+  var p=(navigator.clipboard&&navigator.clipboard.writeText)?navigator.clipboard.writeText(url):Promise.reject();
+  p.then(function(){try{syncStat('📋 คัดลอกลิงก์แล้ว','ok');}catch(_){}}).catch(function(){prompt('คัดลอกลิงก์นี้ส่งให้เจ้าของฟาร์ม',url);});
+}
+function lmRevoke(tok,label){
+  if(!confirm('🚫 เพิกถอนลิงก์'+(label?' ของ "'+label+'"':'')+' ?\n\nคนที่ถือลิงก์นี้จะเปิดดูไม่ได้อีกทันที (ออกลิงก์ใหม่ได้เสมอ)'))return;
+  fetch(syncCfg.url,{method:'POST',body:JSON.stringify({code:syncCfg.wcode,links:'revoke',token:tok,who:syncCfg.who||''})})
+   .then(function(r){return r.json();}).then(function(j){ if(j&&j.ok)lmLoad(); else alert('เพิกถอนไม่สำเร็จ: '+((j&&j.error)||'?')); })
+   .catch(function(){alert('เชื่อมต่อไม่ได้');});
+}
 function calc(h){
   const side=h.fan*IN2CM/30.48,area=side*side,avg=h.pts.reduce((a,b)=>a+(+b||0),0)/9,fanCFM=area*avg;
   const wkg=bw(h.age)/1000,ck=cfmkg(h.age),reqAir=ck*wkg*h.birds;
@@ -1651,8 +1696,8 @@ function ventCard(h,i){
       <div class="inset"><div class="scroll"><table class="tt"><thead><tr><th>วัน</th><th>เป้าหมาย °C</th><th>ปั๊มน้ำ °C</th><th>แสง lux</th><th>เปิดไฟ ชม.</th></tr></thead><tbody>${trows}</tbody></table></div></div></details>
     <details><summary>ที่มาของตัวเลข (อธิบายสั้น)</summary><div class="inset" style="font-size:13.5px;color:var(--muted);line-height:1.7">
       <div>• <b>ลมที่ไก่ต้องการ</b> = ${r.ck} cfm/kg × ${(r.wt/1000).toFixed(3)} kg × ${h.birds.toLocaleString()} ตัว = <b>${Math.round(r.reqAir).toLocaleString()} cfm</b> (${Math.round(r.reqFt)} ft/min)</div>
-      <div>• <b>สูงสุด</b> = ลมที่ต้องการ ÷ ประสิทธิภาพพัดลม (${Math.round(r.fanCFM).toLocaleString()} cfm/ตัว) ปัดขึ้น ไม่เกิน ${h.fans} ตัว</div>
-      <div>• <b>ขั้นต่ำ</b> = ไม่ต่ำกว่า สูงสุด − ${GAP} (อากาศหนาว) · วัน 1–7 สูงสุด ≤ 3</div>
+      <div>• <b>สูงสุด</b> = ค่าที่<u>มากกว่า</u>ระหว่าง "แผนพัดลมของฟาร์ม" กับ "ลมที่ต้องการ ÷ ประสิทธิภาพพัดลม (${Math.round(r.fanCFM).toLocaleString()} cfm/ตัว) ปัดขึ้น" — แผนคุมพื้นล่างตอนไก่เล็ก สูตรคุมเพดานตอนไก่โต · <b>อายุ 35 วันขึ้นไปเปิดครบ ${h.fans} ตัว</b> (กฎที่หมอกำหนด)</div>
+      <div>• <b>ขั้นต่ำ</b> = ตามแผนพัดลม (เปิดมือสะสม + โช๊ค) · ถ้าไม่มีแผน: ไม่ต่ำกว่า สูงสุด − ${GAP} · วัน 1–7 (ไม่มีแผน) สูงสุด ≤ 4</div>
       <div>• <b>ลมเป้าหมายอายุนี้</b> = ${r.windTarget.toFixed(2)} m/s (${Math.round(r.windTarget*196.85)} ft/min) · สูงสุดทนได้ ${r.comfort.toFixed(1)} m/s — UGA Poultry Extension ตามอายุ</div>
       <div>• <b>อาหาร</b> ${r.fd} g/ตัว/วัน · <b>%อาหารสะสม ${r.fpct.toFixed(2)}%</b> (ตาราง STD = อาหารสะสมต่อตัว ÷ ถุงอาหาร 30 กก.) · ทั้งเล้า ${Math.round(r.fhouse).toLocaleString()} kg/วัน (คิดจากไก่คงเหลือ ${r.alive.toLocaleString()} ตัว)</div>
       <div>• <b>ตาราง STD ที่ใช้</b> — อาหาร (วัน1=14g → วัน42=194g): ชีต "โปรแกรมการเดินอาหาร+แสง" · น้ำหนักตัว (วัน0=42g → วัน42=3,278g): ตารางน้ำหนักมาตรฐาน ชีต "พัดลมขั้นต่ำ" — จากไฟล์โปรแกรมการจัดการไก่เนื้อของบริษัท ชุดเดียวกันทุกฟาร์ม (วัน31 ต้นฉบับพิมพ์ 2,034g แอปปรับเป็น 2,094g ตามที่หมอยืนยัน) · FCR เป้าใช้ตาราง STD As-Hatched (วันจับ 42 = 1.68)</div>
@@ -1890,7 +1935,10 @@ function tryUnlock(){
      return fetch(syncCfg.url,{method:'POST',body:JSON.stringify({code:p,data:data,updatedAt:ts})}).then(r=>r.json());
    })
    .then(j=>{
-     if(j&&j.ok){ syncCfg.wcode=p; try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){} canEdit=true; applyLock(); syncStat('🔓 ปลดล็อกแก้ไขแล้ว','ok'); }
+     if(j&&j.ok){ syncCfg.wcode=p;
+       // ตั้งชื่อผู้ใช้เครื่องนี้ครั้งเดียว → เซิร์ฟเวอร์บันทึกว่า "ใคร" แก้ข้อมูล (ดูได้ในประวัติ ☁️ กู้จากคลาวด์)
+       if(!syncCfg.who){ const w=prompt('ตั้งชื่อผู้ใช้เครื่องนี้ (แสดงในประวัติการแก้ไข)\nเช่น "หมอวรัญญู มือถือ" หรือ "พี่แดง ฟาร์มชัยนาท"'); if(w&&w.trim())syncCfg.who=w.trim().slice(0,60); }
+       try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){} canEdit=true; applyLock(); syncStat('🔓 ปลดล็อกแก้ไขแล้ว','ok'); }
      else { alert('รหัสสำหรับแก้ไขไม่ถูกต้อง'); syncStat('รหัสผิด','err'); }
    })
    .catch(()=>{alert('เชื่อมต่อไม่ได้ ลองใหม่'); syncStat('เชื่อมต่อไม่ได้','err');});
@@ -2523,7 +2571,7 @@ function render(){
   document.getElementById('tabName').textContent=t.label;
   document.getElementById('tabDesc').textContent=t.id==='guide'?t.desc:t.desc+' — '+farms[cf].name;
   const tb=document.getElementById('toolbar');
-  tb.innerHTML = tab==='set'?`<div class="setbar1"><span class="editic" title="แตะเพื่อแก้ไขชื่อฟาร์ม">${I.edit}</span><input class="farmname" value="${esc(farms[cf].name)}" aria-label="ชื่อฟาร์ม"></div><div class="setbar2"><button class="btn primary" id="addHouse">+ เพิ่มโรงเรือน</button><button class="btn" id="addFarm">+ เพิ่มฟาร์ม</button><button class="btn" id="importXlsx">${I.download} นำเข้าจาก Excel</button><button class="btn" id="expBackup">${I.download} สำรองข้อมูล</button><button class="btn" id="impBackup">${I.upload} กู้คืนจากไฟล์</button><button class="btn" id="cloudBackup">☁️ กู้จากคลาวด์</button>`+((mangmeeDiff(farms[cf])||[]).length?`<button class="btn primary" id="fixMangmee" title="ตั้งขนาดเล้า ชิ่งลม และจำนวนพัดลม ตามตารางที่หมอยืนยัน">🛠 แก้ข้อมูลเล้าให้ถูกต้อง (${mangmeeDiff(farms[cf]).length} เล้า)</button>`:'')+(localStorage.getItem('ppf_farms_v3_prev')?`<button class="btn" id="undoBackup">${I.undo} กู้กลับ</button>`:'')+(farms.length>1?`<button class="btn warn" id="delFarm">ลบฟาร์มนี้</button>`:'')+`</div>`:(tab==='vent'?`<button class="btn" id="openHI" type="button">${I.temp} คำนวณ Heat Index</button>`:'');
+  tb.innerHTML = tab==='set'?`<div class="setbar1"><span class="editic" title="แตะเพื่อแก้ไขชื่อฟาร์ม">${I.edit}</span><input class="farmname" value="${esc(farms[cf].name)}" aria-label="ชื่อฟาร์ม"></div><div class="setbar2"><button class="btn primary" id="addHouse">+ เพิ่มโรงเรือน</button><button class="btn" id="addFarm">+ เพิ่มฟาร์ม</button><button class="btn" id="importXlsx">${I.download} นำเข้าจาก Excel</button><button class="btn" id="expBackup">${I.download} สำรองข้อมูล</button><button class="btn" id="impBackup">${I.upload} กู้คืนจากไฟล์</button><button class="btn" id="cloudBackup">☁️ กู้จากคลาวด์</button><button class="btn" id="linkMgr">🔗 ลิงก์ดูฟาร์ม</button>`+((mangmeeDiff(farms[cf])||[]).length?`<button class="btn primary" id="fixMangmee" title="ตั้งขนาดเล้า ชิ่งลม และจำนวนพัดลม ตามตารางที่หมอยืนยัน">🛠 แก้ข้อมูลเล้าให้ถูกต้อง (${mangmeeDiff(farms[cf]).length} เล้า)</button>`:'')+(localStorage.getItem('ppf_farms_v3_prev')?`<button class="btn" id="undoBackup">${I.undo} กู้กลับ</button>`:'')+(farms.length>1?`<button class="btn warn" id="delFarm">ลบฟาร์มนี้</button>`:'')+`</div>`:(tab==='vent'?`<button class="btn" id="openHI" type="button">${I.temp} คำนวณ Heat Index</button>`:'');
   const g=document.getElementById('grid');
   if(tab==='guide'){g.style.gridTemplateColumns='1fr';g.innerHTML=guideCard();const pm=document.getElementById('printManual');if(pm)pm.onclick=buildManual;applyLock();return;}
   if(tab==='cal'){g.style.gridTemplateColumns='1fr';calStyleInject();g.innerHTML=calendarView();_swPaint();calClockPaint();if(!calClkTimer)calClkTimer=setInterval(calClockPaint,1000);applyLock();return;}
@@ -2535,11 +2583,12 @@ function render(){
   const a=document.getElementById('addHouse'),af=document.getElementById('addFarm'),df=document.getElementById('delFarm');
   if(a)a.onclick=()=>{houses().push(house('เล้า '+(houses().length+1)));save();render();};
   if(af)af.onclick=()=>{farms.push({name:'ฟาร์มใหม่ '+(farms.length+1),houses:[house('เล้า 1')]});cf=farms.length-1;save();renderChips();render();};
-  if(df)df.onclick=()=>{if(confirm('ลบฟาร์ม "'+farms[cf].name+'" ?')){farms.splice(cf,1);cf=0;save();renderChips();render();}};
+  if(df)df.onclick=()=>{if(confirm('ลบฟาร์ม "'+farms[cf].name+'" ?')){_delQAdd(farms[cf].fid);farms.splice(cf,1);cf=0;save();renderChips();render();}};
   const imp=document.getElementById('importXlsx');if(imp)imp.onclick=()=>document.getElementById('faceFile').click();
   const eb=document.getElementById('expBackup');if(eb)eb.onclick=exportBackup;
   const ib=document.getElementById('impBackup');if(ib)ib.onclick=()=>document.getElementById('backupFile').click();
   const clb=document.getElementById('cloudBackup');if(clb)clb.onclick=openCloudRestore;
+  const lmb=document.getElementById('linkMgr');if(lmb)lmb.onclick=openLinkMgr;
   const fmg=document.getElementById('fixMangmee');if(fmg)fmg.onclick=applyMangmeeFix;
   const ub=document.getElementById('undoBackup');if(ub)ub.onclick=undoRestore;
   const hib=document.getElementById('openHI');if(hib)hib.onclick=openHI;
@@ -2623,13 +2672,24 @@ function syncTs(){return +localStorage.getItem(TS_KEY)||0;}
 function syncSetTs(t){try{localStorage.setItem(TS_KEY,String(t));}catch(e){}}
 function syncStat(msg,cls){const e=document.getElementById('syncStat');if(e){e.textContent=msg;e.className='syncstat'+(cls?(' '+cls):'');}}
 function syncNowStr(){const d=new Date();return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
-function syncTouch(){ if(syncApplying||!hasAccess())return; syncSetTs(Date.now()); clearTimeout(syncTimer); syncTimer=setTimeout(syncPush,800); }
+function syncTouch(){ if(syncApplying||!hasAccess())return; _uStamp(); syncSetTs(Date.now()); clearTimeout(syncTimer); syncTimer=setTimeout(syncPush,800); }
 function syncPush(){ if(!hasAccess())return;                     // ไม่ผ่านประตู = ห้ามเขียนคลาวด์เด็ดขาด
   if(!syncCfg.wcode){ syncStat('👁️ โหมดดูอย่างเดียว — กดกุญแจใส่รหัสเพื่อแก้ไข'); return; }   // ไม่มีรหัสเขียน → ไม่ push (กันเครื่องคนอื่นทับ)
   syncStat('กำลังส่งขึ้นชีท…');
-  fetch(syncCfg.url,{method:'POST',body:JSON.stringify({code:syncCfg.wcode,data:JSON.stringify(farms),updatedAt:syncTs()})})
+  const _dq=_delQ();                                              // ฟาร์มที่รอลบบนคลาวด์ (เฉพาะ backend v3)
+  const _body={code:syncCfg.wcode,data:JSON.stringify(farms),updatedAt:syncTs()};
+  if(syncCfg.who)_body.who=syncCfg.who;                           // ชื่อผู้ใช้เครื่องนี้ → audit log ฝั่งเซิร์ฟเวอร์
+  if(_dq.length)_body.del=_dq;
+  fetch(syncCfg.url,{method:'POST',body:JSON.stringify(_body)})
    .then(r=>r.json()).then(j=>{
-     if(j&&j.ok){ syncStat('ซิงค์แล้ว '+syncNowStr(),'ok'); }
+     if(j&&j.ok){
+       if(j.v===3){try{localStorage.setItem('ppf_backend_v3','1');}catch(_){}}
+       if(_dq.length&&j.v===3)_delQClear(_dq);
+       if(+j.updatedAt)syncSetTs(+j.updatedAt);                   // เทียบเวลากับเซิร์ฟเวอร์ให้ตรง กัน push วนซ้ำ
+       // เซิร์ฟเวอร์มีของใหม่กว่าบางฟาร์ม (kept) หรือเพิ่งแจกรหัสฟาร์มถาวร (assigned) → ดึงฉบับรวมกลับมา
+       if((j.kept&&j.kept.length)||(j.assigned&&j.assigned.length)){ syncPull({force:true}); syncStat('🔄 รวมกับข้อมูลเครื่องอื่นแล้ว '+syncNowStr(),'ok'); }
+       else syncStat('ซิงค์แล้ว '+syncNowStr(),'ok');
+     }
      else if(j&&/write code|bad code/i.test(j.error||'')){ syncCfg.wcode=null; try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){} canEdit=false; applyLock(); syncStat('รหัสแก้ไขไม่ถูกต้อง','err'); alert('🔒 รหัสสำหรับแก้ไขไม่ถูกต้องหรือถูกเปลี่ยน\nกรุณากดกุญแจ แล้วใส่รหัสแก้ไขใหม่'); }
      else syncStat('ส่งไม่ได้: '+((j&&j.error)||'?'),'err');
    })
@@ -2642,7 +2702,7 @@ function syncPull(opts){ if(!syncCfg)return; opts=opts||{}; syncStat('กำล�
      const rts=+j.updatedAt||0, lts=syncTs(), hasR=j.data&&j.data.length>2;
      if(hasR&&(opts.force||rts>lts)){
        let d;try{d=JSON.parse(j.data);}catch(e){syncStat('ข้อมูลในชีทเสีย','err');return;}
-       if(Array.isArray(d)&&d[0]&&d[0].houses){ try{if(farms&&farms[0]&&farms[0].houses)localStorage.setItem('ppf_farms_v3_prev',JSON.stringify(farms));}catch(_){}  syncApplying=true; farms=normalize(d); cf=0; backfillDates(); syncAgesToToday(); save(); syncApplying=false; syncSetTs(rts||Date.now()); renderChips(); render(); syncStat('ดึงจากชีทแล้ว '+syncNowStr(),'ok'); }
+       if(Array.isArray(d)&&d[0]&&d[0].houses){ try{if(farms&&farms[0]&&farms[0].houses)localStorage.setItem('ppf_farms_v3_prev',JSON.stringify(farms));}catch(_){}  syncApplying=true; farms=normalize(d); cf=0; backfillDates(); syncAgesToToday(); save(); syncApplying=false; _uSnap(); syncSetTs(rts||Date.now()); renderChips(); render(); syncStat('ดึงจากชีทแล้ว '+syncNowStr(),'ok'); }
        else syncStat('ข้อมูลในชีทไม่ถูกต้อง','err');
      } else { syncPush(); }
    }).catch(()=>syncStat('เชื่อมต่อไม่ได้ (เน็ต/ลิงก์?)','err')); }
@@ -2754,7 +2814,7 @@ function syncTick(){           // ซิงค์กับชีททุก 3 �
      if(hasR&&rts>lts){                                   // ชีทใหม่กว่า → ดึงลง (ข้ามถ้ากำลังพิมพ์)
        if(isTyping())return;
        let d;try{d=JSON.parse(j.data);}catch(e){return;}
-       if(Array.isArray(d)&&d[0]&&d[0].houses){ try{if(farms&&farms[0]&&farms[0].houses)localStorage.setItem('ppf_farms_v3_prev',JSON.stringify(farms));}catch(_){}  syncApplying=true; farms=normalize(d); if(cf>=farms.length)cf=0; backfillDates(); syncAgesToToday(); save(); syncApplying=false; syncSetTs(rts); renderChips(); render(); }
+       if(Array.isArray(d)&&d[0]&&d[0].houses){ try{if(farms&&farms[0]&&farms[0].houses)localStorage.setItem('ppf_farms_v3_prev',JSON.stringify(farms));}catch(_){}  syncApplying=true; farms=normalize(d); if(cf>=farms.length)cf=0; backfillDates(); syncAgesToToday(); save(); syncApplying=false; _uSnap(); syncSetTs(rts); renderChips(); render(); }
      } else if(lts>rts){ syncPush(); }                    // เครื่องนี้ใหม่กว่า → ดันขึ้น (กันกรณีดันก่อนหน้าไม่สำเร็จ)
    }).catch(()=>{_syncFails++; if(_syncFails>=3)syncStat('⚠️ ออฟไลน์/ซิงค์ไม่ได้ — ข้อมูลอาจไม่อัปเดต','err');}).finally(()=>{syncBusy=false;});
 }
