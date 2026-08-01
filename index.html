@@ -1263,8 +1263,19 @@ function fanPlanHTML(h,farmName){
   const tbl='<details><summary>ดูตารางเปิดมือทั้ง 1–42 วัน</summary><div class="inset"><div class="scroll"><table class="tt"><thead><tr><th>วัน</th><th>เปิดมือ</th><th>ตัวที่ (สะสม)</th></tr></thead><tbody>'+grows+'</tbody></table></div></div></details>';
   const lifecycle=fanLifecycle(p,a);
   const planHead='<div class="fphd"><span class="fpsum-ic">'+I.fan+'</span><span class="fpsum-tx"><b>แผนการทำงานพัดลม</b><small>อายุ '+h.age+' วัน · เปิดมือ '+st.man.length+' ตัว</small></span></div>';
+  /* แผนบนกระดาษตามความต้องการลมไม่ทัน → บอกหน้างานตรง ๆ ว่าต้องเปิดเพิ่มกี่ตัว (หมอยืนยัน 31 ก.ค. 2026) */
+  const _rc=calc(h), _extra=_rc.ventMax-_rc.planMaxRaw;
+  const topup=_extra>0
+    ? '<div style="margin:10px 0 2px;padding:12px 14px;border-radius:10px;background:rgba(227,73,72,.12);border:1px solid rgba(227,73,72,.42);color:#FCA5A5;font-size:13.5px;line-height:1.65">'
+      +'<b style="font-size:15px">เปิดเพิ่มอีก '+_extra+' ตัว — รวมเป็น '+_rc.ventMax+' ตัว</b><br>'
+      +'แผนในตารางข้างล่างระบุ '+_rc.planMaxRaw+' ตัว ซึ่ง<u>ไม่พอกับความต้องการลมของไก่วันนี้</u><br>'
+      +'<span style="opacity:.85">'+(D(h.age)>=35
+          ? 'อายุ '+h.age+' วัน — ตั้งแต่วัน 35 พัดลมต้องขึ้นเต็มทุกฟาร์ม'
+          : 'ไก่ '+Math.round(bw(h.age))+' ก./ตัว × '+_rc.ck+' cfm/kg × '+h.birds.toLocaleString()+' ตัว = ต้องการลม '+Math.round(_rc.reqAir).toLocaleString()+' cfm')
+      +'</span></div>'
+    : '';
   // มีจุดไม่ตรง → กางกล่องไว้เลย ไม่งั้นป้ายเตือนซ่อนอยู่ในกล่องที่ปิดอยู่ แต่ตัวเลขที่ผิดโชว์อยู่ข้างนอก
-  return '<details class="fpwrap"'+(mism.length?' open':'')+'><summary class="fpsum"></summary><div class="fpbody">'+planHead+'<div class="fpwho">'+esc(p.farms.join('/'))+' · '+p.size+' · '+p.nf+' ตัว</div>'+borrow+sizeNote+act+lifecycle+strip+lad+tbl+sel+legend+'</div></details>';
+  return '<details class="fpwrap"'+((mism.length||_extra>0)?' open':'')+'><summary class="fpsum"></summary><div class="fpbody">'+planHead+'<div class="fpwho">'+esc(p.farms.join('/'))+' · '+p.size+' · '+p.nf+' ตัว</div>'+topup+borrow+sizeNote+act+lifecycle+strip+lad+tbl+sel+legend+'</div></details>';
 }
 const TM=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
 function fmtThai(d){return d.getDate()+' '+TM[d.getMonth()]+' '+String((d.getFullYear()+543)%100).padStart(2,'0');}
@@ -1569,6 +1580,14 @@ function calc(h){
   else if(h.age<=7){ventMax=Math.min(h.fans,4);ventMin=Math.min(1,ventMax);}
   // fallback (ไม่มีแผน) = สูตรตรง Excel "พัดลมขั้นต่ำ": ⌈cfm/kg × นน.กก. × ไก่ ÷ ประสิทธิภาพพัดลม⌉ (vmaxRaw) · คง floor 4 ตัว
   else{ventMax=Math.max(vmaxRaw(fanCFM,h.birds,h.fans,h.age),Math.min(h.fans,4));ventMin=Math.min(ventMax,Math.max(1,Math.ceil(needMin)));ventMin=Math.max(ventMin,ventMax-GAP);}
+  /* ── กฎที่หมอกำหนด 31 ก.ค. 2026 — แทนที่ "แผนบนกระดาษ" ที่ตามไก่ไม่ทันช่วงท้าย ───────────────
+     1) ความต้องการลมของไก่มาก่อนแผนเสมอ — แผนคุมพื้นล่างตอนไก่เล็ก (ความชื้น/คุณภาพอากาศ)
+        สูตร cfm/kg คุมเพดานตอนไก่โต (ระบายความร้อน) → ใช้ค่าที่มากกว่า สองระบบเลิกขัดกัน
+     2) อายุ 35 วันขึ้นไป พัดลมขึ้นเต็มทุกฟาร์ม (cfm/kg ขึ้นเป็น 5 ตั้งแต่วัน 28 ความต้องการพุ่งเร็ว) */
+  const planMaxRaw=ventMax, needFans=vmaxRaw(fanCFM,h.birds,h.fans,h.age);
+  if(needFans>ventMax)ventMax=needFans;
+  if(D(h.age)>=35)ventMax=h.fans;
+  if(ventMin>ventMax)ventMin=ventMax;
   const velMax=cross>0?(ventMax*fm)/cross:0;
   const padNeeded=(h.age>7)&&(velMax>comfort+0.001);
   const reqFt=cross>0?reqAir/(cross*10.7639):0;
@@ -1582,7 +1601,7 @@ function calc(h){
   const fd=feedG(h.age),fpct=FPCT[D(h.age)],fhouse=fd*alive/1000;
   let cumStd=0;for(let d=1;d<=h.age;d++)cumStd+=FEED[d];
   const fcrT=(h.age>=1)?FCR_STD[D(h.age)]:0;
-  return{fanCFM,reqAir,reqFt,ventMin,ventMax,velMax,comfort,windTarget:targetWind(h.age),padNeeded,ck,wt:bw(h.age),tt:targetT(h.age),pump:pumpT(h.age),
+  return{fanCFM,reqAir,reqFt,ventMin,ventMax,velMax,planMaxRaw,needFans,comfort,windTarget:targetWind(h.age),padNeeded,ck,wt:bw(h.age),tt:targetT(h.age),pump:pumpT(h.age),
     used,ratio,openH,openA,blocks,padVel,alive,fd,fpct,fhouse,cumStd,fcrT,choke:choke(h.age),lx:lux(h.age),lhr:lightHr(h.age)};
 }
 function fI(l,k,v,s){return `<div class="f"><label>${l}</label><input type="number" data-k="${k}" value="${v}" step="${s}"></div>`;}
