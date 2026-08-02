@@ -1922,6 +1922,8 @@ function tryUnlock(){
   if(canEdit){canEdit=false;applyLock();return;}
   // ต้องเช็กประตูก่อนทุกกรณี — ถ้าเช็ก wcode ก่อน เครื่องที่ถูกเพิกถอนสิทธิ์จะปลดล็อกแก้ไขได้อยู่ดี
   if(!hasAccess()){ gateShow('ใส่รหัสเข้าใช้งานก่อน แล้วจึงปลดล็อกแก้ไขได้'); return; }
+  if(isStaff()){ alert('👁️ บัญชีนี้ดูได้อย่างเดียว แก้ข้อมูลไม่ได้\nติดต่อหมอวรัญญูหากต้องแก้ไข'); return; }   // เซิร์ฟเวอร์ปฏิเสธอยู่แล้ว — แจ้งตรง ๆ ดีกว่าปล่อยให้กดแล้วงง
+  if(syncCfg&&syncCfg.sid){canEdit=true;applyLock();return;}            // บัญชีแอดมิน — สิทธิ์เขียนมากับบัญชีอยู่แล้ว ไม่ต้องใส่รหัสซ้ำ
   if(syncCfg&&syncCfg.wcode){canEdit=true;applyLock();return;}          // มีรหัสแก้ไขในเครื่องแล้ว → ปลดล็อกได้เลย
   const p=prompt('🔒 ใส่รหัสสำหรับ "แก้ไข" ข้อมูล\n(เป็นคนละตัวกับรหัสเข้าใช้งาน — ถ้าไม่ทราบ ถามหมอวรัญญู)');
   if(p===null||p==='')return;
@@ -2675,11 +2677,13 @@ function syncStat(msg,cls){const e=document.getElementById('syncStat');if(e){e.t
 function syncNowStr(){const d=new Date();return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
 function syncTouch(){ if(syncApplying||!hasAccess())return; _uStamp(); syncSetTs(Date.now()); clearTimeout(syncTimer); syncTimer=setTimeout(syncPush,800); }
 function syncPush(){ if(!hasAccess())return;                     // ไม่ผ่านประตู = ห้ามเขียนคลาวด์เด็ดขาด
-  if(!syncCfg.wcode){ syncStat('👁️ โหมดดูอย่างเดียว — กดกุญแจใส่รหัสเพื่อแก้ไข'); return; }   // ไม่มีรหัสเขียน → ไม่ push (กันเครื่องคนอื่นทับ)
+  if(isStaff()){ syncStat('👁️ บัญชีนี้ดูอย่างเดียว — แก้ข้อมูลไม่ได้'); return; }   // พนักงานไม่ push (เซิร์ฟเวอร์ก็ปฏิเสธซ้ำอีกชั้น)
+  if(!syncCfg.sid&&!syncCfg.wcode){ syncStat('👁️ โหมดดูอย่างเดียว — กดกุญแจใส่รหัสเพื่อแก้ไข'); return; }   // ไม่มีรหัสเขียน → ไม่ push (กันเครื่องคนอื่นทับ)
   syncStat('กำลังส่งขึ้นชีท…');
   const _dq=_delQ();                                              // ฟาร์มที่รอลบบนคลาวด์ (เฉพาะ backend v3)
-  const _body={code:syncCfg.wcode,data:JSON.stringify(farms),updatedAt:syncTs()};
-  if(syncCfg.who)_body.who=syncCfg.who;                           // ชื่อผู้ใช้เครื่องนี้ → audit log ฝั่งเซิร์ฟเวอร์
+  const _body={data:JSON.stringify(farms),updatedAt:syncTs()};
+  if(syncCfg.sid){ _body.sid=syncCfg.sid; }                       // บัญชีแอดมิน — เซิร์ฟเวอร์รู้ชื่อจากบัญชีเอง (ปลอมไม่ได้)
+  else{ _body.code=syncCfg.wcode; if(syncCfg.who)_body.who=syncCfg.who; }   // รหัสรวมแบบเดิม → ส่งชื่อเครื่องไปลง audit
   if(_dq.length)_body.del=_dq;
   fetch(syncCfg.url,{method:'POST',body:JSON.stringify(_body)})
    .then(r=>r.json()).then(j=>{
@@ -2698,14 +2702,15 @@ function syncPush(){ if(!hasAccess())return;                     // ไม่ผ
        if(_pushRetry<4){ _pushRetry++; syncStat('⏳ มีเครื่องอื่นกำลังบันทึก — กำลังลองใหม่ ('+_pushRetry+'/4)'); clearTimeout(syncTimer); syncTimer=setTimeout(syncPush,1500*_pushRetry); }
        else { _pushRetry=0; syncStat('บันทึกไม่สำเร็จ (มีคนบันทึกพร้อมกันหลายเครื่อง) — กรุณาแก้ซ้ำอีกครั้ง','err'); }
      }
+     else if(j&&/bad session/i.test(j.error||'')){ accessDenied(); }
      else if(j&&/write code|bad code/i.test(j.error||'')){ syncCfg.wcode=null; try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){} canEdit=false; applyLock(); syncStat('รหัสแก้ไขไม่ถูกต้อง','err'); alert('🔒 รหัสสำหรับแก้ไขไม่ถูกต้องหรือถูกเปลี่ยน\nกรุณากดกุญแจ แล้วใส่รหัสแก้ไขใหม่'); }
      else syncStat('ส่งไม่ได้: '+((j&&j.error)||'?'),'err');
    })
    .catch(()=>syncStat('ส่งไม่ได้ (เน็ต/ลิงก์?)','err')); }
 function syncPull(opts){ if(!syncCfg)return; opts=opts||{}; syncStat('กำลังดึงจากชีท…');
-  fetch(syncCfg.url+'?code='+encodeURIComponent(syncCfg.code)+'&t='+Date.now())
+  fetch(syncCfg.url+'?'+_authQ()+'&t='+Date.now())
    .then(r=>r.json()).then(j=>{
-     if(j&&!j.ok&&/bad code/i.test(j.error||'')){ accessDenied(); return; }        // รหัสเข้าใช้งานถูกเปลี่ยน/เพิกถอน → กลับไปหน้าใส่รหัส
+     if(j&&!j.ok&&/bad code|bad session/i.test(j.error||'')){ accessDenied(); return; }   // รหัส/บัญชีถูกเปลี่ยน-เพิกถอน → กลับไปหน้าใส่รหัส
      if(!j||!j.ok){syncStat('เชื่อมต่อไม่ได้: '+((j&&j.error)||'รหัสผิด?'),'err');return;}
      const rts=+j.updatedAt||0, lts=syncTs(), hasR=j.data&&j.data.length>2;
      if(hasR&&(opts.force||rts>lts)){
@@ -2718,7 +2723,9 @@ function syncPull(opts){ if(!syncCfg)return; opts=opts||{}; syncStat('กำล�
    เดิมแอปฝัง "รหัสดู" ไว้ในหน้าเว็บสาธารณะ → ใครเปิด DevTools ก็ดึงข้อมูลทุกฟาร์มได้
    ตอนนี้ไม่ฝังรหัสใด ๆ ในโค้ดแล้ว — เครื่องที่ยังไม่เคยใส่รหัส ดึงข้อมูลจากคลาวด์ไม่ได้เลย
    ใส่ครั้งเดียวต่อเครื่อง → จำไว้ใน localStorage → เปิดครั้งต่อไป/ใช้ออฟไลน์ ได้ตามปกติ */
-function hasAccess(){ return !!(syncCfg&&syncCfg.code); }
+function hasAccess(){ return !!(syncCfg&&(syncCfg.code||syncCfg.sid)); }
+function isStaff(){ return !!(syncCfg&&syncCfg.sid&&syncCfg.role!=='ADMIN'); }        // บัญชีพนักงาน = ดูอย่างเดียว
+function _authQ(){ return syncCfg.sid?('sid='+encodeURIComponent(syncCfg.sid)):('code='+encodeURIComponent(syncCfg.code)); }   // ใช้ต่อท้าย URL ทุกคำขอ GET
 function gateEl(){
   var g=document.getElementById('accessGate'); if(g)return g;
   g=document.createElement('div'); g.id='accessGate';
@@ -2728,13 +2735,16 @@ function gateEl(){
    +'<div style="font-size:32px;margin-bottom:12px">🔒</div>'
    +'<div style="font-size:19px;font-weight:600;letter-spacing:.5px;margin-bottom:6px">FARM FAN</div>'
    +'<div id="gateMsg" style="font-size:14px;color:#94A3B8;line-height:1.6;margin-bottom:22px">ใส่รหัสเข้าใช้งาน</div>'
-   +'<input id="gateCode" type="password" inputmode="numeric" autocomplete="off" placeholder="รหัสเข้าใช้งาน" style="width:100%;box-sizing:border-box;padding:14px 16px;font-size:17px;text-align:center;letter-spacing:3px;border:1px solid #334155;border-radius:12px;background:#111C2E;color:#F8FAFC;outline:none">'
+   +'<input id="gateUser" type="text" autocomplete="username" autocapitalize="none" placeholder="ชื่อผู้ใช้ (ถ้ามีบัญชีพนักงาน)" style="width:100%;box-sizing:border-box;margin-bottom:10px;padding:14px 16px;font-size:16px;text-align:center;border:1px solid #334155;border-radius:12px;background:#111C2E;color:#F8FAFC;outline:none">'
+   +'<input id="gateCode" type="password" inputmode="numeric" autocomplete="off" placeholder="รหัสเข้าใช้งาน / PIN" style="width:100%;box-sizing:border-box;padding:14px 16px;font-size:17px;text-align:center;letter-spacing:3px;border:1px solid #334155;border-radius:12px;background:#111C2E;color:#F8FAFC;outline:none">'
    +'<button id="gateGo" type="button" style="width:100%;box-sizing:border-box;margin-top:12px;padding:14px;font-size:16px;font-weight:600;border:0;border-radius:12px;background:#0EA5A4;color:#04211F;cursor:pointer">เข้าใช้งาน</button>'
+   +'<div style="margin-top:10px;font-size:12px;color:#64748B;line-height:1.6">มีบัญชีพนักงาน → ใส่ชื่อผู้ใช้ + PIN 6 หลัก<br>ใช้รหัสรวมแบบเดิม → เว้นชื่อผู้ใช้ว่างไว้</div>'
    +'<div id="gateErr" style="min-height:20px;margin-top:12px;font-size:13px;color:#94A3B8"></div>'
    +'<div style="margin-top:14px;font-size:12px;color:#64748B;line-height:1.6">ไม่ทราบรหัส — ติดต่อผู้ดูแลระบบ</div></div>';
   document.body.appendChild(g);
   g.querySelector('#gateGo').onclick=gateSubmit;
   g.querySelector('#gateCode').onkeydown=function(e){ if(e.key==='Enter')gateSubmit(); };
+  g.querySelector('#gateUser').onkeydown=function(e){ if(e.key==='Enter'){var c=g.querySelector('#gateCode');if(c)c.focus();} };
   return g;
 }
 function gateShow(msg){
@@ -2743,6 +2753,7 @@ function gateShow(msg){
   g.style.display='flex';
   try{document.body.style.overflow='hidden';}catch(_){}          // กันแอปเลื่อน/โผล่ข้างหลังประตู
   if(already)return;                       // เปิดอยู่แล้ว → ห้ามล้างช่องหรือแย่งโฟกัส (ไม่งั้นผู้ใช้พิมพ์รหัสไม่ได้)
+  var u=g.querySelector('#gateUser'); if(u)u.value='';
   var i=g.querySelector('#gateCode'); if(i){i.value=''; setTimeout(function(){try{i.focus();}catch(_){}} ,80);}
   gateOffline();
 }
@@ -2758,17 +2769,39 @@ function gateOffline(){
   g.querySelector('#gateErr').parentNode.insertBefore(b,g.querySelector('#gateErr'));
 }
 function gateHide(){ var g=document.getElementById('accessGate'); if(g)g.style.display='none'; try{document.body.style.overflow='';}catch(_){} }
+function _devId(){                                        // รหัสประจำเครื่องแบบสุ่ม (ไว้ดูใน AUTH_LOG ว่าล็อกอินจากกี่เครื่อง — ไม่ใช่ข้อมูลส่วนตัว)
+  var d=localStorage.getItem('ppf_dev');
+  if(!d){ d=Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,6); try{localStorage.setItem('ppf_dev',d);}catch(_){} }
+  return d;
+}
 function gateSubmit(){
   var g=gateEl(), inp=g.querySelector('#gateCode'), err=g.querySelector('#gateErr'), btn=g.querySelector('#gateGo');
+  var u=(g.querySelector('#gateUser').value||'').trim();
   var p=(inp.value||'').trim();
-  if(!p){ err.style.color='#F87171'; err.textContent='กรุณาใส่รหัส'; return; }
+  if(!p){ err.style.color='#F87171'; err.textContent=u?'กรุณาใส่ PIN 6 หลัก':'กรุณาใส่รหัส'; return; }
   btn.disabled=true; err.style.color='#94A3B8'; err.textContent='กำลังตรวจสอบ…';
+  if(u){                                                  // ── ล็อกอินด้วยบัญชีพนักงาน (username + PIN) ──
+    fetch(SYNC_DEFAULT_URL,{method:'POST',body:JSON.stringify({auth:'login',user:u,pin:p,dev:_devId()})})
+     .then(function(r){return r.json();})
+     .then(function(j){
+       btn.disabled=false;
+       if(j&&j.ok&&j.sid){
+         syncCfg={url:SYNC_DEFAULT_URL, sid:j.sid, role:j.role, who:j.name, farms:j.farms};
+         try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){}
+         canEdit=false; applyLock();                      // แอดมินปลดล็อกได้ด้วยปุ่มกุญแจ (ไม่ต้องใส่รหัสอีก) · พนักงานปลดไม่ได้
+         gateHide(); syncStat('👤 '+j.name+(j.role==='ADMIN'?' (ผู้ดูแล)':'')); syncPull({force:true});
+       } else { err.style.color='#F87171'; err.textContent=(j&&j.error)||'เข้าสู่ระบบไม่สำเร็จ'; inp.value=''; try{inp.focus();}catch(_){} }
+     })
+     .catch(function(){ btn.disabled=false; err.style.color='#F87171'; err.textContent='เชื่อมต่อไม่ได้ — ตรวจอินเทอร์เน็ต'; });
+    return;
+  }
   fetch(SYNC_DEFAULT_URL+'?code='+encodeURIComponent(p)+'&t='+Date.now())
    .then(function(r){return r.json();})
    .then(function(j){
      btn.disabled=false;
      if(j&&j.ok){
        syncCfg=syncCfg||{}; syncCfg.url=SYNC_DEFAULT_URL; syncCfg.code=p;
+       delete syncCfg.sid; delete syncCfg.role; delete syncCfg.farms;   // สลับจากบัญชีพนักงานกลับมารหัสรวม → ล้างของเก่า
        try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){}
        // เครื่องที่เคยเชื่อมต่อแล้ว (เช่น หมอเปลี่ยนรหัสแล้วใส่ใหม่) → ดึงตามปกติ
        // ห้ามเข้า syncFirstConnect เพราะจะถาม "ใช้คลาวด์ หรือ ใช้เครื่องนี้" แล้วถ้ากดยกเลิก = ดันข้อมูลเก่าทับของทุกคน
@@ -2777,15 +2810,16 @@ function gateSubmit(){
    })
    .catch(function(){ btn.disabled=false; err.style.color='#F87171'; err.textContent='เชื่อมต่อไม่ได้ — ตรวจอินเทอร์เน็ต'; });
 }
-function accessDenied(){                              // เซิร์ฟเวอร์ปฏิเสธรหัสที่เครื่องนี้จำไว้ (ถูกเปลี่ยน/เพิกถอน)
+function accessDenied(){                              // เซิร์ฟเวอร์ปฏิเสธรหัส/บัญชีที่เครื่องนี้จำไว้ (ถูกเปลี่ยน/เพิกถอน/หมดอายุ)
   if(syncCfg){
     syncCfg.code=null;
     syncCfg.wcode=null;                              // เพิกถอนสิทธิ์ "เขียน" ด้วย — ไม่งั้นเครื่องที่ถูกตัดสิทธิ์อ่านยังทับข้อมูลคลาวด์ได้
+    delete syncCfg.sid; delete syncCfg.role; delete syncCfg.farms;   // ตัด session ล็อกอินด้วย
     try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){}
   }
   clearTimeout(syncTimer);                           // ยกเลิก push ที่ค้างอยู่ (syncTouch ตั้งไว้ 800ms) กันทับข้อมูลคนอื่นตอนถูกตัดสิทธิ์
   if(canEdit){canEdit=false;applyLock();}
-  gateShow('รหัสเข้าใช้งานถูกเปลี่ยน — กรุณาใส่รหัสใหม่');
+  gateShow('รหัสหรือบัญชีถูกเปลี่ยน/หมดอายุ — กรุณาเข้าสู่ระบบใหม่');
 }
 function syncAutoInit(){
   if(!SYNC_DEFAULT_URL) return;                       // ไม่มีลิงก์ฝัง → ไม่ทำอะไร
@@ -2830,9 +2864,9 @@ function isTyping(){const a=document.activeElement;return!!a&&(a.tagName==='INPU
 function syncTick(){           // เช็คกับชีทตามจังหวะ syncGap() (ทำงานเฉพาะตอนเปิดแอปดูอยู่ — ประหยัด quota/แบต)
   if(!hasAccess()||syncApplying||syncBusy||document.visibilityState!=='visible')return;   // ถูกตัดสิทธิ์แล้ว → หยุดยิง ไม่งั้นวนเรียก accessDenied จนพิมพ์รหัสใหม่ไม่ได้
   syncBusy=true;
-  fetch(syncCfg.url+'?code='+encodeURIComponent(syncCfg.code)+(pingOK===false?'':'&ping=1')+'&t='+Date.now())
+  fetch(syncCfg.url+'?'+_authQ()+(pingOK===false?'':'&ping=1')+'&t='+Date.now())
    .then(r=>r.json()).then(j=>{
-     if(j&&!j.ok&&/bad code/i.test(j.error||'')){ accessDenied(); return; }        // รหัสเข้าใช้งานถูกเปลี่ยน/เพิกถอน → กลับไปหน้าใส่รหัส
+     if(j&&!j.ok&&/bad code|bad session/i.test(j.error||'')){ accessDenied(); return; }   // รหัส/บัญชีถูกเปลี่ยน-เพิกถอน → กลับไปหน้าใส่รหัส
      if(!j||!j.ok){_syncFails++; if(_syncFails>=3)syncStat('⚠️ ซิงค์ไม่สำเร็จหลายครั้ง — ข้อมูลอาจไม่อัปเดต','err'); return;}
      _syncFails=0;
      if(j.ping)pingOK=true;                             // เซิร์ฟเวอร์รองรับแล้ว
