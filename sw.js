@@ -2,7 +2,7 @@
    - vendor/รูป = cache-first (ไฟล์ไม่เปลี่ยน โหลดเร็ว)
    - html/js อื่น = network-first (ออนไลน์ได้ของใหม่เสมอ · ออฟไลน์ใช้แคช)
    ⚠️ เวลาแก้โค้ดแล้ว deploy ใหม่ ให้เพิ่มเลขเวอร์ชัน CACHE ด้านล่าง เพื่อล้างแคชเก่า */
-const CACHE='ppf-farmfan-v31';
+const CACHE='ppf-farmfan-v32';
 const ASSETS=[
   './','./index.html','./analytics.html','./mortality.html','./fan-plan.html','./view.html','./calc-core.js','./parse-worker.js',
   './ctrl-manual.html','./ctrl-manual-data.js',

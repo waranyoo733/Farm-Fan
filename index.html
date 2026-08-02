@@ -2725,7 +2725,7 @@ function syncPull(opts){ if(!syncCfg)return; opts=opts||{}; syncStat('กำล�
    ใส่ครั้งเดียวต่อเครื่อง → จำไว้ใน localStorage → เปิดครั้งต่อไป/ใช้ออฟไลน์ ได้ตามปกติ */
 function hasAccess(){ return !!(syncCfg&&(syncCfg.code||syncCfg.sid)); }
 function isStaff(){ return !!(syncCfg&&syncCfg.sid&&syncCfg.role!=='ADMIN'); }        // บัญชีพนักงาน = ดูอย่างเดียว
-function _authQ(){ return syncCfg.sid?('sid='+encodeURIComponent(syncCfg.sid)):('code='+encodeURIComponent(syncCfg.code)); }   // ใช้ต่อท้าย URL ทุกคำขอ GET
+function _authQ(){ return syncCfg.sid?('ses='+encodeURIComponent(syncCfg.sid)):('code='+encodeURIComponent(syncCfg.code)); }   // ใช้ต่อท้าย URL ทุกคำขอ GET — ⚠️ ต้องชื่อ "ses" ห้าม "sid" (ชนพารามิเตอร์สงวนของ Google โดนดักก่อนถึงสคริปต์)
 function gateEl(){
   var g=document.getElementById('accessGate'); if(g)return g;
   g=document.createElement('div'); g.id='accessGate';
