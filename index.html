@@ -2735,15 +2735,17 @@ function gateEl(){
    +'<div style="font-size:32px;margin-bottom:12px">🔒</div>'
    +'<div style="font-size:19px;font-weight:600;letter-spacing:.5px;margin-bottom:6px">FARM FAN</div>'
    +'<div id="gateMsg" style="font-size:14px;color:#94A3B8;line-height:1.6;margin-bottom:22px">ใส่รหัสเข้าใช้งาน</div>'
-   +'<input id="gateUser" type="text" autocomplete="username" autocapitalize="none" placeholder="ชื่อผู้ใช้ (ถ้ามีบัญชีพนักงาน)" style="width:100%;box-sizing:border-box;margin-bottom:10px;padding:14px 16px;font-size:16px;text-align:center;border:1px solid #334155;border-radius:12px;background:#111C2E;color:#F8FAFC;outline:none">'
-   +'<input id="gateCode" type="password" inputmode="numeric" autocomplete="off" placeholder="รหัสเข้าใช้งาน / PIN" style="width:100%;box-sizing:border-box;padding:14px 16px;font-size:17px;text-align:center;letter-spacing:3px;border:1px solid #334155;border-radius:12px;background:#111C2E;color:#F8FAFC;outline:none">'
+   +'<input id="gateUser" type="text" autocomplete="username" autocapitalize="none" placeholder="ชื่อผู้ใช้" style="width:100%;box-sizing:border-box;margin-bottom:10px;padding:14px 16px;font-size:16px;text-align:center;border:1px solid #334155;border-radius:12px;background:#111C2E;color:#F8FAFC;outline:none">'
+   +'<input id="gateCode" type="password" inputmode="numeric" autocomplete="off" placeholder="รหัสผ่าน" style="width:100%;box-sizing:border-box;margin-bottom:10px;padding:14px 16px;font-size:17px;text-align:center;letter-spacing:3px;border:1px solid #334155;border-radius:12px;background:#111C2E;color:#F8FAFC;outline:none">'
+   +'<input id="gateFarm" type="text" autocomplete="off" placeholder="ชื่อฟาร์ม (เช่น ชัยนาท)" style="width:100%;box-sizing:border-box;padding:14px 16px;font-size:16px;text-align:center;border:1px solid #334155;border-radius:12px;background:#111C2E;color:#F8FAFC;outline:none">'
    +'<button id="gateGo" type="button" style="width:100%;box-sizing:border-box;margin-top:12px;padding:14px;font-size:16px;font-weight:600;border:0;border-radius:12px;background:#0EA5A4;color:#04211F;cursor:pointer">เข้าใช้งาน</button>'
-   +'<div style="margin-top:10px;font-size:12px;color:#64748B;line-height:1.6">มีบัญชีพนักงาน → ใส่ชื่อผู้ใช้ + PIN 6 หลัก<br>ใช้รหัสรวมแบบเดิม → เว้นชื่อผู้ใช้ว่างไว้</div>'
+   +'<div style="margin-top:10px;font-size:12px;color:#64748B;line-height:1.6">พนักงานฟาร์ม → ใส่ชื่อ + รหัส + ชื่อฟาร์มตัวเอง (เห็นเฉพาะฟาร์มตัวเอง)<br>ผู้ดูแล → ใส่รหัสผู้ดูแล เว้นช่องฟาร์มว่างไว้</div>'
    +'<div id="gateErr" style="min-height:20px;margin-top:12px;font-size:13px;color:#94A3B8"></div>'
    +'<div style="margin-top:14px;font-size:12px;color:#64748B;line-height:1.6">ไม่ทราบรหัส — ติดต่อผู้ดูแลระบบ</div></div>';
   document.body.appendChild(g);
   g.querySelector('#gateGo').onclick=gateSubmit;
-  g.querySelector('#gateCode').onkeydown=function(e){ if(e.key==='Enter')gateSubmit(); };
+  g.querySelector('#gateCode').onkeydown=function(e){ if(e.key==='Enter'){var f=g.querySelector('#gateFarm');if(f&&f.value.trim()===''){f.focus();}else gateSubmit();} };
+  g.querySelector('#gateFarm').onkeydown=function(e){ if(e.key==='Enter')gateSubmit(); };
   g.querySelector('#gateUser').onkeydown=function(e){ if(e.key==='Enter'){var c=g.querySelector('#gateCode');if(c)c.focus();} };
   return g;
 }
@@ -2754,7 +2756,9 @@ function gateShow(msg){
   try{document.body.style.overflow='hidden';}catch(_){}          // กันแอปเลื่อน/โผล่ข้างหลังประตู
   if(already)return;                       // เปิดอยู่แล้ว → ห้ามล้างช่องหรือแย่งโฟกัส (ไม่งั้นผู้ใช้พิมพ์รหัสไม่ได้)
   var u=g.querySelector('#gateUser'); if(u)u.value='';
-  var i=g.querySelector('#gateCode'); if(i){i.value=''; setTimeout(function(){try{i.focus();}catch(_){}} ,80);}
+  var fm=g.querySelector('#gateFarm'); if(fm)fm.value='';
+  var i=g.querySelector('#gateCode'); if(i)i.value='';
+  if(u)setTimeout(function(){try{u.focus();}catch(_){}} ,80);
   gateOffline();
 }
 /* ออฟไลน์: ถ้าเครื่องนี้เคยมีข้อมูลอยู่แล้ว (เคยผ่านประตูมาก่อน) ให้ใช้งานต่อได้โดยไม่ต้องต่อเน็ต
@@ -2777,10 +2781,26 @@ function _devId(){                                        // รหัสปร�
 function gateSubmit(){
   var g=gateEl(), inp=g.querySelector('#gateCode'), err=g.querySelector('#gateErr'), btn=g.querySelector('#gateGo');
   var u=(g.querySelector('#gateUser').value||'').trim();
+  var fm=(g.querySelector('#gateFarm').value||'').trim();
   var p=(inp.value||'').trim();
-  if(!p){ err.style.color='#F87171'; err.textContent=u?'กรุณาใส่ PIN 6 หลัก':'กรุณาใส่รหัส'; return; }
+  if(!p){ err.style.color='#F87171'; err.textContent='กรุณาใส่รหัสผ่าน'; return; }
   btn.disabled=true; err.style.color='#94A3B8'; err.textContent='กำลังตรวจสอบ…';
-  if(u){                                                  // ── ล็อกอินด้วยบัญชีพนักงาน (username + PIN) ──
+  if(fm){                                                 // ── พนักงานฟาร์ม: ชื่อ + รหัสรวม + ชื่อฟาร์ม → เห็นฟาร์มเดียว อ่านอย่างเดียว ──
+    fetch(SYNC_DEFAULT_URL,{method:'POST',body:JSON.stringify({auth:'farmlogin',name:u,code:p,farm:fm,dev:_devId()})})
+     .then(function(r){return r.json();})
+     .then(function(j){
+       btn.disabled=false;
+       if(j&&j.ok&&j.sid){
+         syncCfg={url:SYNC_DEFAULT_URL, sid:j.sid, role:'STAFF', who:j.name, farms:j.farms};
+         try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){}
+         canEdit=false; applyLock();
+         gateHide(); syncStat('👤 '+j.name+' · '+(j.farmName||'')); syncPull({force:true});
+       } else { err.style.color='#F87171'; err.textContent=(j&&j.error)||'เข้าสู่ระบบไม่สำเร็จ'; }
+     })
+     .catch(function(){ btn.disabled=false; err.style.color='#F87171'; err.textContent='เชื่อมต่อไม่ได้ — ตรวจอินเทอร์เน็ต'; });
+    return;
+  }
+  if(u&&/^\d{6}$/.test(p)){                               // ── ล็อกอินด้วยบัญชีส่วนตัว (username + PIN 6 หลัก) ──
     fetch(SYNC_DEFAULT_URL,{method:'POST',body:JSON.stringify({auth:'login',user:u,pin:p,dev:_devId()})})
      .then(function(r){return r.json();})
      .then(function(j){
@@ -2802,6 +2822,7 @@ function gateSubmit(){
      if(j&&j.ok){
        syncCfg=syncCfg||{}; syncCfg.url=SYNC_DEFAULT_URL; syncCfg.code=p;
        delete syncCfg.sid; delete syncCfg.role; delete syncCfg.farms;   // สลับจากบัญชีพนักงานกลับมารหัสรวม → ล้างของเก่า
+       if(u&&!syncCfg.who)syncCfg.who=u;                                // พิมพ์ชื่อมาด้วย → ใช้เป็นชื่อในประวัติการแก้ไข
        try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){}
        // เครื่องที่เคยเชื่อมต่อแล้ว (เช่น หมอเปลี่ยนรหัสแล้วใส่ใหม่) → ดึงตามปกติ
        // ห้ามเข้า syncFirstConnect เพราะจะถาม "ใช้คลาวด์ หรือ ใช้เครื่องนี้" แล้วถ้ากดยกเลิก = ดันข้อมูลเก่าทับของทุกคน
