@@ -2690,6 +2690,13 @@ function syncPush(){ if(!hasAccess())return;                     // ไม่ผ
        // เซิร์ฟเวอร์มีของใหม่กว่าบางฟาร์ม (kept) หรือเพิ่งแจกรหัสฟาร์มถาวร (assigned) → ดึงฉบับรวมกลับมา
        if((j.kept&&j.kept.length)||(j.assigned&&j.assigned.length)){ syncPull({force:true}); syncStat('🔄 รวมกับข้อมูลเครื่องอื่นแล้ว '+syncNowStr(),'ok'); }
        else syncStat('ซิงค์แล้ว '+syncNowStr(),'ok');
+       _pushRetry=0;
+     }
+     /* เซิร์ฟเวอร์ v3 ปฏิเสธการเขียนเพราะมีเครื่องอื่นกำลังบันทึกอยู่ (busy) — ของเดิมเซิร์ฟเวอร์จะเขียนทับเงียบ ๆ
+        ตอนนี้ปลอดภัยแล้วแต่แปลว่า "ไม่ได้บันทึก" ถ้าไม่ลองใหม่ให้ การแก้ของผู้ใช้จะหายไปเฉย ๆ */
+     else if(j&&j.busy){
+       if(_pushRetry<4){ _pushRetry++; syncStat('⏳ มีเครื่องอื่นกำลังบันทึก — กำลังลองใหม่ ('+_pushRetry+'/4)'); clearTimeout(syncTimer); syncTimer=setTimeout(syncPush,1500*_pushRetry); }
+       else { _pushRetry=0; syncStat('บันทึกไม่สำเร็จ (มีคนบันทึกพร้อมกันหลายเครื่อง) — กรุณาแก้ซ้ำอีกครั้ง','err'); }
      }
      else if(j&&/write code|bad code/i.test(j.error||'')){ syncCfg.wcode=null; try{localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg));}catch(_){} canEdit=false; applyLock(); syncStat('รหัสแก้ไขไม่ถูกต้อง','err'); alert('🔒 รหัสสำหรับแก้ไขไม่ถูกต้องหรือถูกเปลี่ยน\nกรุณากดกุญแจ แล้วใส่รหัสแก้ไขใหม่'); }
      else syncStat('ส่งไม่ได้: '+((j&&j.error)||'?'),'err');
@@ -2801,17 +2808,41 @@ function syncFirstConnect(){                          // เชื่อมต�
    }).catch(()=>syncStat('เชื่อมต่อไม่ได้ (เน็ต/ลิงก์?)','err'));
 }
 
-let syncBusy=false, _syncFails=0;
+let syncBusy=false, _syncFails=0, _pushRetry=0;
+/* ── ตัวเช็คเบา (ping) — ลดภาระเซิร์ฟเวอร์ ─────────────────────────────────────
+   ปัญหาที่วัดได้จริง 2 ส.ค. 2569: เซิร์ฟเวอร์ตอบคำขอดึงข้อมูลเต็มครั้งละ 1.8–3.0 วินาที
+   แต่แอปยิงทุก 3 วินาที → เครื่องเดียวที่เปิดแอปค้างไว้ กินโควตาประมวลผลของ Google
+   ประมาณ 48 นาที ต่อการเปิดแค่ 1 ชั่วโมง (โควตา Gmail ธรรมดามีแค่ 90 นาที/วัน ทั้งระบบ)
+   วิธีแก้: ยิงคำถามเบา ?ping=1 ที่ตอบแค่ "เลขเวลาอัปเดตล่าสุด" ไม่แตะสเปรดชีตเลย
+   แล้วดึงข้อมูลเต็มเฉพาะตอนเลขนั้นเปลี่ยนจริงเท่านั้น
+   ⚠️ เข้ากันได้กับเซิร์ฟเวอร์รุ่นเก่า: รุ่นที่ยังไม่ได้ deploy จะไม่รู้จัก ping แล้วตอบ
+      ข้อมูลเต็มกลับมาเหมือนเดิม (ไม่มีธง j.ping) → ตรวจเจอแล้วถอยไปใช้จังหวะเดิม 3 วิ
+      อัตโนมัติ ปล่อยขึ้นเว็บก่อน deploy หลังบ้านได้ ไม่พัง */
+const PING_FAST=10000, PING_IDLE=60000, IDLE_AFTER=180000, TICK_LEGACY=3000;
+let pingOK=null, _lastAct=Date.now(), _tickTimer=null;
+['pointerdown','keydown','touchstart'].forEach(function(ev){ document.addEventListener(ev,function(){_lastAct=Date.now();},{passive:true,capture:true}); });
+function syncGap(){                        // เครื่องที่เปิดทิ้งไว้บนโต๊ะคือตัวกินโควตาหลัก → ไม่มีใครแตะเกิน 3 นาที ยืดเป็น 60 วิ
+  if(pingOK===false)return TICK_LEGACY;    // เซิร์ฟเวอร์ยังไม่รองรับ ping → ใช้พฤติกรรมเดิมทุกอย่าง
+  return (Date.now()-_lastAct>IDLE_AFTER)?PING_IDLE:PING_FAST;
+}
+function syncLoop(){ clearTimeout(_tickTimer); _tickTimer=setTimeout(function(){ syncTick(); syncLoop(); }, syncGap()); }
 function isTyping(){const a=document.activeElement;return!!a&&(a.tagName==='INPUT'||a.tagName==='SELECT'||a.tagName==='TEXTAREA');}
-function syncTick(){           // ซิงค์กับชีททุก 3 วิ (ทำงานเฉพาะตอนเปิดแอปดูอยู่ — ประหยัด quota/แบต)
-  if(!hasAccess()||syncApplying||syncBusy||document.visibilityState!=='visible')return;   // ถูกตัดสิทธิ์แล้ว → หยุดยิง ไม่งั้นวนเรียก accessDenied ทุก 3 วิ จนพิมพ์รหัสใหม่ไม่ได้
+function syncTick(){           // เช็คกับชีทตามจังหวะ syncGap() (ทำงานเฉพาะตอนเปิดแอปดูอยู่ — ประหยัด quota/แบต)
+  if(!hasAccess()||syncApplying||syncBusy||document.visibilityState!=='visible')return;   // ถูกตัดสิทธิ์แล้ว → หยุดยิง ไม่งั้นวนเรียก accessDenied จนพิมพ์รหัสใหม่ไม่ได้
   syncBusy=true;
-  fetch(syncCfg.url+'?code='+encodeURIComponent(syncCfg.code)+'&t='+Date.now())
+  fetch(syncCfg.url+'?code='+encodeURIComponent(syncCfg.code)+(pingOK===false?'':'&ping=1')+'&t='+Date.now())
    .then(r=>r.json()).then(j=>{
      if(j&&!j.ok&&/bad code/i.test(j.error||'')){ accessDenied(); return; }        // รหัสเข้าใช้งานถูกเปลี่ยน/เพิกถอน → กลับไปหน้าใส่รหัส
      if(!j||!j.ok){_syncFails++; if(_syncFails>=3)syncStat('⚠️ ซิงค์ไม่สำเร็จหลายครั้ง — ข้อมูลอาจไม่อัปเดต','err'); return;}
      _syncFails=0;
+     if(j.ping)pingOK=true;                             // เซิร์ฟเวอร์รองรับแล้ว
+     else if(pingOK===null)pingOK=false;                // ไม่มีธง = รุ่นเก่า ตอบข้อมูลเต็มมาแทน → ถอยกลับไปจังหวะเดิม
      const rts=+j.updatedAt||0, lts=syncTs(), hasR=j.data&&j.data.length>2;
+     if(j.ping){                                        // คำตอบแบบเบา ไม่มีข้อมูลมาด้วย → ถ้าเลขเปลี่ยนค่อยดึงเต็ม
+       if(rts>lts){ if(isTyping())return; syncPull(); }
+       else if(lts>rts){ syncPush(); }
+       return;
+     }
      if(hasR&&rts>lts){                                   // ชีทใหม่กว่า → ดึงลง (ข้ามถ้ากำลังพิมพ์)
        if(isTyping())return;
        let d;try{d=JSON.parse(j.data);}catch(e){return;}
@@ -2982,8 +3013,8 @@ document.getElementById('backupFile').addEventListener('change',e=>{const f=e.ta
 renderChips();renderTabs();render();
 (function(){var i=document.querySelector('header .logo img');if(i){var l=document.createElement('link');l.rel='icon';l.type='image/png';l.href=i.src;document.head.appendChild(l);}})();
 syncAutoInit();
-setInterval(syncTick,3000);                                                                   // ซิงค์กับชีททุก 3 วินาที
-document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){autoAge();syncTick();} });   // กลับมาเปิดแอป → เด้งอายุ + ซิงค์ทันที
+syncLoop();                                                                                   // เช็คกับชีทเป็นจังหวะ: ใช้งานอยู่ 10 วิ · เปิดค้างไม่แตะเกิน 3 นาที 60 วิ (ดูหมายเหตุที่ syncGap)
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){_lastAct=Date.now();autoAge();syncTick();syncLoop();} });   // กลับมาเปิดแอป → เด้งอายุ + ซิงค์ทันที + เริ่มจับเวลาใหม่
 function autoAge(){ if(syncApplying||isTyping())return; if(syncAgesToToday()){ save(); render(); } }   // เด้งอายุไก่เป็นวันจริงเองตามวันลงไก่ (ไม่ต้องกด "วันนี้")
 window.addEventListener('focus',autoAge);                                                      // กลับมาที่หน้าต่าง → เด้งอายุ
 if('serviceWorker' in navigator){ window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); }); }   // PWA: ใช้ออฟไลน์ + ติดตั้งหน้าจอโฮมได้
