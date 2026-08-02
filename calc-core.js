@@ -18,7 +18,12 @@ const bw=a=>BW[D(a)],feedG=d=>FEED[D(d)];
 const targetT=a=>{const x=D(a);return x<1?33:Math.max(27.6,33-0.3*(x-1));};
 const pumpT=a=>{const x=D(a);return x<1?36:Math.max(30.6,36-0.3*(x-1));};
 const cfmkg=a=>a<=13?3:(a<=27?4:5);
-const maxWind=a=>a<=7?0.3:a<=14?0.7:a<=21?1.2:a<=28?1.8:a<=35?2.3:2.8;
+/* ลมสูงสุดที่ไก่ทนได้ (m/s) — ใช้ตัดสินว่าต้องเปิด Cooling pad แทนการเพิ่มลมหรือยัง
+   ⚠️ ช่วง >35 วัน แก้ 2.8 → 3.0 ตามที่หมอชี้ขาด 2 ส.ค. 2569
+   เหตุผล: เดิมขัดกับ targetWind ที่บอกให้ทำถึง 3.0 ทั้งที่เพดานเขียนไว้ 2.8
+   ผลกระทบที่วัดแล้ว: กระทบเฉพาะไก่ 36+ วัน ในช่วงลม 2.8–3.0 (ตัวอย่างชัยนาท = ตอนเปิดพัดลม 17 ตัว)
+   🔴 ช่วง 29–35 วัน ยังขัดกันอยู่ (เป้า 2.5 > เพดาน 2.3) — ยังไม่แก้ รอหมอชี้ขาด */
+const maxWind=a=>a<=7?0.3:a<=14?0.7:a<=21?1.2:a<=28?1.8:a<=35?2.3:3.0;
 // ความเร็วลมเป้าหมายที่ไก่ต้องการต่ออายุ (UGA Poultry Extension, m/s) — แสดงผลเป็นไกด์ ไม่กระทบ logic เปิดแพด
 const targetWind=a=>a<=7?0.25:a<=14?0.5:a<=21?1.0:a<=28?1.75:a<=35?2.5:3.0;
 function vmaxRaw(fc,birds,fans,age){const reqAir=cfmkg(age)*(BW[D(age)]/1000)*birds;return Math.min(fans,Math.max(1,Math.ceil(fc>0?reqAir/fc:0)));}
