@@ -180,7 +180,7 @@ button{font-family:inherit;cursor:pointer;border:0;border-radius:10px}
 var ROUNDS=['ตี5','เที่ยง','บ่าย3'];
 var ROUND_WIN={'ตี5':[5,6],'เที่ยง':[11,13],'บ่าย3':[15,16]};   // ช่วงเวลาที่หมอเคาะ
 var PHOTO_CATS=['ตู้คอนโทรล','Kestrel อุณหภูมิ','Kestrel ความชื้น','Kestrel แรงลม','แกลบ','อาหารในมือ','แพด/ปั๊มน้ำ','น้ำนิปเปิ้ล'];
-var Q_KEY='ppf_field_queue', DRAFT_KEY='ppf_field_draft';
+var Q_KEY='ppf_field_queue', DRAFT_KEY='ppf_field_draft', DEAD_KEY='ppf_field_dead';
 var TASK_LITTER_MIN=3, TASK_FOOT_MIN=2;                          // ให้ตรงกับเซิร์ฟเวอร์ (เตือนก่อนส่ง)
 
 /* ── สภาพแวดล้อม: อ่าน syncCfg + ข้อมูลฟาร์มจากแอปหลัก (origin เดียวกัน) ── */
@@ -197,28 +197,43 @@ function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMon
 
 /* ── คิวออฟไลน์ ── */
 function qGet(){ try{ var q=JSON.parse(localStorage.getItem(Q_KEY)||'[]'); return Array.isArray(q)?q:[]; }catch(_){ return []; } }
-function qSet(q){ try{ localStorage.setItem(Q_KEY,JSON.stringify(q)); }catch(e){ setStat('⚠️ เครื่องเก็บรูปค้างไว้เยอะเกิน — ต่อเน็ตเพื่อส่งก่อน แล้วค่อยถ่ายเพิ่ม'); } qBadge(); }
+function qSet(q){ try{ localStorage.setItem(Q_KEY,JSON.stringify(q)); }catch(e){ setStat('⚠️ เครื่องเก็บข้อมูลค้างเยอะเกิน — ต่อเน็ตเพื่อส่งก่อน'); } qBadge(); }
 function qPush(item){ var q=qGet(); q.push(item); qSet(q); }
-function qBadge(){ var n=qGet().length; document.getElementById('qBadge').textContent=n?('📤 ค้างส่ง '+n):''; }
-var flushing=false;
+/* dead = รายการที่ส่งไม่ได้ซ้ำ ๆ (เช่น สิทธิ์ Drive ยังไม่พร้อม) — พักไว้ ไม่วนยิงจนแอปหน่วง
+   จะลองใหม่อัตโนมัติ "ครั้งเดียวตอนเปิดแอป" เท่านั้น (ดู requeueDead) */
+function deadGet(){ try{ var q=JSON.parse(localStorage.getItem(DEAD_KEY)||'[]'); return Array.isArray(q)?q:[]; }catch(_){ return []; } }
+function deadSet(q){ try{ localStorage.setItem(DEAD_KEY,JSON.stringify(q)); }catch(_){} qBadge(); }
+function deadPush(it){ var q=deadGet(); q.push(it); deadSet(q); }
+function requeueDead(){ var d=deadGet(); if(!d.length)return; try{ localStorage.setItem(DEAD_KEY,'[]'); }catch(_){} var q=qGet(); d.forEach(function(it){ it.tries=0; q.push(it); }); qSet(q); }
+function qBadge(){ var n=qGet().length, dn=deadGet().length; document.getElementById('qBadge').textContent=(n?('📤 ค้างส่ง '+n):'')+(dn?('  ⚠️ พักไว้ '+dn):''); }
+var flushing=false, flushTimer=null;
+function qFlushLater(ms){ clearTimeout(flushTimer); flushTimer=setTimeout(qFlush,ms); }
 function qFlush(){
   if(flushing||!navigator.onLine||!hasAuth())return;
-  var q=qGet(); if(!q.length)return;
+  var q=qGet(); if(!q.length){ return; }
+  var item=q[0];
   flushing=true; setStat('📤 กำลังส่งข้อมูลค้าง ('+q.length+')…');
-  fetch(API,{method:'POST',body:JSON.stringify(q[0].body)})
+  var ctl=new AbortController(), to=setTimeout(function(){ try{ctl.abort();}catch(_){}} ,20000);   // กันคำขอค้างไม่จบ
+  fetch(API,{method:'POST',body:JSON.stringify(item.body),signal:ctl.signal})
    .then(function(r){return r.json();})
    .then(function(j){
-     flushing=false;
-     if(j&&j.ok){ var q2=qGet(); q2.shift(); qSet(q2); setStat('✅ ส่งแล้ว เหลือ '+q2.length); if(q2.length)qFlush(); else refreshAfterSync(); }
-     else if(j&&(j.busy)){ setStat('⏳ เซิร์ฟเวอร์ไม่ว่าง จะลองใหม่'); setTimeout(qFlush,4000); }
-     else if(j&&/bad session|bad code/i.test(j.error||'')){ setStat('🔒 สิทธิ์หมดอายุ — เปิดหน้าแรกเพื่อเข้าระบบใหม่'); }
-     else if(j&&/unknown field|no permission/i.test(j.error||'')){ var q3=qGet(); var bad=q3.shift(); qSet(q3); setStat('⚠️ รายการหนึ่งส่งไม่ได้ ('+((j&&j.error)||'')+') — ข้ามแล้ว'); if(q3.length)qFlush(); }
-     else { setStat('⚠️ ส่งไม่สำเร็จ จะลองใหม่อัตโนมัติ'); }
+     clearTimeout(to); flushing=false;
+     if(j&&j.ok){ var q2=qGet(); q2.shift(); qSet(q2); if(q2.length){ setStat('✅ ส่งแล้ว เหลือ '+q2.length); qFlush(); } else { setStat('✅ ส่งครบแล้ว'); refreshAfterSync(); } return; }
+     if(j&&j.busy){ setStat('⏳ เซิร์ฟเวอร์ไม่ว่าง จะลองใหม่'); qFlushLater(6000); return; }
+     if(j&&/bad session|bad code/i.test(j.error||'')){ setStat('🔒 สิทธิ์หมดอายุ — เปิดหน้าแรกเพื่อเข้าระบบใหม่'); return; }
+     /* ข้อผิดพลาดอื่น (สิทธิ์ Drive ยังไม่เปิด ฯลฯ) — ห้ามวนยิงซ้ำจนแอปหน่วง:
+        เอารายการนี้ออกจากคิวหลัก ไปพักใน dead แล้ว "เดินหน้าส่งรายการถัดไป" ทันที
+        → รอบข้อมูล (submit) จะไม่ค้างเพราะรูปติด และเซิร์ฟเวอร์ไม่โดนถล่มทุก 30 วิ */
+     var q3=qGet(); var bad=q3.shift(); qSet(q3);
+     bad.tries=(bad.tries||0)+1; bad.lastErr=(j&&j.error)||'?';
+     deadPush(bad);
+     setStat('⚠️ ส่ง'+(bad.type==='photo'?'รูป':'ข้อมูล')+'ไม่ได้ ('+String(bad.lastErr).slice(0,40)+') — พักไว้ ส่งรายการอื่นต่อ');
+     if(qGet().length)qFlush(); else refreshAfterSync();
    })
-   .catch(function(){ flushing=false; setStat('📴 ออฟไลน์ — จะส่งให้เองเมื่อมีเน็ต'); });
+   .catch(function(){ clearTimeout(to); flushing=false; setStat('📴 ออฟไลน์/คำขอค้าง — จะลองใหม่เมื่อมีเน็ต'); });
 }
-window.addEventListener('online',qFlush);
-setInterval(qFlush,30000);
+window.addEventListener('online',function(){ requeueDead(); qFlush(); });
+setInterval(qFlush,30000);   // วนเฉพาะคิวหลัก · dead ไม่ถูกแตะ (ลองใหม่ตอนเปิดแอป/ออนไลน์ใหม่เท่านั้น)
 
 function setStat(t){ document.getElementById('stat').textContent=t; }
 
@@ -384,16 +399,19 @@ function docInit(){
   document.getElementById('btnTlBack').onclick=function(){ showTl(false); };
   loadBoard();
 }
+var boardBusy=false;
 function loadBoard(){
-  if(!serverReady){ return; }
-  setStat('กำลังโหลดกระดาน…');
-  fetch(API+'?field=day&d='+boardDay+'&'+authQ()+'&t='+Date.now())
+  if(!serverReady||boardBusy){ return; }
+  boardBusy=true; setStat('กำลังโหลดกระดาน…');
+  var ctl=new AbortController(), to=setTimeout(function(){ try{ctl.abort();}catch(_){}} ,20000);
+  fetch(API+'?field=day&d='+boardDay+'&'+authQ()+'&t='+Date.now(),{signal:ctl.signal})
    .then(function(r){return r.json();})
    .then(function(j){
+     clearTimeout(to); boardBusy=false;
      if(!j||!j.ok){ setStat('โหลดไม่ได้: '+((j&&j.error)||'?')); return; }
      paintBoard(j); setStat('อัปเดต '+new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}));
    })
-   .catch(function(){ setStat('📴 เชื่อมต่อไม่ได้'); });
+   .catch(function(){ clearTimeout(to); boardBusy=false; setStat('📴 เชื่อมต่อไม่ได้/ช้า — กด ⟳ ลองใหม่'); });
 }
 function paintBoard(j){
   var byKey={}; j.logs.forEach(function(l){ byKey[l.farm+'|'+l.house+'|'+l.round]=l; });
@@ -466,9 +484,11 @@ function openTimeline(f,hi){
   showTl(true);
   var body=document.getElementById('tlBody');
   body.innerHTML='<div class="muted">กำลังโหลด…</div>';
-  fetch(API+'?field=house&fid='+encodeURIComponent(f.fid)+'&house='+encodeURIComponent(h.name)+'&days=14&'+authQ()+'&t='+Date.now())
+  var ctl=new AbortController(), to=setTimeout(function(){ try{ctl.abort();}catch(_){}} ,20000);
+  fetch(API+'?field=house&fid='+encodeURIComponent(f.fid)+'&house='+encodeURIComponent(h.name)+'&days=14&'+authQ()+'&t='+Date.now(),{signal:ctl.signal})
    .then(function(r){return r.json();})
    .then(function(j){
+     clearTimeout(to);
      if(!j||!j.ok){ body.innerHTML='<div class="muted">โหลดไม่ได้: '+esc((j&&j.error)||'?')+'</div>'; return; }
      if(!j.logs.length){ body.innerHTML='<div class="muted">ยังไม่มีบันทึกของเล้านี้</div>'; return; }
      body.innerHTML=j.logs.map(function(l){
@@ -487,7 +507,7 @@ function openTimeline(f,hi){
        return '<div class="ev"><b>'+esc(l.day)+' · รอบ'+esc(l.round)+'</b> <span class="dim">อายุ '+(l.age||'—')+' วัน · '+esc(l.who)+'</span><div class="kv">'+rows.join(' ')+'</div></div>';
      }).join('');
    })
-   .catch(function(){ body.innerHTML='<div class="muted">เชื่อมต่อไม่ได้</div>'; });
+   .catch(function(){ clearTimeout(to); body.innerHTML='<div class="muted">เชื่อมต่อไม่ได้/ช้า — ปิดแล้วกดดูใหม่</div>'; });
 }
 function showTl(on){
   document.getElementById('tlView').classList.toggle('hide',!on);
@@ -505,7 +525,7 @@ function showTl(on){
   probeServer(function(){
     if(serverReady===false)document.getElementById('notReady').classList.remove('hide');
     if(isStaff())staffInit(); else docInit();
-    if(serverReady)qFlush();
+    if(serverReady){ requeueDead(); qFlush(); }   // ลองส่งรายการที่พักไว้ใหม่ "ครั้งเดียว" ตอนเปิดแอป (เช่น หลังหมอเปิดสิทธิ์ Drive)
   });
   /* พนักงานก็เปิดไทม์ไลน์เล้าตัวเองได้จากปุ่มในกระดาน — แต่มุมมองหลักคือฟอร์ม */
 })();
