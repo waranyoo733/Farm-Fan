@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>รายงานประจำวัน — PPF Smart Farm</title>
+<!--
+  สรุปผู้บริหาร · Diary Report วันนี้ — แดชบอร์ดเน้นตัวเลขการผลิต ไม่รกตา
+  · ตัวเลขทุกตัวคำนวณจากข้อมูลจริงด้วยสูตรใน calc-core.js (bw/aliveAt/cumDead/FCR_STD/CUMF_STD)
+    ไม่มีตัวเลขสมมติ — ช่องที่ระบบไม่มีข้อมูล (นน.จริง/FCR จริง) จะไม่แสดง หรือกำกับว่า "มาตรฐาน"
+  · บันทึกวันนี้ (รอบภาคสนาม + งานค้าง) ดึงจาก field API — ถ้าหลังบ้านยังไม่พร้อมก็ซ่อนส่วนนั้น
+  · palette: dark categorical + status ที่ผ่าน validator (dataviz skill)
+  · ADMIN เห็นทุกฟาร์ม · STAFF เห็นเฉพาะฟาร์มตัวเอง (ข้อมูลใน localStorage ถูกกรองจากเซิร์ฟเวอร์แล้ว)
+-->
+<style>
+:root{
+  --bg:#0B1120; --card:#111C2E; --card2:#0E1728; --ink:#F8FAFC; --sec:#94A3B8; --mut:#64748B;
+  --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+  --blue:#3987e5; --aqua:#199e70; --orange:#d95926; --yellow:#c98500; --magenta:#d55181; --violet:#9085e9; --red:#e66767;
+  --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,'Segoe UI','Leelawadee UI',Tahoma,sans-serif;background:
+  radial-gradient(1100px 500px at 12% -8%,rgba(57,135,229,.14),transparent 60%),
+  radial-gradient(900px 500px at 100% 0,rgba(25,158,112,.10),transparent 55%),var(--bg);
+  color:var(--ink);padding:16px 16px 48px;min-height:100vh;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.head h1{font-size:22px;font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:9px}
+.head .date{font-size:13.5px;color:var(--sec);margin-top:3px;font-weight:500}
+.head .role{font-size:11px;font-weight:800;color:var(--blue);background:rgba(57,135,229,.15);border:1px solid rgba(57,135,229,.35);border-radius:99px;padding:3px 11px;vertical-align:middle}
+select,.seg{font-family:inherit;background:var(--card);color:var(--ink);border:1px solid var(--line2);border-radius:11px;padding:9px 13px;font-size:14px;outline:none;cursor:pointer}
+.muted{color:var(--mut)}.sec{color:var(--sec)}
+.stat{color:var(--stat,var(--ink))}
+/* ── KPI hero ── */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.kpi{position:relative;border-radius:18px;padding:16px 16px 15px;background:linear-gradient(160deg,var(--k1),var(--k2));overflow:hidden;box-shadow:0 8px 26px rgba(0,0,0,.32)}
+.kpi:before{content:'';position:absolute;right:-24px;top:-24px;width:96px;height:96px;border-radius:50%;background:rgba(255,255,255,.10)}
+.kpi .lb{font-size:12.5px;font-weight:700;opacity:.92;display:flex;align-items:center;gap:6px;position:relative}
+.kpi .v{font-size:32px;font-weight:800;line-height:1.05;margin-top:8px;letter-spacing:.5px;font-variant-numeric:tabular-nums;position:relative}
+.kpi .u{font-size:14px;font-weight:700;opacity:.8}
+.kpi .sub{font-size:12px;opacity:.9;margin-top:4px;position:relative;font-weight:600}
+.k-alive{--k1:#1d4ed8;--k2:#2563a8;color:#fff}
+.k-surv{--k1:#0f7a52;--k2:#177e4d;color:#fff}
+.k-dead{--k1:#a13a2c;--k2:#8f3030;color:#fff}
+.k-catch{--k1:#8a5a00;--k2:#7a5410;color:#fff}
+/* ── section ── */
+.sec-t{font-size:14px;font-weight:800;color:var(--sec);letter-spacing:.4px;margin:22px 4px 10px;text-transform:none;display:flex;align-items:center;gap:8px}
+.sec-t:before{content:'';width:4px;height:15px;border-radius:3px;background:var(--blue)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px}
+.grid2{display:grid;grid-template-columns:1.35fr 1fr;gap:12px}
+/* ── diary ── */
+.diary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.dtile{background:var(--card2);border:1px solid var(--line);border-radius:13px;padding:12px 13px}
+.dtile .n{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+.dtile .l{font-size:12px;color:var(--sec);margin-top:2px;font-weight:600}
+.tasks .row{display:flex;gap:9px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}
+.tasks .row:last-child{border-bottom:0}
+.dot{width:9px;height:9px;border-radius:50%;margin-top:5px;flex:0 0 auto}
+.pill{font-size:10.5px;font-weight:800;border-radius:6px;padding:2px 7px;white-space:nowrap}
+/* ── table ── */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:9px 8px;text-align:right;white-space:nowrap}
+th{color:var(--mut);font-weight:700;font-size:11.5px;border-bottom:1px solid var(--line2);text-align:right}
+th.l,td.l{text-align:left}
+td{border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+tbody tr.tot td{font-weight:800;border-top:2px solid var(--line2);border-bottom:0;color:var(--ink)}
+.bar{height:7px;border-radius:4px;background:rgba(255,255,255,.09);overflow:hidden;min-width:54px;display:inline-block;vertical-align:middle;width:64px}
+.bar > i{display:block;height:100%;border-radius:4px}
+.badge{font-size:11px;font-weight:800;border-radius:7px;padding:2px 8px}
+/* ── mortality chart ── */
+.chart{width:100%;height:150px;display:block}
+.lgd{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--sec);margin-top:8px}
+.lgd b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+.empty{color:var(--mut);font-size:13px;text-align:center;padding:26px 0}
+.foot{text-align:center;color:var(--mut);font-size:11.5px;margin-top:22px}
+@media(max-width:760px){
+  .kpis{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+  .kpi .v{font-size:27px}
+  .tblwrap{overflow-x:auto}
+  table{min-width:560px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <h1>📈 รายงานประจำวัน <span id="role" class="role"></span></h1>
+      <div class="date" id="today"></div>
+    </div>
+    <select id="farmSel"><option value="*">ทุกฟาร์ม</option></select>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="sec-t" id="diaryHead">📋 บันทึกวันนี้</div>
+  <div class="card" id="diaryCard"><div class="empty" id="diaryEmpty">กำลังโหลด…</div></div>
+
+  <div class="grid2">
+    <div>
+      <div class="sec-t">🏭 ผลการผลิตรายฟาร์ม</div>
+      <div class="card tblwrap" id="prodCard"></div>
+    </div>
+    <div>
+      <div class="sec-t">🎯 กำหนดจับ (ใกล้สุด)</div>
+      <div class="card" id="catchCard"></div>
+    </div>
+  </div>
+
+  <div class="sec-t">💀 ไก่ตายรวม 14 วันล่าสุด</div>
+  <div class="card"><svg class="chart" id="mortChart" preserveAspectRatio="none"></svg>
+    <div class="lgd"><span><b style="background:var(--red)"></b>จำนวนตัวที่ตายต่อวัน (รวมทุกเล้าในขอบเขต)</span></div>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<script src="calc-core.js"></script>
+<script>
+'use strict';
+var TH_MON=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+var cfg=null, farms=[];
+try{ cfg=JSON.parse(localStorage.getItem('ppf_sync')||'null'); }catch(_){}
+try{ farms=JSON.parse(localStorage.getItem('ppf_farms_v3')||'[]'); }catch(_){}
+if(!Array.isArray(farms))farms=[];
+var isAdmin=!(cfg&&cfg.sid&&cfg.role==='STAFF');   // staff session = จำกัด · อื่น ๆ (รหัสรวม/admin) = เต็ม
+function nf(n){ return (Math.round(n)||0).toLocaleString('th-TH'); }
+function fmtDate(d){ return d.getDate()+' '+TH_MON[d.getMonth()]+' '+(d.getFullYear()+543); }
+function parseD(s){ var p=String(s||'').split('-'); return p.length===3?new Date(+p[0],+p[1]-1,+p[2]):null; }
+function dayKey(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+
+document.getElementById('role').textContent=isAdmin?'ผู้ดูแล':'พนักงาน';
+document.getElementById('today').textContent=fmtDate(new Date())+' · อัปเดต '+new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
+
+/* ── ตัวกรองฟาร์ม ── */
+var sel=document.getElementById('farmSel');
+farms.forEach(function(f){ var o=document.createElement('option'); o.value=f.fid||f.name; o.textContent=f.name; sel.appendChild(o); });
+if(farms.length===1){ sel.value=farms[0].fid||farms[0].name; sel.style.display='none'; }
+sel.onchange=paintAll;
+
+function scope(){ var v=sel.value; return v==='*'?farms:farms.filter(function(f){return (f.fid||f.name)===v;}); }
+
+/* ── คำนวณตัวเลขการผลิตจากสูตรจริง ── */
+function houseStat(h,f){
+  var age=+h.age||0, placed=+h.birds||0;
+  var alive=(typeof aliveAt==='function')?aliveAt(h,age):placed;
+  var deadCum=Math.max(0,placed-alive);
+  var deadToday=(h.dead&&age>0)?(+h.dead[age-1]||0):0;
+  var catchAge=+f.catchAge||42, toGo=catchAge-age;
+  return {age:age,placed:placed,alive:alive,deadCum:deadCum,deadToday:deadToday,
+          surv:placed>0?alive/placed*100:0, stdWt:(typeof bw==='function')?bw(age):0,
+          catchAge:catchAge,toGo:toGo};
+}
+function agg(list){
+  var t={placed:0,alive:0,deadCum:0,deadToday:0,houses:0,near:0,ageSum:0,wSum:0};
+  list.forEach(function(f){ (f.houses||[]).forEach(function(h){
+    var s=houseStat(h,f); t.placed+=s.placed; t.alive+=s.alive; t.deadCum+=s.deadCum; t.deadToday+=s.deadToday;
+    t.houses++; t.ageSum+=s.age; t.wSum+=s.stdWt*s.alive; if(s.toGo>=0&&s.toGo<=3)t.near++;
+  });});
+  t.surv=t.placed>0?t.alive/t.placed*100:0; t.avgAge=t.houses?t.ageSum/t.houses:0;
+  return t;
+}
+function survColor(p){ return p>=97?'var(--good)':p>=94?'var(--warn)':'var(--crit)'; }
+
+/* ── KPI ── */
+function paintKpis(t){
+  var loss=t.placed>0?(100-t.surv):0;
+  document.getElementById('kpis').innerHTML=
+    tile('k-alive','🐔 ไก่คงเหลือ',nf(t.alive),'ตัว','จากที่ลง '+nf(t.placed)+' ตัว')
+   +tile('k-surv','✅ อัตรารอด',t.surv.toFixed(1),'%','เสียหายสะสม '+loss.toFixed(1)+'%')
+   +tile('k-dead','💀 ตายวันนี้',nf(t.deadToday),'ตัว','สะสมทั้งรุ่น '+nf(t.deadCum)+' ตัว')
+   +tile('k-catch','🎯 ใกล้จับ',nf(t.near),'เล้า','ภายใน 3 วัน · '+t.houses+' เล้าทั้งหมด');
+}
+function tile(cls,lb,v,u,sub){
+  return '<div class="kpi '+cls+'"><div class="lb">'+lb+'</div>'
+    +'<div class="v">'+v+' <span class="u">'+u+'</span></div>'
+    +'<div class="sub">'+sub+'</div></div>';
+}
+
+/* ── ตารางผลิตรายฟาร์ม ── */
+function paintProd(list){
+  var rows='', T={placed:0,alive:0,deadCum:0};
+  list.forEach(function(f){
+    var s=agg([f]); T.placed+=s.placed; T.alive+=s.alive; T.deadCum+=s.deadCum;
+    var lossPct=s.placed>0?(100-s.surv):0, w=Math.min(100,lossPct*8);
+    rows+='<tr><td class="l" style="font-weight:700">'+esc(f.name)+'</td>'
+      +'<td>'+s.houses+'</td>'
+      +'<td>'+Math.round(s.avgAge)+'</td>'
+      +'<td>'+nf(s.alive)+'</td>'
+      +'<td><span style="color:'+survColor(s.surv)+';font-weight:800">'+s.surv.toFixed(1)+'%</span></td>'
+      +'<td><span class="bar"><i style="width:'+w+'%;background:'+(lossPct>6?'var(--crit)':lossPct>3?'var(--warn)':'var(--aqua)')+'"></i></span> '+lossPct.toFixed(1)+'%</td></tr>';
+  });
+  var Tsurv=T.placed>0?T.alive/T.placed*100:0;
+  rows+='<tr class="tot"><td class="l">รวม</td><td></td><td></td><td>'+nf(T.alive)+'</td>'
+    +'<td style="color:'+survColor(Tsurv)+'">'+Tsurv.toFixed(1)+'%</td><td>'+(100-Tsurv).toFixed(1)+'%</td></tr>';
+  document.getElementById('prodCard').innerHTML=
+    '<table><thead><tr><th class="l">ฟาร์ม</th><th>เล้า</th><th>อายุ</th><th>คงเหลือ</th><th>รอด</th><th>เสียหาย</th></tr></thead><tbody>'+rows+'</tbody></table>';
+}
+
+/* ── กำหนดจับ ── */
+function paintCatch(list){
+  var arr=[];
+  list.forEach(function(f){ (f.houses||[]).forEach(function(h){
+    var s=houseStat(h,f); if(s.toGo>=0&&s.toGo<=10) arr.push({f:f.name,h:h.name,toGo:s.toGo,alive:s.alive,wt:s.stdWt});
+  });});
+  arr.sort(function(a,b){return a.toGo-b.toGo;});
+  if(!arr.length){ document.getElementById('catchCard').innerHTML='<div class="empty">ยังไม่มีเล้าที่ใกล้จับใน 10 วัน</div>'; return; }
+  var html='';
+  arr.slice(0,8).forEach(function(x){
+    var col=x.toGo<=1?'var(--crit)':x.toGo<=3?'var(--warn)':'var(--blue)';
+    html+='<div class="tasks"><div class="row"><span class="dot" style="background:'+col+'"></span>'
+      +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+esc(x.f)+' · '+esc(x.h)+'</div>'
+      +'<div class="sec" style="font-size:11.5px">คงเหลือ '+nf(x.alive)+' ตัว · นน.มาตรฐาน ~'+(x.wt/1000).toFixed(2)+' กก.</div></div>'
+      +'<span class="pill" style="background:rgba(255,255,255,.08);color:'+col+'">'+(x.toGo===0?'วันนี้':'อีก '+x.toGo+' วัน')+'</span></div></div>';
+  });
+  document.getElementById('catchCard').innerHTML=html;
+}
+
+/* ── กราฟไก่ตาย 14 วันตามปฏิทิน ── */
+function paintMort(list){
+  var today=new Date(); today.setHours(0,0,0,0);
+  var days=[], map={};
+  for(var i=13;i>=0;i--){ var d=new Date(today); d.setDate(d.getDate()-i); var k=dayKey(d); days.push({k:k,d:d,v:0}); map[k]=days[days.length-1]; }
+  list.forEach(function(f){ (f.houses||[]).forEach(function(h){
+    if(!h.dead||!h.placeDate)return; var pd=parseD(h.placeDate); if(!pd)return;
+    for(var idx=0;idx<h.dead.length;idx++){ var dv=+h.dead[idx]||0; if(!dv)continue;
+      var cd=new Date(pd); cd.setDate(cd.getDate()+idx); var k=dayKey(cd); if(map[k])map[k].v+=dv; }
+  });});
+  var max=Math.max(1,Math.max.apply(null,days.map(function(x){return x.v;})));
+  var W=700,H=150,pad=22,bw2=(W-pad*2)/days.length, svg='';
+  // baseline
+  svg+='<line x1="'+pad+'" y1="'+(H-18)+'" x2="'+(W-pad)+'" y2="'+(H-18)+'" stroke="var(--line2)" stroke-width="1"/>';
+  days.forEach(function(x,i){
+    var bh=x.v/max*(H-46), bx=pad+i*bw2+bw2*0.16, bwid=bw2*0.68, by=H-18-bh;
+    var col=x.v>=max&&max>1?'var(--crit)':'var(--red)';
+    svg+='<rect x="'+bx.toFixed(1)+'" y="'+by.toFixed(1)+'" width="'+bwid.toFixed(1)+'" height="'+Math.max(0,bh).toFixed(1)+'" rx="3" fill="'+col+'"><title>'+x.d.getDate()+' '+TH_MON[x.d.getMonth()]+' — ตาย '+nf(x.v)+' ตัว</title></rect>';
+    if(x.v>0)svg+='<text x="'+(bx+bwid/2).toFixed(1)+'" y="'+(by-4).toFixed(1)+'" fill="var(--sec)" font-size="9.5" text-anchor="middle" font-family="system-ui">'+x.v+'</text>';
+    if(i%2===0)svg+='<text x="'+(bx+bwid/2).toFixed(1)+'" y="'+(H-5)+'" fill="var(--mut)" font-size="9" text-anchor="middle" font-family="system-ui">'+x.d.getDate()+'</text>';
+  });
+  var el=document.getElementById('mortChart'); el.setAttribute('viewBox','0 0 '+W+' '+H); el.innerHTML=svg;
+}
+
+/* ── บันทึกวันนี้ (field API) ── */
+function paintDiary(list){
+  var card=document.getElementById('diaryCard');
+  if(!cfg||!cfg.url){ document.getElementById('diaryHead').style.display='none'; card.style.display='none'; return; }
+  var authq=cfg.sid?('ses='+encodeURIComponent(cfg.sid)):('code='+encodeURIComponent(cfg.code));
+  var today=dayKey(new Date());
+  var ctl=new AbortController(), to=setTimeout(function(){try{ctl.abort();}catch(_){}} ,15000);
+  fetch(cfg.url+'?field=day&d='+today+'&'+authq+'&t='+Date.now(),{signal:ctl.signal})
+   .then(function(r){return r.json();})
+   .then(function(j){
+     clearTimeout(to);
+     if(!j||!j.ok||j.logs===undefined){ document.getElementById('diaryHead').style.display='none'; card.style.display='none'; return; }
+     var fids={}; list.forEach(function(f){fids[f.fid]=1;});
+     var logs=j.logs.filter(function(l){return fids[l.farm];});
+     var tasks=j.tasks.filter(function(t){return fids[t.farm]&&t.status==='OPEN';});
+     var photos=j.photos.filter(function(p){return fids[p.farm];}).length;
+     // จำนวนรอบที่ควรมี: เล้าอายุ 1-7 = 3 รอบ, 8+ = 1 รอบ
+     var expect=0; list.forEach(function(f){(f.houses||[]).forEach(function(h){ expect+=((+h.age||0)<=7?3:1); });});
+     var doneKeys={}; logs.forEach(function(l){doneKeys[l.farm+'|'+l.house+'|'+l.round]=1;});
+     var done=Object.keys(doneKeys).length;
+     var fname={}; farms.forEach(function(f){fname[f.fid]=f.name;});
+     var h='<div class="diary">'
+       +'<div class="dtile"><div class="n" style="color:var(--blue)">'+done+' / '+expect+'</div><div class="l">รอบที่บันทึกวันนี้</div></div>'
+       +'<div class="dtile"><div class="n" style="color:'+(tasks.length?'var(--crit)':'var(--good)')+'">'+tasks.length+'</div><div class="l">งานค้างที่ต้องตาม</div></div>'
+       +'<div class="dtile"><div class="n" style="color:var(--aqua)">'+photos+'</div><div class="l">รูปหน้างานวันนี้</div></div></div>';
+     if(tasks.length){
+       h+='<div class="tasks">';
+       tasks.slice(0,6).forEach(function(t){
+         var col=t.source==='ผิวหนัง'?'var(--magenta)':t.source==='อุ้งเท้า'?'var(--orange)':t.source==='แกลบ'?'var(--yellow)':'var(--red)';
+         h+='<div class="row"><span class="dot" style="background:'+col+'"></span>'
+           +'<div style="flex:1"><div style="font-weight:700;font-size:13px">'+esc(fname[t.farm]||t.farm)+' · '+esc(t.house)+'</div>'
+           +'<div class="sec" style="font-size:11.5px">'+esc(t.detail)+'</div></div>'
+           +'<span class="pill" style="background:rgba(255,255,255,.07);color:'+col+'">'+esc(t.source)+'</span></div>';
+       });
+       if(tasks.length>6)h+='<div class="sec" style="font-size:12px;padding-top:8px">…และอีก '+(tasks.length-6)+' งาน</div>';
+       h+='</div>';
+     } else {
+       h+='<div style="color:var(--good);font-weight:700;font-size:13.5px;padding:4px 2px">✅ ไม่มีงานค้าง — ทุกเล้าปกติ</div>';
+     }
+     card.innerHTML=h;
+   })
+   .catch(function(){ clearTimeout(to); document.getElementById('diaryHead').style.display='none'; card.style.display='none'; });
+}
+
+function paintAll(){
+  var list=scope();
+  if(!list.length){ document.getElementById('kpis').innerHTML='<div class="empty" style="grid-column:1/-1">ยังไม่มีข้อมูลฟาร์มในเครื่อง — เปิดหน้าแรกให้ซิงค์ก่อน</div>'; return; }
+  paintKpis(agg(list)); paintProd(list); paintCatch(list); paintMort(list); paintDiary(list);
+  var tot=agg(farms);
+  document.getElementById('foot').textContent='PPF Smart Farm · '+farms.length+' ฟาร์ม · '+tot.houses+' เล้า · ตัวเลขคำนวณจากมาตรฐานสายพันธุ์ (นน./FCR เป็นค่ามาตรฐานอ้างอิง)';
+}
+paintAll();
+</script>
+</body>
+</html>

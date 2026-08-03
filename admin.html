@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>จัดการบัญชี — PPF Smart Farm</title>
+<!--
+  หน้าจัดการบัญชีสำหรับหมอ (ADMIN) — หมอเพิ่มพนักงาน/เปลี่ยนรหัสรวม/รีเซ็ต PIN เองได้ ไม่ต้องผ่านนักพัฒนา
+  ใช้ API users:* (list/create/resetpin/setname/disable/enable/logout) + setstaffcode ผ่าน sid(ADMIN) หรือรหัสแอดมิน
+  ⚠️ ห้ามใส่สตริงไทยใน onclick — ใช้ data-attr + event delegation (กฎข้อ 4 ใน handoff)
+  สิทธิ์บังคับที่เซิร์ฟเวอร์: STAFF เรียก users:* ไม่ผ่าน (เซิร์ฟเวอร์ปฏิเสธ) — หน้านี้แค่ซ่อน UI ให้เรียบร้อย
+-->
+<style>
+:root{
+  --bg:#0B1120;--card:#111C2E;--card2:#0E1728;--ink:#F8FAFC;--sec:#94A3B8;--mut:#64748B;
+  --line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.14);
+  --brand:#3987e5;--good:#0ca30c;--warn:#fab219;--crit:#d03b3b;--aqua:#199e70;--violet:#9085e9;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,'Segoe UI','Leelawadee UI',Tahoma,sans-serif;background:
+  radial-gradient(900px 420px at 10% -6%,rgba(57,135,229,.12),transparent 60%),var(--bg);
+  color:var(--ink);padding:16px 16px 48px;min-height:100vh;-webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-size:21px;font-weight:800;display:flex;align-items:center;gap:9px;margin-bottom:4px}
+.sub{font-size:13px;color:var(--sec);margin-bottom:18px}
+.sec-t{font-size:14px;font-weight:800;color:var(--sec);letter-spacing:.3px;margin:20px 4px 10px;display:flex;align-items:center;gap:8px}
+.sec-t:before{content:'';width:4px;height:15px;border-radius:3px;background:var(--brand)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:6px}
+label{display:block;font-size:12.5px;color:var(--sec);margin-bottom:5px;font-weight:600}
+input,select{width:100%;font-family:inherit;background:var(--card2);color:var(--ink);border:1px solid var(--line2);border-radius:11px;padding:11px 13px;font-size:15px;outline:none}
+input:focus,select:focus{border-color:var(--brand)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:11px}
+.btn{font-family:inherit;border:0;border-radius:11px;padding:12px 18px;font-size:14.5px;font-weight:700;cursor:pointer;background:var(--brand);color:#04211f}
+.btn.g{background:var(--good);color:#02240a}
+.btn.sm{padding:7px 12px;font-size:12.5px;border-radius:9px}
+.btn.ghost{background:var(--card2);color:var(--ink);border:1px solid var(--line2)}
+.btn.warn{background:transparent;border:1px solid var(--warn);color:var(--warn)}
+.btn.danger{background:transparent;border:1px solid var(--crit);color:var(--crit)}
+.btn[disabled]{opacity:.5;cursor:default}
+.hint{font-size:12px;color:var(--mut);margin-top:8px;line-height:1.6}
+.stat{font-size:13px;margin-top:10px;min-height:18px}
+.stat.ok{color:var(--good)}.stat.err{color:var(--crit)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{color:var(--mut);font-size:11.5px;font-weight:700}
+tr:last-child td{border-bottom:0}
+.tag{font-size:10.5px;font-weight:800;border-radius:6px;padding:2px 8px;white-space:nowrap}
+.tag.admin{background:rgba(144,133,233,.18);color:var(--violet)}
+.tag.staff{background:rgba(25,158,112,.18);color:var(--aqua)}
+.tag.off{background:rgba(208,59,59,.16);color:var(--crit)}
+.acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.tblwrap{overflow-x:auto}
+.locked{text-align:center;padding:60px 20px;color:var(--sec)}
+.locked .ic{font-size:44px;margin-bottom:12px}
+.info{background:rgba(57,135,229,.08);border:1px solid rgba(57,135,229,.25);border-radius:12px;padding:12px 14px;font-size:12.5px;color:var(--sec);line-height:1.7}
+.info b{color:var(--ink)}
+@media(max-width:640px){.row{grid-template-columns:1fr}table{min-width:520px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>👥 จัดการบัญชีผู้ใช้</h1>
+  <div class="sub" id="sub">บัญชีพนักงานและผู้ดูแล · เพิ่ม/แก้ไข/ปิดได้เอง</div>
+
+  <div id="lockView" class="card locked" style="display:none">
+    <div class="ic">🔒</div>
+    <div style="font-weight:700;font-size:16px;color:var(--ink)">เฉพาะผู้ดูแลระบบ</div>
+    <div style="margin-top:6px">เข้าสู่ระบบด้วยรหัสผู้ดูแล (หมอวรัญญู) เพื่อจัดการบัญชี</div>
+  </div>
+
+  <div id="adminView" style="display:none">
+    <!-- รหัสรวมพนักงาน -->
+    <div class="sec-t">🔑 รหัสเข้าใช้แบบพนักงาน (รหัสรวม)</div>
+    <div class="card">
+      <div class="info" style="margin-bottom:12px">พนักงานเข้าระบบด้วย <b>ชื่อตัวเอง + รหัสนี้ + ชื่อฟาร์ม</b> → เห็นเฉพาะฟาร์มตัวเอง ดูอย่างเดียว · เปลี่ยนรหัสเมื่อไหร่ พนักงานทุกคนต้องใช้รหัสใหม่</div>
+      <div class="row">
+        <div><label>รหัสรวม (ตัวเลข 4–8 หลัก)</label><input id="scInput" type="text" inputmode="numeric" placeholder="เช่น 1234"></div>
+        <div style="display:flex;align-items:flex-end"><button class="btn g" id="scBtn" style="width:100%">บันทึกรหัสพนักงาน</button></div>
+      </div>
+      <div class="stat" id="scStat"></div>
+    </div>
+
+    <!-- เพิ่มบัญชีส่วนตัว -->
+    <div class="sec-t">➕ เพิ่มบัญชีส่วนตัว (PIN เฉพาะคน)</div>
+    <div class="card">
+      <div class="info" style="margin-bottom:12px">ใช้เมื่ออยากให้ <b>บางคนมี PIN ส่วนตัว</b> (ปลอดภัยกว่ารหัสรวม) หรือเพิ่ม <b>ผู้ดูแล</b> คนที่สอง · ชื่อผู้ใช้เป็นภาษาอังกฤษ/ตัวเลข พิมพ์ง่ายบนมือถือ</div>
+      <div class="row">
+        <div><label>ชื่อผู้ใช้ (a-z 0-9)</label><input id="nUser" type="text" autocapitalize="none" placeholder="เช่น somchai"></div>
+        <div><label>ชื่อ-สกุล (แสดงในประวัติ)</label><input id="nName" type="text" placeholder="เช่น สมชาย ใจดี"></div>
+      </div>
+      <div class="row">
+        <div><label>PIN (ตัวเลข 6 หลัก)</label><input id="nPin" type="text" inputmode="numeric" maxlength="6" placeholder="เช่น 482619"></div>
+        <div><label>บทบาท</label><select id="nRole"><option value="STAFF">พนักงาน — ดูฟาร์มเดียว</option><option value="ADMIN">ผู้ดูแล — ทุกฟาร์ม แก้ได้</option></select></div>
+      </div>
+      <div class="row" id="farmRow">
+        <div><label>ฟาร์มที่ดูแล</label><select id="nFarm"></select></div>
+        <div style="display:flex;align-items:flex-end"><button class="btn" id="addBtn" style="width:100%">สร้างบัญชี</button></div>
+      </div>
+      <div class="stat" id="addStat"></div>
+    </div>
+
+    <!-- รายชื่อบัญชี -->
+    <div class="sec-t">📋 บัญชีทั้งหมด <span id="uCount" class="sec" style="font-weight:400"></span></div>
+    <div class="card tblwrap">
+      <table><thead><tr><th>ชื่อผู้ใช้</th><th>ชื่อ-สกุล</th><th>บทบาท</th><th>ฟาร์ม</th><th>เข้าล่าสุด</th><th></th></tr></thead>
+      <tbody id="uBody"><tr><td colspan="6" style="text-align:center;color:var(--mut);padding:22px">กำลังโหลด…</td></tr></tbody></table>
+    </div>
+    <div class="hint">💡 บัญชี "รหัสรวม" (พนักงานที่เข้าด้วยรหัส 1234) เป็นการเข้าชั่วคราว จะไม่แสดงในตารางนี้ · ตารางนี้แสดงเฉพาะบัญชีส่วนตัวที่มี PIN</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+var cfg=null, farms=[];
+try{ cfg=JSON.parse(localStorage.getItem('ppf_sync')||'null'); }catch(_){}
+try{ farms=JSON.parse(localStorage.getItem('ppf_farms_v3')||'[]'); }catch(_){}
+if(!Array.isArray(farms))farms=[];
+var API=(cfg&&cfg.url)||'';
+var isAdmin=!!(cfg&&(cfg.code||cfg.sid))&&!(cfg.sid&&cfg.role==='STAFF');   // staff session = ไม่ใช่แอดมิน
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function authFields(o){ o=o||{}; if(cfg.sid&&cfg.role!=='STAFF')o.sid=cfg.sid; else o.code=cfg.wcode||cfg.code; if(cfg.who)o.who=cfg.who; return o; }
+function post(body,cb){
+  var ctl=new AbortController(), to=setTimeout(function(){try{ctl.abort();}catch(_){}} ,20000);
+  fetch(API,{method:'POST',body:JSON.stringify(authFields(body)),signal:ctl.signal})
+   .then(function(r){return r.json();}).then(function(j){clearTimeout(to);cb(j);})
+   .catch(function(){clearTimeout(to);cb({ok:false,error:'เชื่อมต่อไม่ได้/ช้า'});});
+}
+function setStat(id,msg,cls){ var e=document.getElementById(id); e.textContent=msg||''; e.className='stat'+(cls?(' '+cls):''); }
+
+if(!isAdmin||!API){ document.getElementById('lockView').style.display='block'; }
+else {
+  document.getElementById('adminView').style.display='block';
+  init();
+}
+
+function init(){
+  // farm dropdown
+  var fs=document.getElementById('nFarm');
+  farms.forEach(function(f){ var o=document.createElement('option'); o.value=f.fid; o.textContent=f.name+' ('+f.fid+')'; fs.appendChild(o); });
+  // role toggles farm row
+  document.getElementById('nRole').onchange=function(){ document.getElementById('farmRow').style.opacity=this.value==='ADMIN'?'.5':'1'; document.getElementById('nFarm').disabled=this.value==='ADMIN'; };
+  document.getElementById('scBtn').onclick=saveStaffCode;
+  document.getElementById('addBtn').onclick=addUser;
+  document.getElementById('uBody').addEventListener('click',onTableClick);
+  loadUsers();
+  // show current staff code hint (ไม่ดึงรหัสจริงมาโชว์ — เซิร์ฟเวอร์ไม่ส่งกลับ เพื่อความปลอดภัย)
+}
+
+function saveStaffCode(){
+  var v=(document.getElementById('scInput').value||'').trim();
+  if(!/^\d{4,8}$/.test(v)){ setStat('scStat','รหัสต้องเป็นตัวเลข 4–8 หลัก','err'); return; }
+  var b=document.getElementById('scBtn'); b.disabled=true; setStat('scStat','กำลังบันทึก…');
+  post({users:'setstaffcode',staffcode:v},function(j){
+    b.disabled=false;
+    if(j&&j.ok){ setStat('scStat','✅ บันทึกแล้ว — แจ้งพนักงานใช้รหัสใหม่: '+v,'ok'); document.getElementById('scInput').value=''; }
+    else setStat('scStat','ไม่สำเร็จ: '+((j&&j.error)||'?'),'err');
+  });
+}
+
+function addUser(){
+  var u=(document.getElementById('nUser').value||'').trim();
+  var name=(document.getElementById('nName').value||'').trim();
+  var pin=(document.getElementById('nPin').value||'').trim();
+  var role=document.getElementById('nRole').value;
+  var farm=document.getElementById('nFarm').value;
+  if(!/^[A-Za-z0-9_.-]{3,20}$/.test(u)){ setStat('addStat','ชื่อผู้ใช้ต้องเป็น a-z 0-9 . _ - ยาว 3–20 ตัว','err'); return; }
+  if(!/^\d{6}$/.test(pin)){ setStat('addStat','PIN ต้องเป็นตัวเลข 6 หลัก','err'); return; }
+  var body={users:'create',user:u,name:name||u,pin:pin,role:role};
+  if(role!=='ADMIN'){ if(!farm){ setStat('addStat','เลือกฟาร์มก่อน','err'); return; } body.farm_ids=farm; }
+  var b=document.getElementById('addBtn'); b.disabled=true; setStat('addStat','กำลังสร้าง…');
+  post(body,function(j){
+    b.disabled=false;
+    if(j&&j.ok){
+      setStat('addStat','✅ สร้างบัญชี '+j.user+' แล้ว · PIN: '+pin+' (แจ้งเจ้าตัว)','ok');
+      document.getElementById('nUser').value=''; document.getElementById('nName').value=''; document.getElementById('nPin').value='';
+      loadUsers();
+    } else setStat('addStat','ไม่สำเร็จ: '+((j&&j.error)||'?'),'err');
+  });
+}
+
+var USERS=[];
+function loadUsers(){
+  post({users:'list'},function(j){
+    var tb=document.getElementById('uBody');
+    if(!j||!j.ok){ tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--crit);padding:22px">โหลดไม่ได้: '+esc((j&&j.error)||'?')+'</td></tr>'; return; }
+    USERS=j.users||[];
+    document.getElementById('uCount').textContent='· '+USERS.length+' บัญชี';
+    if(!USERS.length){ tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--mut);padding:22px">ยังไม่มีบัญชีส่วนตัว — เพิ่มด้านบน</td></tr>'; return; }
+    var fname={}; farms.forEach(function(f){fname[f.fid]=f.name;});
+    tb.innerHTML=USERS.map(function(u,i){
+      var off=u.status!=='ACTIVE';
+      var roleTag=u.role==='ADMIN'?'<span class="tag admin">ผู้ดูแล</span>':'<span class="tag staff">พนักงาน</span>';
+      var ll=u.last_login?String(u.last_login).slice(0,10):'—';
+      return '<tr style="'+(off?'opacity:.55':'')+'"><td style="font-weight:700">'+esc(u.user)+(off?' <span class="tag off">ปิด</span>':'')+'</td>'
+        +'<td>'+esc(u.name||'—')+'</td><td>'+roleTag+'</td>'
+        +'<td>'+(u.role==='ADMIN'?'ทุกฟาร์ม':esc(fname[u.farms]||u.farms||'—'))+'</td>'
+        +'<td class="sec">'+esc(ll)+'</td>'
+        +'<td><div class="acts">'
+          +'<button class="btn sm ghost" data-a="pin" data-i="'+i+'">รีเซ็ต PIN</button>'
+          +(off?'<button class="btn sm g" data-a="enable" data-i="'+i+'">เปิด</button>'
+               :'<button class="btn sm warn" data-a="disable" data-i="'+i+'">ปิด</button>')
+          +'<button class="btn sm danger" data-a="logout" data-i="'+i+'">ออกทุกเครื่อง</button>'
+        +'</div></td></tr>';
+    }).join('');
+  });
+}
+
+function onTableClick(e){
+  var b=e.target.closest('button[data-a]'); if(!b)return;
+  var u=USERS[+b.dataset.i]; if(!u)return; var a=b.dataset.a;
+  if(a==='pin'){
+    var np=prompt('ตั้ง PIN ใหม่ให้ '+u.user+' (ตัวเลข 6 หลัก):');
+    if(np===null)return; np=np.trim();
+    if(!/^\d{6}$/.test(np)){ alert('PIN ต้องเป็นตัวเลข 6 หลัก'); return; }
+    post({users:'resetpin',user:u.user,pin:np},function(j){ alert(j&&j.ok?('รีเซ็ต PIN ให้ '+u.user+' แล้ว · PIN ใหม่: '+np+'\n(ทุกเครื่องเดิมต้องล็อกอินใหม่)'):('ไม่สำเร็จ: '+((j&&j.error)||'?'))); loadUsers(); });
+  } else if(a==='disable'){
+    if(!confirm('ปิดบัญชี '+u.user+' ? เข้าระบบไม่ได้จนกว่าจะเปิดใหม่'))return;
+    post({users:'disable',user:u.user},function(j){ if(!(j&&j.ok))alert('ไม่สำเร็จ: '+((j&&j.error)||'?')); loadUsers(); });
+  } else if(a==='enable'){
+    post({users:'enable',user:u.user},function(j){ if(!(j&&j.ok))alert('ไม่สำเร็จ: '+((j&&j.error)||'?')); loadUsers(); });
+  } else if(a==='logout'){
+    if(!confirm('บังคับ '+u.user+' ออกจากระบบทุกเครื่อง ?'))return;
+    post({users:'logout',user:u.user},function(j){ alert(j&&j.ok?('ตัด '+u.user+' ออก '+(j.sessions_killed||0)+' เครื่องแล้ว'):('ไม่สำเร็จ: '+((j&&j.error)||'?'))); });
+  }
+}
+</script>
+</body>
+</html>
