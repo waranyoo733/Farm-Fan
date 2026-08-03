@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>ติดตามงานภาคสนาม — PPF Smart Farm</title>
+<!--
+  ระบบติดตามงานภาคสนาม (ตี5 / เที่ยง / บ่าย3) — ออกแบบตามรายงานสัตวบาลจริง 1:1
+  · พนักงาน (STAFF): ฟอร์มกรอกรอบ + รูป 8 หมวด + ออฟไลน์เฟิร์สต์ (ตี5 ในเล้าไม่มีเน็ต)
+  · หมอ (ADMIN/รหัสรวม): กระดานทุกฟาร์มทุกเล้า + งานค้าง + ไทม์ไลน์รายเล้า
+  · เกณฑ์เปิดงานค้างอัตโนมัติ (หมอเคาะ 2 ส.ค. 2569): แกลบ ≥3 · อุ้งเท้า ≥2 · พบรอยขีดข่วนผิวหนัง
+  · ข้อมูลอยู่ชีตแยก FIELD_LOG/TASKS/PHOTOS — ไม่แตะ farms_v3 เด็ดขาด (เพดาน 49,500 ตัวอักษร/ฟาร์ม)
+  ⚠️ ห้ามส่งสตริงไทยเข้า onclick — ใช้ dataset index + lookup เท่านั้น (กฎข้อ 4 ใน handoff)
+-->
+<style>
+:root{--bg:#0B1120;--panel:#111C2E;--panel2:#0D1526;--ink:#F8FAFC;--muted:#94A3B8;--dim:#64748B;
+--brand:#0EA5A4;--good:#34D399;--warn:#FCD34D;--bad:#F87171;--line:rgba(255,255,255,.1)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI','Leelawadee UI',Tahoma,system-ui,sans-serif;background:var(--bg);color:var(--ink);padding:12px 12px 90px;font-size:15px;line-height:1.55}
+h2{font-size:17px;margin:14px 0 8px}
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.top .ttl{font-size:18px;font-weight:700}
+.badge{font-size:11.5px;font-weight:700;border-radius:99px;padding:3px 10px;background:rgba(14,165,164,.15);color:var(--brand)}
+.badge.staff{background:rgba(52,211,153,.15);color:var(--good)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.muted{color:var(--muted);font-size:13px}.dim{color:var(--dim);font-size:12.5px}
+button{font-family:inherit;cursor:pointer;border:0;border-radius:10px}
+.btn{background:var(--brand);color:#04211F;font-weight:700;font-size:15px;padding:12px 18px;width:100%}
+.btn[disabled]{opacity:.5;cursor:default}
+.btn2{background:var(--panel2);color:var(--ink);border:1px solid var(--line);font-size:13.5px;padding:8px 14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:99px;padding:8px 14px;font-size:14px;cursor:pointer}
+.chip.on{background:rgba(14,165,164,.18);border-color:var(--brand);color:var(--ink);font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fld{margin-bottom:10px}
+.fld label{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.fld input,.fld textarea{width:100%;padding:11px 12px;font-size:16px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--ink);outline:none}
+.fld input:focus{border-color:var(--brand)}
+.unit{font-size:12px;color:var(--dim);margin-left:6px}
+.score{display:flex;gap:6px}
+.score b{flex:1;text-align:center;padding:10px 0;border-radius:10px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);font-size:16px;cursor:pointer;font-weight:600}
+.score b.on{background:rgba(14,165,164,.2);border-color:var(--brand);color:var(--ink)}
+.score b.on.lv3,.score b.on.lv4{background:rgba(248,113,113,.2);border-color:var(--bad)}
+.skin{display:flex;gap:8px}
+.skin b{flex:1;text-align:center;padding:12px 0;border-radius:10px;background:var(--panel2);border:1px solid var(--line);color:var(--muted);cursor:pointer;font-size:14.5px}
+.skin b.ok.on{background:rgba(52,211,153,.16);border-color:var(--good);color:var(--good);font-weight:700}
+.skin b.ng.on{background:rgba(248,113,113,.18);border-color:var(--bad);color:var(--bad);font-weight:700}
+.photos{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ph{position:relative;aspect-ratio:1;border:1px dashed var(--line);border-radius:10px;background:var(--panel2);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10.5px;color:var(--dim);cursor:pointer;overflow:hidden;text-align:center;padding:2px}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ph .tick{position:absolute;top:2px;right:4px;font-size:13px}
+.stat{position:fixed;left:0;right:0;bottom:0;background:var(--panel2);border-top:1px solid var(--line);padding:10px 14px;font-size:13px;color:var(--muted);z-index:50}
+.board table{width:100%;border-collapse:collapse;font-size:13px}
+.board th,.board td{padding:7px 6px;border-bottom:1px solid var(--line);text-align:center}
+.board th{color:var(--dim);font-weight:600;font-size:12px}
+.board td.h{text-align:left;font-weight:600}
+.ok{color:var(--good)}.miss{color:var(--dim)}.late{color:var(--warn)}.alert{color:var(--bad);font-weight:700}
+.task{border-left:3px solid var(--bad);background:var(--panel2);border-radius:8px;padding:9px 12px;margin-bottom:8px;font-size:13.5px}
+.task.closed{border-left-color:var(--good);opacity:.65}
+.task .meta{font-size:11.5px;color:var(--dim);margin-top:2px}
+.rowline{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.tl{border-left:2px solid var(--line);margin-left:8px;padding-left:14px}
+.tl .ev{margin-bottom:12px;position:relative}
+.tl .ev:before{content:'';position:absolute;left:-19px;top:5px;width:8px;height:8px;border-radius:50%;background:var(--brand)}
+.kv{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;margin-top:4px}
+.kv span{color:var(--muted)}.kv b{color:var(--ink);font-weight:600}
+.hide{display:none!important}
+.notice{background:rgba(252,211,77,.1);border:1px solid rgba(252,211,77,.35);border-radius:10px;padding:10px 12px;font-size:13px;color:var(--warn);margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="ttl">📋 ติดตามงานภาคสนาม</div>
+  <span id="roleBadge" class="badge">…</span>
+  <span id="qBadge" class="dim"></span>
+</div>
+
+<div id="notReady" class="notice hide">⏳ หลังบ้านยังไม่เปิดระบบภาคสนาม — รอผู้ดูแล deploy รุ่น v3.3 แล้วหน้านี้จะใช้ได้ทันที (ข้อมูลที่กรอกระหว่างนี้จะเก็บไว้ในเครื่องและส่งให้เองเมื่อระบบเปิด)</div>
+<div id="noAccess" class="notice hide">🔒 ยังไม่ได้เข้าสู่ระบบ — กลับไปหน้าแรกแล้วใส่รหัสก่อน</div>
+
+<!-- ═══════════ มุมมองพนักงาน: ฟอร์มกรอกรอบ ═══════════ -->
+<div id="staffView" class="hide">
+  <div class="card">
+    <div class="rowline"><h2 style="margin:0">บันทึกรอบ</h2><span id="fLabel" class="muted"></span></div>
+    <div class="fld" style="margin-top:10px"><label>เล้า</label><div id="houseChips" class="chips"></div></div>
+    <div class="fld"><label>รอบ</label><div id="roundChips" class="chips"></div></div>
+    <div class="dim" id="roundHint"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">🌡️ ค่าที่วัด</h2>
+    <div class="grid2">
+      <div class="fld"><label>อุณหภูมิหน้าเล้า <span class="unit">°C</span></label><input id="tFront" type="number" step="0.1" inputmode="decimal"></div>
+      <div class="fld"><label>อุณหภูมิท้ายเล้า <span class="unit">°C</span></label><input id="tBack" type="number" step="0.1" inputmode="decimal"></div>
+      <div class="fld"><label>ความชื้น <span class="unit">%</span></label><input id="rh" type="number" step="0.1" inputmode="decimal"></div>
+      <div class="fld"><label>หัววัดตู้อ่านได้ <span class="unit">°C · ไว้เทียบ Kestrel</span></label><input id="tCab" type="number" step="0.1" inputmode="decimal"></div>
+      <div class="fld"><label>แรงดันน้ำ <span class="unit">ml/นาที</span></label><input id="waterFlow" type="number" inputmode="numeric"></div>
+      <div class="fld"><label>แรงลม <span class="unit">ft/min</span></label><input id="wind" type="number" inputmode="numeric"></div>
+    </div>
+    <div id="tHint" class="dim"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">🐔 คะแนนสุขภาพ</h2>
+    <div class="fld"><label>อุ้งเท้า (0 = ไม่มีรอยแดง · 4 = แผลรุนแรง)</label><div class="score" id="scFoot"></div></div>
+    <div class="fld"><label>ผิวหนัง — เกณฑ์หมอ: ต้องไม่พบรอยขีดข่วนเลย</label>
+      <div class="skin" id="scSkin">
+        <b class="ok" data-v="ไม่พบ">✅ ไม่พบรอยขีดข่วน</b>
+        <b class="ng" data-v="พบ">⚠️ พบรอยขีดข่วน</b>
+      </div>
+      <div class="dim hide" id="skinWarn">⚠️ ระบบจะเปิดงานค้างอัตโนมัติ และต้องแนบรูปประกอบ</div>
+    </div>
+    <div class="fld"><label>แกลบ — หน้า / กลาง / ท้ายเล้า (0 = แห้งร่วนดี · 4 = แฉะจับแผ่น)</label>
+      <div class="score" id="scLit0"></div><div style="height:6px"></div>
+      <div class="score" id="scLit1"></div><div style="height:6px"></div>
+      <div class="score" id="scLit2"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">🌀 พัดลม & แพด</h2>
+    <div class="grid2">
+      <div class="fld"><label>พัดลมตามอุณหภูมิ <span class="unit">ตัว</span></label><input id="fanAuto" type="number" inputmode="numeric"></div>
+      <div class="fld"><label>พัดลมยืน <span class="unit">ตัว</span></label><input id="fanStand" type="number" inputmode="numeric"></div>
+      <div class="fld"><label>พัดลมเสริม <span class="unit">ตัว</span></label><input id="fanExtra" type="number" inputmode="numeric"></div>
+      <div class="fld"><label>ใช้งานไม่ได้ <span class="unit">ตัว</span></label><input id="fanBroken" type="number" inputmode="numeric"></div>
+      <div class="fld"><label>ปั๊มแพด ทำงาน <span class="unit">นาที</span></label><input id="padOn" type="number" step="0.5" inputmode="decimal"></div>
+      <div class="fld"><label>ปั๊มแพด หยุด <span class="unit">นาที</span></label><input id="padOff" type="number" step="0.5" inputmode="decimal"></div>
+    </div>
+    <div id="fanHint" class="dim"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">📷 รูปประกอบ (แตะช่องเพื่อถ่าย)</h2>
+    <div class="photos" id="photoGrid"></div>
+    <div class="dim" style="margin-top:6px">รูปย่ออัตโนมัติก่อนส่ง · ไม่มีเน็ตก็ถ่ายได้ ระบบส่งให้ทีหลัง</div>
+  </div>
+
+  <div class="card">
+    <div class="fld"><label>หมายเหตุ (ถ้ามี)</label><textarea id="note" rows="2"></textarea></div>
+    <button class="btn" id="btnSend">💾 บันทึกรอบนี้</button>
+    <div class="dim" id="sendHint" style="margin-top:8px;text-align:center"></div>
+  </div>
+</div>
+
+<!-- ═══════════ มุมมองหมอ: กระดานวันนี้ ═══════════ -->
+<div id="docView" class="hide">
+  <div class="card">
+    <div class="rowline">
+      <h2 style="margin:0">กระดานประจำวัน</h2>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="dayPick" type="date" style="padding:8px 10px;font-size:14px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--ink)">
+        <button class="btn2" id="btnReload">⟳ รีเฟรช</button>
+      </div>
+    </div>
+    <div class="dim" id="boardStat" style="margin-top:6px"></div>
+  </div>
+  <div id="taskWrap" class="card hide">
+    <h2 style="margin-top:0">🔴 งานค้าง <span id="taskCount"></span></h2>
+    <div id="taskList"></div>
+  </div>
+  <div id="boardWrap"></div>
+</div>
+
+<!-- ═══════════ ไทม์ไลน์รายเล้า (ทั้งสองบทบาท) ═══════════ -->
+<div id="tlView" class="hide">
+  <div class="card">
+    <div class="rowline"><h2 style="margin:0" id="tlTitle">ไทม์ไลน์</h2><button class="btn2" id="btnTlBack">← กลับ</button></div>
+    <div class="tl" id="tlBody" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<div class="stat" id="stat">กำลังเริ่มระบบ…</div>
+
+<script src="calc-core.js"></script>
+<script>
+'use strict';
+/* ── ค่าคงที่ ── */
+var ROUNDS=['ตี5','เที่ยง','บ่าย3'];
+var ROUND_WIN={'ตี5':[5,6],'เที่ยง':[11,13],'บ่าย3':[15,16]};   // ช่วงเวลาที่หมอเคาะ
+var PHOTO_CATS=['ตู้คอนโทรล','Kestrel อุณหภูมิ','Kestrel ความชื้น','Kestrel แรงลม','แกลบ','อาหารในมือ','แพด/ปั๊มน้ำ','น้ำนิปเปิ้ล'];
+var Q_KEY='ppf_field_queue', DRAFT_KEY='ppf_field_draft';
+var TASK_LITTER_MIN=3, TASK_FOOT_MIN=2;                          // ให้ตรงกับเซิร์ฟเวอร์ (เตือนก่อนส่ง)
+
+/* ── สภาพแวดล้อม: อ่าน syncCfg + ข้อมูลฟาร์มจากแอปหลัก (origin เดียวกัน) ── */
+var cfg=null, farms=[], role='', myFarms=null;
+try{ cfg=JSON.parse(localStorage.getItem('ppf_sync')||'null'); }catch(_){}
+try{ farms=JSON.parse(localStorage.getItem('ppf_farms_v3')||'[]'); }catch(_){}
+if(!Array.isArray(farms))farms=[];
+function hasAuth(){ return !!(cfg&&(cfg.sid||cfg.code)); }
+function isStaff(){ return !!(cfg&&cfg.sid&&cfg.role==='STAFF'); }
+function authQ(){ return cfg.sid?('ses='+encodeURIComponent(cfg.sid)):('code='+encodeURIComponent(cfg.code)); }
+function postAuth(b){ if(cfg.sid)b.sid=cfg.sid; else{ b.code=cfg.wcode||cfg.code; if(cfg.who)b.who=cfg.who; } return b; }
+var API=(cfg&&cfg.url)||'';
+function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+
+/* ── คิวออฟไลน์ ── */
+function qGet(){ try{ var q=JSON.parse(localStorage.getItem(Q_KEY)||'[]'); return Array.isArray(q)?q:[]; }catch(_){ return []; } }
+function qSet(q){ try{ localStorage.setItem(Q_KEY,JSON.stringify(q)); }catch(e){ setStat('⚠️ เครื่องเก็บรูปค้างไว้เยอะเกิน — ต่อเน็ตเพื่อส่งก่อน แล้วค่อยถ่ายเพิ่ม'); } qBadge(); }
+function qPush(item){ var q=qGet(); q.push(item); qSet(q); }
+function qBadge(){ var n=qGet().length; document.getElementById('qBadge').textContent=n?('📤 ค้างส่ง '+n):''; }
+var flushing=false;
+function qFlush(){
+  if(flushing||!navigator.onLine||!hasAuth())return;
+  var q=qGet(); if(!q.length)return;
+  flushing=true; setStat('📤 กำลังส่งข้อมูลค้าง ('+q.length+')…');
+  fetch(API,{method:'POST',body:JSON.stringify(q[0].body)})
+   .then(function(r){return r.json();})
+   .then(function(j){
+     flushing=false;
+     if(j&&j.ok){ var q2=qGet(); q2.shift(); qSet(q2); setStat('✅ ส่งแล้ว เหลือ '+q2.length); if(q2.length)qFlush(); else refreshAfterSync(); }
+     else if(j&&(j.busy)){ setStat('⏳ เซิร์ฟเวอร์ไม่ว่าง จะลองใหม่'); setTimeout(qFlush,4000); }
+     else if(j&&/bad session|bad code/i.test(j.error||'')){ setStat('🔒 สิทธิ์หมดอายุ — เปิดหน้าแรกเพื่อเข้าระบบใหม่'); }
+     else if(j&&/unknown field|no permission/i.test(j.error||'')){ var q3=qGet(); var bad=q3.shift(); qSet(q3); setStat('⚠️ รายการหนึ่งส่งไม่ได้ ('+((j&&j.error)||'')+') — ข้ามแล้ว'); if(q3.length)qFlush(); }
+     else { setStat('⚠️ ส่งไม่สำเร็จ จะลองใหม่อัตโนมัติ'); }
+   })
+   .catch(function(){ flushing=false; setStat('📴 ออฟไลน์ — จะส่งให้เองเมื่อมีเน็ต'); });
+}
+window.addEventListener('online',qFlush);
+setInterval(qFlush,30000);
+
+function setStat(t){ document.getElementById('stat').textContent=t; }
+
+/* ── ตรวจความพร้อมเซิร์ฟเวอร์ (รุ่นเก่าไม่รู้จัก field → ตอบ data ฟาร์มแทน logs) ── */
+var serverReady=null;
+function probeServer(cb){
+  fetch(API+'?field=day&d='+todayStr()+'&'+authQ()+'&t='+Date.now())
+   .then(function(r){return r.json();})
+   .then(function(j){ serverReady=!!(j&&j.ok&&j.logs!==undefined); cb(j); })
+   .catch(function(){ serverReady=false; cb(null); });
+}
+
+/* ═══════════ มุมมองพนักงาน ═══════════ */
+var selHouse=0, selRound=null, photoData={}, myFarm=null;
+function staffInit(){
+  document.getElementById('staffView').classList.remove('hide');
+  myFarm=farms[0]||null;
+  if(!myFarm){ setStat('ยังไม่มีข้อมูลฟาร์มในเครื่อง — เปิดหน้าแรกให้ซิงค์ก่อน'); return; }
+  document.getElementById('fLabel').textContent=myFarm.name;
+  var hc=document.getElementById('houseChips');
+  hc.innerHTML=myFarm.houses.map(function(h,i){ return '<span class="chip'+(i===0?' on':'')+'" data-i="'+i+'">'+esc(h.name)+'</span>'; }).join('');
+  hc.onclick=function(e){ var d=e.target.dataset.i; if(d===undefined)return; selHouse=+d;
+    hc.querySelectorAll('.chip').forEach(function(c,j){c.classList.toggle('on',j===selHouse);}); paintHints(); loadDraft(); };
+  var rc=document.getElementById('roundChips');
+  var now=new Date(), hr=now.getHours()+now.getMinutes()/60, def=0;
+  if(hr>=14)def=2; else if(hr>=9)def=1;                       // เดารอบจากเวลา — เปลี่ยนเองได้
+  selRound=ROUNDS[def];
+  rc.innerHTML=ROUNDS.map(function(r,i){ return '<span class="chip'+(i===def?' on':'')+'" data-i="'+i+'">'+r+'</span>'; }).join('');
+  rc.onclick=function(e){ var d=e.target.dataset.i; if(d===undefined)return; selRound=ROUNDS[+d];
+    rc.querySelectorAll('.chip').forEach(function(c,j){c.classList.toggle('on',j===+d);}); roundHint(); saveDraft(); };
+  roundHint();
+  mkScore('scFoot',5); mkScore('scLit0',5); mkScore('scLit1',5); mkScore('scLit2',5);
+  var sk=document.getElementById('scSkin');
+  sk.onclick=function(e){ var b=e.target.closest('b'); if(!b)return;
+    sk.querySelectorAll('b').forEach(function(x){x.classList.remove('on');}); b.classList.add('on');
+    document.getElementById('skinWarn').classList.toggle('hide', b.dataset.v!=='พบ'); saveDraft(); };
+  var pg=document.getElementById('photoGrid');
+  pg.innerHTML=PHOTO_CATS.map(function(c,i){ return '<div class="ph" data-i="'+i+'"><span>'+esc(c)+'</span></div>'; }).join('');
+  pg.onclick=function(e){ var d=e.target.closest('.ph'); if(!d)return; pickPhoto(+d.dataset.i); };
+  document.getElementById('btnSend').onclick=submitRound;
+  ['tFront','tBack','rh','tCab','waterFlow','wind','fanAuto','fanStand','fanExtra','fanBroken','padOn','padOff','note']
+    .forEach(function(id){ document.getElementById(id).addEventListener('input',function(){ paintHints(); saveDraft(); }); });
+  paintHints(); loadDraft(); qBadge();
+  setStat(navigator.onLine?'พร้อมบันทึก':'📴 ออฟไลน์ — กรอกได้ตามปกติ ระบบส่งให้เมื่อมีเน็ต');
+}
+function mkScore(id,n){
+  var el=document.getElementById(id);
+  el.innerHTML=Array.from({length:n},function(_,v){ return '<b class="lv'+v+'" data-v="'+v+'">'+v+'</b>'; }).join('');
+  el.onclick=function(e){ var b=e.target.closest('b'); if(!b)return;
+    el.querySelectorAll('b').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); saveDraft(); };
+}
+function scoreVal(id){ var b=document.querySelector('#'+id+' b.on'); return b?+b.dataset.v:null; }
+function skinVal(){ var b=document.querySelector('#scSkin b.on'); return b?b.dataset.v:null; }
+function roundHint(){
+  var w=ROUND_WIN[selRound];
+  document.getElementById('roundHint').textContent='ช่วงเวลารอบ'+selRound+': '+('0'+w[0]).slice(-2)+':00–'+('0'+w[1]).slice(-2)+':00 น.'+(ageOf()>=8?' · ไก่อายุ 8 วันขึ้นไป เก็บวันละ 1 รอบพอ':'');
+}
+function ageOf(){ var h=myFarm&&myFarm.houses[selHouse]; return h?(+h.age||0):0; }
+function paintHints(){
+  var age=ageOf(), tT=null;
+  try{ tT=targetT(age); }catch(_){}
+  var tf=parseFloat(document.getElementById('tFront').value), tb=parseFloat(document.getElementById('tBack').value);
+  var msg=[];
+  if(tT!=null)msg.push('เป้าอุณหภูมิอายุ '+age+' วัน = '+tT+'°C');
+  if(!isNaN(tf)&&tT!=null){ var d1=+(tf-tT).toFixed(1); if(Math.abs(d1)>=1)msg.push('หน้าเล้า '+(d1>0?'เกิน ':'ต่ำ ')+Math.abs(d1)+'°'); }
+  if(!isNaN(tb)&&tT!=null){ var d2=+(tb-tT).toFixed(1); if(Math.abs(d2)>=1)msg.push('ท้ายเล้า '+(d2>0?'เกิน ':'ต่ำ ')+Math.abs(d2)+'°'); }
+  if(!isNaN(tf)&&!isNaN(tb)&&Math.abs(tb-tf)>=1.5)msg.push('หน้า-ท้ายต่างกัน '+Math.abs(+(tb-tf).toFixed(1))+'° — เช็คการไหลของลม');
+  document.getElementById('tHint').textContent=msg.join(' · ');
+  var h=myFarm&&myFarm.houses[selHouse];
+  var fb=parseInt(document.getElementById('fanBroken').value);
+  document.getElementById('fanHint').textContent=(h?('พัดลมทั้งหมดของเล้านี้ '+(h.fans||'?')+' ตัว'):'')+((!isNaN(fb)&&fb>0)?' · ⚠️ มีพัดลมเสีย '+fb+' ตัว — ระบบจะเปิดงานแจ้งซ่อมให้':'');
+}
+/* ร่าง: กันข้อมูลหายตอนสลับแอป/แบตหมด — เก็บต่อ เล้า+รอบ+วัน */
+function draftKey(){ return todayStr()+'|'+selHouse+'|'+selRound; }
+function saveDraft(){
+  var all={}; try{ all=JSON.parse(localStorage.getItem(DRAFT_KEY)||'{}'); }catch(_){}
+  all[draftKey()]=collect(false);
+  try{ localStorage.setItem(DRAFT_KEY,JSON.stringify(all)); }catch(_){}
+}
+function loadDraft(){
+  var all={}; try{ all=JSON.parse(localStorage.getItem(DRAFT_KEY)||'{}'); }catch(_){}
+  var d=all[draftKey()]||{};
+  ['tFront','tBack','rh','tCab','waterFlow','wind','fanAuto','fanStand','fanExtra','fanBroken','padOn','padOff','note']
+    .forEach(function(id){ document.getElementById(id).value=(d[id]!==undefined&&d[id]!==null)?d[id]:''; });
+  setScore('scFoot',d.scoreFoot); setScore('scLit0',(d.scoreLitter||[])[0]); setScore('scLit1',(d.scoreLitter||[])[1]); setScore('scLit2',(d.scoreLitter||[])[2]);
+  document.querySelectorAll('#scSkin b').forEach(function(b){ b.classList.toggle('on',b.dataset.v===d.skin); });
+  document.getElementById('skinWarn').classList.toggle('hide',d.skin!=='พบ');
+  paintHints();
+}
+function setScore(id,v){ document.querySelectorAll('#'+id+' b').forEach(function(b){ b.classList.toggle('on',v!=null&&+b.dataset.v===+v); }); }
+function collect(strict){
+  function num(id){ var v=document.getElementById(id).value; return v===''?null:+v; }
+  return { tFront:num('tFront'), tBack:num('tBack'), rh:num('rh'), tCab:num('tCab'),
+    waterFlow:num('waterFlow'), wind:num('wind'),
+    scoreFoot:scoreVal('scFoot'), skin:skinVal(),
+    scoreLitter:[scoreVal('scLit0'),scoreVal('scLit1'),scoreVal('scLit2')],
+    fanAuto:num('fanAuto'), fanStand:num('fanStand'), fanExtra:num('fanExtra'), fanBroken:num('fanBroken'),
+    padOn:num('padOn'), padOff:num('padOff'),
+    note:document.getElementById('note').value.trim().slice(0,300)||null };
+}
+function pickPhoto(i){
+  var inp=document.createElement('input'); inp.type='file'; inp.accept='image/*'; inp.capture='environment';
+  inp.onchange=function(){
+    var f=inp.files&&inp.files[0]; if(!f)return;
+    var img=new Image(), rd=new FileReader();
+    rd.onload=function(){ img.onload=function(){
+      var MAX=1280, w=img.width, h=img.height;
+      if(w>MAX||h>MAX){ var k=MAX/Math.max(w,h); w=Math.round(w*k); h=Math.round(h*k); }
+      var cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      var url=cv.toDataURL('image/jpeg',.72);
+      photoData[i]=url.split(',')[1];
+      var ph=document.querySelector('#photoGrid .ph[data-i="'+i+'"]');
+      ph.innerHTML='<img src="'+url+'"><span class="tick">✅</span>';
+    }; img.src=rd.result; };
+    rd.readAsDataURL(f);
+  };
+  inp.click();
+}
+function submitRound(){
+  var d=collect(true), h=myFarm.houses[selHouse];
+  var missing=[];
+  if(d.tFront==null||d.tBack==null)missing.push('อุณหภูมิ');
+  if(d.scoreFoot==null)missing.push('อุ้งเท้า');
+  if(!d.skin)missing.push('ผิวหนัง');
+  if(d.scoreLitter.some(function(x){return x==null;}))missing.push('แกลบให้ครบ 3 จุด');
+  if(d.skin==='พบ'&&!Object.keys(photoData).length)missing.push('รูปประกอบ (พบรอยขีดข่วน ต้องมีรูป)');
+  if(missing.length){ alert('ยังขาด: '+missing.join(' · ')); return; }
+  var warn=[];
+  if(d.scoreFoot>=TASK_FOOT_MIN)warn.push('อุ้งเท้า '+d.scoreFoot);
+  if(d.scoreLitter.some(function(x){return x>=TASK_LITTER_MIN;}))warn.push('แกลบถึงเกณฑ์');
+  if(d.skin==='พบ')warn.push('ผิวหนังพบรอย');
+  if(d.fanBroken>0)warn.push('พัดลมเสีย '+d.fanBroken);
+  if(warn.length&&!confirm('รอบนี้มีเรื่องต้องตาม: '+warn.join(' · ')+'\nระบบจะเปิดงานค้างให้อัตโนมัติ — บันทึกเลยไหม?'))return;
+  var day=todayStr();
+  qPush({type:'submit', body:postAuth({field:'submit', day:day, farm:myFarm.fid, house:h.name, round:selRound, age:h.age||null, data:d})});
+  Object.keys(photoData).forEach(function(i){
+    qPush({type:'photo', body:postAuth({field:'photo', day:day, farm:myFarm.fid, house:h.name, round:selRound, cat:PHOTO_CATS[+i], b64:photoData[i], mime:'image/jpeg'})});
+  });
+  if(d.fanBroken>0)
+    qPush({type:'task', body:postAuth({field:'taskopen', day:day, farm:myFarm.fid, house:h.name, detail:'พัดลมใช้งานไม่ได้ '+d.fanBroken+' ตัว (แจ้งจากรอบ'+selRound+')'})});
+  photoData={};
+  document.getElementById('photoGrid').querySelectorAll('.ph').forEach(function(p,i){ p.innerHTML='<span>'+esc(PHOTO_CATS[i])+'</span>'; });
+  var all={}; try{ all=JSON.parse(localStorage.getItem(DRAFT_KEY)||'{}'); }catch(_){}
+  delete all[draftKey()]; try{ localStorage.setItem(DRAFT_KEY,JSON.stringify(all)); }catch(_){}
+  ['tFront','tBack','rh','tCab','waterFlow','wind','fanAuto','fanStand','fanExtra','fanBroken','padOn','padOff','note']
+    .forEach(function(id){ document.getElementById(id).value=''; });
+  setScore('scFoot',null); setScore('scLit0',null); setScore('scLit1',null); setScore('scLit2',null);
+  document.querySelectorAll('#scSkin b').forEach(function(b){b.classList.remove('on');});
+  setStat('💾 เก็บรอบ'+selRound+' '+h.name+' เข้าคิวแล้ว'+(navigator.onLine?' — กำลังส่ง':' — จะส่งเมื่อมีเน็ต'));
+  qFlush();
+}
+function refreshAfterSync(){ if(!isStaff())loadBoard(); }
+
+/* ═══════════ มุมมองหมอ ═══════════ */
+var boardDay='', tlFrom='doc';
+function docInit(){
+  document.getElementById('docView').classList.remove('hide');
+  boardDay=todayStr();
+  var dp=document.getElementById('dayPick'); dp.value=boardDay;
+  dp.onchange=function(){ boardDay=dp.value||todayStr(); loadBoard(); };
+  document.getElementById('btnReload').onclick=loadBoard;
+  document.getElementById('btnTlBack').onclick=function(){ showTl(false); };
+  loadBoard();
+}
+function loadBoard(){
+  if(!serverReady){ return; }
+  setStat('กำลังโหลดกระดาน…');
+  fetch(API+'?field=day&d='+boardDay+'&'+authQ()+'&t='+Date.now())
+   .then(function(r){return r.json();})
+   .then(function(j){
+     if(!j||!j.ok){ setStat('โหลดไม่ได้: '+((j&&j.error)||'?')); return; }
+     paintBoard(j); setStat('อัปเดต '+new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'}));
+   })
+   .catch(function(){ setStat('📴 เชื่อมต่อไม่ได้'); });
+}
+function paintBoard(j){
+  var byKey={}; j.logs.forEach(function(l){ byKey[l.farm+'|'+l.house+'|'+l.round]=l; });
+  var phCount={}; j.photos.forEach(function(p){ var k=p.farm+'|'+p.house; phCount[k]=(phCount[k]||0)+1; });
+  var openTasks=j.tasks.filter(function(t){return t.status==='OPEN';});
+  var tw=document.getElementById('taskWrap'), tl=document.getElementById('taskList');
+  document.getElementById('taskCount').textContent=openTasks.length?('('+openTasks.length+')'):'';
+  tw.classList.toggle('hide',!j.tasks.length);
+  var fname={}; farms.forEach(function(f){ fname[f.fid]=f.name; });
+  tl.innerHTML=j.tasks.map(function(t,i){
+    return '<div class="task'+(t.status==='OPEN'?'':' closed')+'">'
+     +'<div class="rowline"><div><b>'+esc(fname[t.farm]||t.farm)+' · '+esc(t.house)+'</b> — '+esc(t.detail)+'</div>'
+     +(t.status==='OPEN'?'<button class="btn2" data-close="'+i+'">ปิดงาน</button>':'<span class="ok">✓ ปิดแล้ว</span>')+'</div>'
+     +'<div class="meta">'+esc(t.id)+' · เปิดโดย '+esc(t.by)+' ('+esc(t.source)+') '+esc(String(t.ts).slice(0,16).replace('T',' '))
+     +(t.status!=='OPEN'?(' · ปิดโดย '+esc(t.closed_by)+(t.close_note?' — '+esc(t.close_note):'')):'')+'</div></div>';
+  }).join('');
+  tl.onclick=function(e){ var b=e.target.closest('[data-close]'); if(!b)return; closeTask(j.tasks[+b.dataset.close]); };
+  var host=document.getElementById('boardWrap'), html='';
+  farms.forEach(function(f){
+    var openHere=openTasks.filter(function(t){return t.farm===f.fid;}).length;
+    html+='<div class="card board"><div class="rowline"><h2 style="margin:0">'+esc(f.name)+'</h2>'
+      +(openHere?'<span class="alert">🔴 งานค้าง '+openHere+'</span>':'<span class="ok">ไม่มีงานค้าง</span>')+'</div>';
+    html+='<table><tr><th style="text-align:left">เล้า</th><th>อายุ</th>'+ROUNDS.map(function(r){return '<th>'+r+'</th>';}).join('')+'<th>อุณหภูมิ</th><th>รูป</th><th></th></tr>';
+    f.houses.forEach(function(h,hi){
+      var cells='', temp='—', tCls='miss';
+      ROUNDS.forEach(function(r){
+        var l=byKey[f.fid+'|'+h.name+'|'+r];
+        if(l){ cells+='<td class="ok">✓ '+esc(String(l.ts).slice(11,16))+'</td>'; }
+        else cells+='<td class="miss">—</td>';
+      });
+      for(var ri=ROUNDS.length-1;ri>=0;ri--){
+        var l2=byKey[f.fid+'|'+h.name+'|'+ROUNDS[ri]];
+        if(l2&&l2.data&&(l2.data.tFront!=null||l2.data.tBack!=null)){
+          var tv=l2.data.tBack!=null?l2.data.tBack:l2.data.tFront, tT=null;
+          try{ tT=targetT(l2.age||h.age||0); }catch(_){}
+          if(tT!=null){ var df=+(tv-tT).toFixed(1);
+            temp=tv+'° ('+(df>0?'+':'')+df+')'; tCls=Math.abs(df)>=2?'alert':(Math.abs(df)>=1?'late':'ok'); }
+          else { temp=tv+'°'; tCls='ok'; }
+          break;
+        }
+      }
+      var pk=phCount[f.fid+'|'+h.name]||0;
+      cells+='<td class="'+tCls+'">'+temp+'</td><td class="'+(pk?'ok':'miss')+'">'+(pk||'—')+'</td>';
+      cells+='<td><button class="btn2" data-tl="'+f.fid+'|'+hi+'" style="padding:4px 10px;font-size:12px">ดู</button></td>';
+      html+='<tr><td class="h">'+esc(h.name)+'</td><td>'+(h.age||'—')+'</td>'+cells+'</tr>';
+    });
+    html+='</table></div>';
+  });
+  host.innerHTML=html||'<div class="card muted">ยังไม่มีข้อมูลฟาร์มในเครื่อง — เปิดหน้าแรกให้ซิงค์ก่อน</div>';
+  host.onclick=function(e){ var b=e.target.closest('[data-tl]'); if(!b)return;
+    var pp=b.dataset.tl.split('|'), f=farms.find(function(x){return x.fid===pp[0];});
+    if(f)openTimeline(f,+pp[1]); };
+  var sent=j.logs.length, houses=farms.reduce(function(s,f){return s+f.houses.length;},0);
+  document.getElementById('boardStat').textContent=boardDay+' · ส่งแล้ว '+sent+' รอบ · '+houses+' เล้า · รูป '+j.photos.length;
+}
+function closeTask(t){
+  var note=prompt('ปิดงาน '+t.id+' — '+t.detail+'\n\nแก้อย่างไร (บันทึกไว้ในประวัติ):');
+  if(note===null)return;
+  fetch(API,{method:'POST',body:JSON.stringify(postAuth({field:'taskclose', id:t.id, note:note.trim()}))})
+   .then(function(r){return r.json();})
+   .then(function(j){ if(j&&j.ok){ setStat('✓ ปิดงาน '+t.id+' แล้ว'); loadBoard(); } else alert('ปิดไม่ได้: '+((j&&j.error)||'?')); })
+   .catch(function(){ alert('เชื่อมต่อไม่ได้'); });
+}
+
+/* ═══════════ ไทม์ไลน์รายเล้า ═══════════ */
+function openTimeline(f,hi){
+  var h=f.houses[hi];
+  tlFrom=isStaff()?'staff':'doc';
+  document.getElementById('tlTitle').textContent='📈 '+f.name+' · '+h.name;
+  showTl(true);
+  var body=document.getElementById('tlBody');
+  body.innerHTML='<div class="muted">กำลังโหลด…</div>';
+  fetch(API+'?field=house&fid='+encodeURIComponent(f.fid)+'&house='+encodeURIComponent(h.name)+'&days=14&'+authQ()+'&t='+Date.now())
+   .then(function(r){return r.json();})
+   .then(function(j){
+     if(!j||!j.ok){ body.innerHTML='<div class="muted">โหลดไม่ได้: '+esc((j&&j.error)||'?')+'</div>'; return; }
+     if(!j.logs.length){ body.innerHTML='<div class="muted">ยังไม่มีบันทึกของเล้านี้</div>'; return; }
+     body.innerHTML=j.logs.map(function(l){
+       var d=l.data||{}, tT=null; try{ tT=targetT(l.age||0); }catch(_){}
+       var rows=[];
+       if(d.tFront!=null)rows.push('<span>หน้า</span> <b>'+d.tFront+'°</b>');
+       if(d.tBack!=null)rows.push('<span>ท้าย</span> <b>'+d.tBack+'°</b>');
+       if(tT!=null)rows.push('<span>เป้า</span> <b>'+tT+'°</b>');
+       if(d.rh!=null)rows.push('<span>ชื้น</span> <b>'+d.rh+'%</b>');
+       if(d.wind!=null)rows.push('<span>ลม</span> <b>'+d.wind+' ft/min</b>');
+       if(d.scoreFoot!=null)rows.push('<span>อุ้งเท้า</span> <b'+(d.scoreFoot>=TASK_FOOT_MIN?' class="alert"':'')+'>'+d.scoreFoot+'</b>');
+       if(d.skin)rows.push('<span>ผิวหนัง</span> <b'+(d.skin==='พบ'?' class="alert"':'')+'>'+esc(d.skin)+'</b>');
+       if(Array.isArray(d.scoreLitter)&&d.scoreLitter.some(function(x){return x!=null;}))rows.push('<span>แกลบ</span> <b>'+d.scoreLitter.map(function(x){return x==null?'-':x;}).join('/')+'</b>');
+       if(d.fanBroken)rows.push('<span class="alert">พัดลมเสีย</span> <b class="alert">'+d.fanBroken+'</b>');
+       if(d.note)rows.push('<span>หมายเหตุ</span> <b>'+esc(d.note)+'</b>');
+       return '<div class="ev"><b>'+esc(l.day)+' · รอบ'+esc(l.round)+'</b> <span class="dim">อายุ '+(l.age||'—')+' วัน · '+esc(l.who)+'</span><div class="kv">'+rows.join(' ')+'</div></div>';
+     }).join('');
+   })
+   .catch(function(){ body.innerHTML='<div class="muted">เชื่อมต่อไม่ได้</div>'; });
+}
+function showTl(on){
+  document.getElementById('tlView').classList.toggle('hide',!on);
+  document.getElementById(isStaff()?'staffView':'docView').classList.toggle('hide',on);
+}
+/* esc() ใช้ของ calc-core.js — ห้ามประกาศซ้ำ: calc-core ประกาศเป็น const ระดับบนสุด
+   ถ้าประกาศ function esc ซ้ำอีกที่นี่ จะ SyntaxError ตายทั้งบล็อกเงียบ ๆ ทั้งหน้า */
+
+/* ═══════════ เริ่มระบบ ═══════════ */
+(function boot(){
+  var rb=document.getElementById('roleBadge');
+  if(!hasAuth()||!API){ rb.textContent='ไม่ได้เข้าระบบ'; document.getElementById('noAccess').classList.remove('hide'); setStat('—'); return; }
+  if(isStaff()){ rb.textContent='พนักงาน · '+(cfg.who||''); rb.className='badge staff'; }
+  else rb.textContent='ผู้ดูแล';
+  probeServer(function(){
+    if(serverReady===false)document.getElementById('notReady').classList.remove('hide');
+    if(isStaff())staffInit(); else docInit();
+    if(serverReady)qFlush();
+  });
+  /* พนักงานก็เปิดไทม์ไลน์เล้าตัวเองได้จากปุ่มในกระดาน — แต่มุมมองหลักคือฟอร์ม */
+})();
+</script>
+</body>
+</html>
