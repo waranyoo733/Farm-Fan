@@ -31,7 +31,22 @@ const maxWind=a=>a<=7?0.3:a<=14?0.7:a<=21?1.2:a<=28?1.8:a<=35?2.5:3.0;
 const targetWind=a=>a<=7?0.25:a<=14?0.5:a<=21?1.0:a<=28?1.75:a<=35?2.5:3.0;
 function vmaxRaw(fc,birds,fans,age){const reqAir=cfmkg(age)*(BW[D(age)]/1000)*birds;return Math.min(fans,Math.max(1,Math.ceil(fc>0?reqAir/fc:0)));}
 function vmaxCurve(fc,birds,fans,age){const MS=[7,14,21,28,35,42];const vals=[4];for(let k=1;k<6;k++)vals.push(Math.max(vals[k-1],vmaxRaw(fc,birds,fans,MS[k])));if(age<=7)return 4;if(age>=42)return vals[5];for(let k=0;k<5;k++)if(age<=MS[k+1]){const t=(age-MS[k])/(MS[k+1]-MS[k]);const ts=t*t*(3-2*t);return Math.round(vals[k]+ts*(vals[k+1]-vals[k]));}return vals[5];}
-const choke=a=>{const x=D(a);if(x<=6){const on=[0.5,0.6,0.7,0.7,0.8,0.8,0.6][x];return{on:on>0.6?1:on,off:[10,9,8,7,6,5,3][x]};}return{on:3,off:2};};
+/* ระยะห่างอุณหภูมิระหว่าง Step ออโต้ (°C) — ถอดจาก Excel ชีต Temp1200/Temp716 คอลัมน์ Diff (สองชีตตรงกัน)
+   ⚠️ หมอชี้ขาด 4 ส.ค. 2569: เดิมแอปใช้ +1/+2/+3 ตายตัว → ตอนไก่โตสั่งช้ากว่าตู้จริงเกือบ 2°
+   (วัน 21 แอปบอก Step4 ขึ้นที่ 30.6° แต่ตู้จริง 28.7°) ไก่โตทนร้อนน้อยลง สเต็ปจึงไล่ถี่ขึ้น
+   Step n เปิดที่ เป้า + (n-1)×diff · ปั๊ม/แพดยังเป็น เป้า+3 คงที่ (ตรวจแล้วทุกแถวในทั้งสองชีต) */
+const stepDiff=a=>{const x=D(a);return x<=6?1:x<=13?0.8:x<=20?0.6:x<=27?0.38:0.4;};
+const stepTemp=(a,n)=>+(targetT(a)+(n-1)*stepDiff(a)).toFixed(1);
+/* เวลาโช๊ค ทำ/พัก (นาที) · index = อายุไก่เป็นวัน
+   ⚠️ หมอชี้ขาด 4 ส.ค. 2569: แยกตารางตามขนาดเล้า — เดิมใช้ตารางของ 34×120 กับทุกฟาร์ม
+   เล้า 28×120 ไต่ช้ากว่า 1 วัน (ขึ้นเดินต่อเนื่อง 3/2 ที่วัน 8 ไม่ใช่วัน 7) · ที่มา Temp1200 / Temp716
+   มีข้อมูลจริงแค่ 2 ขนาดนี้ — ขนาดอื่นคงตารางเดิมไว้ก่อน ห้ามเดาแทนหมอ
+   หมายเหตุหมอ: โช๊คต้องดูขนาดเล้า+จำนวนไก่ด้วย → ส่วนนั้นคำนวณอยู่แล้วใน minFan() ด้านล่าง */
+const CK28={on:[0.5,0.5,0.7,0.7,0.8,0.8,0.8,0.6],off:[10,10,9,8,7,6,5,3]};
+const CK34={on:[0.5,0.6,0.7,0.7,0.8,0.8,0.6],off:[10,9,8,7,6,5,3]};
+const choke=(a,h)=>{const x=D(a),T=(h&&Math.round(+h.W||0)===28)?CK28:CK34,last=T.on.length-1;
+  if(x<=last){const on=T.on[x];return{on:on>0.6?1:on,off:T.off[x]};}
+  return{on:3,off:2};};
 // แสดงเวลาโช้ค (รอบเปิด-ปิดพัดลม) มีหน่วย — ถ้าเวลาทำ < 1 นาที แปลงเป็นวินาที
 const chokeOnU=c=>c.on>=1?(c.on+' นาที'):(Math.round(c.on*60)+' วินาที');
 const chokeText=c=>'ทำ '+chokeOnU(c)+' หยุด '+c.off+' นาที';
@@ -55,7 +70,7 @@ function minFan(h,nck){
 const lux=a=>{const x=D(a);return x<=1?40:x<=14?30:x<=21?20:10;};
 const lightHr=a=>{const x=D(a);return x<=1?24:x<=7?20:x<=14?18:x<=21?16:x<=28?10:12;};
 /* ===== แผนการทำงานพัดลม (ฤดูร้อน) — ถอดจาก Excel "แผนการระบายอากาศ หมอวรัญญู" คงลำดับเดิมของแต่ละฟาร์ม =====
-   choke = พัดลมโช๊ค (วิ่ง Cycle ตอน≤เป้า / ต่อเนื่องที่เป้า+1) · steps[].n = Step Auto (เปิดที่เป้า+(n-1)°C) · manual[] = เปิดมือตามอายุ (สะสม) */
+   choke = พัดลมโช๊ค (วิ่ง Cycle ตอน≤เป้า / ต่อเนื่องที่เป้า+diff) · steps[].n = Step Auto (เปิดที่ เป้า+(n-1)×stepDiff) · manual[] = เปิดมือตามอายุ (สะสม) */
 const FANPLANS={"chai34":{"farms":["ชัยนาท"],"size":"34×120","nf":24,"choke":[7,18],"steps":[{"n":2,"fans":[]},{"n":3,"fans":[5,20]},{"n":4,"fans":[3,22]}],"manual":[{"age":8,"fans":[2,23]},{"age":12,"fans":[9,16]},{"age":22,"fans":[11,14]},{"age":25,"fans":[6,19]},{"age":29,"fans":[4,21]},{"age":33,"fans":[1,24]},{"age":36,"fans":[8,17]},{"age":39,"fans":[10,12,13,15]}]},"chai28":{"farms":["ชัยนาท"],"size":"28×120","nf":18,"choke":[4,15],"steps":[{"n":2,"fans":[]},{"n":3,"fans":[6,13]},{"n":4,"fans":[2,17]}],"manual":[{"age":8,"fans":[8,11]},{"age":15,"fans":[3,16]},{"age":22,"fans":[1,18]},{"age":29,"fans":[5,14]},{"age":33,"fans":[7,12]},{"age":36,"fans":[9,10]}]},"thana":{"farms":["ธนวัฒน์"],"size":"28×120","nf":18,"choke":[2,17],"steps":[{"n":2,"fans":[4,15]},{"n":3,"fans":[6,13]},{"n":4,"fans":[8,11]}],"manual":[{"age":10,"fans":[9]},{"age":15,"fans":[1,18]},{"age":19,"fans":[10]},{"age":21,"fans":[7,12]},{"age":23,"fans":[5]},{"age":25,"fans":[14]},{"age":26,"fans":[3]},{"age":27,"fans":[16]},{"age":30,"fans":[8]},{"age":31,"fans":[11]},{"age":33,"fans":[6]},{"age":34,"fans":[13]},{"age":36,"fans":[2,4,15,17]}]},"phum":{"farms":["พุ่มวงษ์","พุ่มวงศ์","ยิ่งรวย"],"size":"28×120","nf":22,"choke":[2,21],"steps":[{"n":2,"fans":[4,19]},{"n":3,"fans":[6,17]},{"n":4,"fans":[8,15]}],"manual":[{"age":8,"fans":[11]},{"age":14,"fans":[1,22]},{"age":16,"fans":[14]},{"age":17,"fans":[9]},{"age":20,"fans":[10,18]},{"age":22,"fans":[3,5,7,16,20]},{"age":27,"fans":[13]},{"age":29,"fans":[8,12,15]},{"age":32,"fans":[6,17]},{"age":33,"fans":[4,19]}]},"money":{"farms":["มันนี่","สาธิต"],"size":"21×120","nf":16,"choke":[2,15],"steps":[{"n":2,"fans":[4,13]},{"n":3,"fans":[6,11]},{"n":4,"fans":[7,10]}],"manual":[{"age":12,"fans":[8]},{"age":15,"fans":[1,16]},{"age":21,"fans":[5,12]},{"age":24,"fans":[3,14]},{"age":28,"fans":[9]},{"age":30,"fans":[10]},{"age":32,"fans":[7]},{"age":34,"fans":[6]},{"age":35,"fans":[11]},{"age":37,"fans":[2,4,13,15]}]},"mk12":{"farms":["มั้งกี้1","มอส"],"size":"16×100","nf":12,"choke":[5],"steps":[{"n":2,"fans":[2,11]},{"n":3,"fans":[7]}],"manual":[{"age":13,"fans":[6]},{"age":16,"fans":[1,12]},{"age":22,"fans":[4,8]},{"age":26,"fans":[10]},{"age":29,"fans":[3]},{"age":31,"fans":[9]},{"age":34,"fans":[7]},{"age":36,"fans":[2,11]},{"age":38,"fans":[5]}]},"mk10":{"farms":["มั้งกี้2","มอส"],"size":"16×100","nf":10,"choke":[4],"steps":[{"n":2,"fans":[1,10]},{"n":3,"fans":[6]}],"manual":[{"age":13,"fans":[5]},{"age":22,"fans":[3,7]},{"age":26,"fans":[9]},{"age":29,"fans":[2]},{"age":31,"fans":[8]},{"age":34,"fans":[6]},{"age":36,"fans":[1,4,10]}]},"mos25":{"farms":["มอส","มั้งกี้3"],"size":"25×120","nf":14,"choke":[2,13],"steps":[{"n":2,"fans":[4,11]},{"n":3,"fans":[6,9]}],"manual":[{"age":10,"fans":[7]},{"age":14,"fans":[1,14]},{"age":18,"fans":[8]},{"age":21,"fans":[3,12]},{"age":23,"fans":[5,10]},{"age":26,"fans":[9]},{"age":27,"fans":[6]},{"age":29,"fans":[11]},{"age":31,"fans":[4]},{"age":33,"fans":[2,13]}]},"sriha":{"farms":["ศรีเหรา"],"size":"40×128","nf":26,"choke":[2,25],"steps":[{"n":2,"fans":[4,23]},{"n":3,"fans":[5,22]},{"n":4,"fans":[7,20]}],"manual":[{"age":7,"fans":[13]},{"age":11,"fans":[3,24]},{"age":16,"fans":[1,9,14,18,26]},{"age":20,"fans":[15]},{"age":21,"fans":[11]},{"age":22,"fans":[6,19,21]},{"age":25,"fans":[8,17]},{"age":26,"fans":[12]},{"age":27,"fans":[16]},{"age":29,"fans":[10]},{"age":30,"fans":[5,22]},{"age":31,"fans":[4]},{"age":32,"fans":[23]},{"age":33,"fans":[2,25]}]},"teng":{"farms":["เต็งหนึ่ง"],"size":"28×84","nf":20,"choke":[6,15],"steps":[{"n":2,"fans":[4,17]},{"n":3,"fans":[9,12]},{"n":4,"fans":[2,19]}],"manual":[{"age":7,"fans":[10]},{"age":12,"fans":[3,18]},{"age":17,"fans":[8,13]},{"age":22,"fans":[11]},{"age":24,"fans":[5,7,14,16]},{"age":32,"fans":[1,20]}]},"rr36":{"farms":["รุ่งเรือง3-6","หนึ่งรุ่งเรือง"],"size":"32×120","nf":21,"choke":[2,20],"steps":[{"n":2,"fans":[4,18]},{"n":3,"fans":[6,16]},{"n":4,"fans":[8,14]}],"manual":[{"age":8,"fans":[11]},{"age":13,"fans":[1,21],"off":[11]},{"age":15,"fans":[11]},{"age":17,"fans":[7,15],"off":[11]},{"age":19,"fans":[5,11,17],"off":[7,15]},{"age":21,"fans":[9,13],"off":[11]},{"age":23,"fans":[7,11,15],"off":[9,13]},{"age":25,"fans":[9,13],"off":[11]},{"age":27,"fans":[3]},{"age":29,"fans":[11]},{"age":30,"fans":[10,12],"off":[11]},{"age":31,"fans":[8,11,14],"off":[10,12]},{"age":32,"fans":[10,12],"off":[11]},{"age":33,"fans":[11]}]},"rr2":{"farms":["รุ่งเรือง2","หนึ่งรุ่งเรือง"],"size":"16×100","nf":11,"choke":[],"steps":[],"manual":[{"age":13,"fans":[6]},{"age":18,"fans":[1,11],"off":[6]},{"age":21,"fans":[6]},{"age":22,"fans":[3]},{"age":25,"fans":[9]},{"age":28,"fans":[4,8],"off":[6]},{"age":30,"fans":[6]},{"age":33,"fans":[7]},{"age":35,"fans":[10]},{"age":37,"fans":[2,5]}]},"rr1":{"farms":["รุ่งเรือง1","หนึ่งรุ่งเรือง"],"size":"14×72","nf":8,"choke":[4],"steps":[],"manual":[{"age":15,"fans":[5]},{"age":22,"fans":[1,8],"off":[5]},{"age":24,"fans":[5]},{"age":28,"fans":[3]},{"age":33,"fans":[6]},{"age":37,"fans":[4]},{"age":38,"fans":[2,7]}]}};
 /* ฟาร์มเดียวกัน คนละชื่อในเอกสารแต่ละยุค — หมอยืนยัน 31 ก.ค. 2026
    "PPF ดอนทอง" (ชื่อในแอป) = "มั่งมี" (ชื่อในไฟล์ Excel) = "มั้งกี้/มอส" (ชื่อในผังพัดลม)
@@ -85,9 +100,10 @@ function manualUpTo(p,a){const out=new Set();for(const s of p.manual)if(s.age<=a
 function fanStateAt(p,age){
   const a=D(age),tgt=targetT(a);
   const man=manualUpTo(p,a);
-  const steps=p.steps.filter(s=>s.fans.length).map(s=>({n:s.n,fans:s.fans,temp:+(tgt+(s.n-1)).toFixed(1)}));
+  const dif=stepDiff(a);
+  const steps=p.steps.filter(s=>s.fans.length).map(s=>({n:s.n,fans:s.fans,temp:+(tgt+(s.n-1)*dif).toFixed(1)}));
   let next=null;for(const s of p.manual)if(s.age>a){next=s;break;}
-  return{man,steps,tgt:+tgt.toFixed(1),chokeTemp:+(tgt+1).toFixed(1),pumpTemp:+pumpT(a).toFixed(1),next};
+  return{man,steps,tgt:+tgt.toFixed(1),diff:dif,chokeTemp:+(tgt+dif).toFixed(1),pumpTemp:+pumpT(a).toFixed(1),next};
 }
 const CFM_TO_M3S=0.00047195, MINRATE=1, GAP=4;
 function cumDead(h,upto){let s=0;for(let d=1;d<=upto;d++)s+=(+h.dead[d-1]||0);return s;}

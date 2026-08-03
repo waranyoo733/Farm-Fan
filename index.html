@@ -1183,7 +1183,7 @@ function fanPlanHTML(h,farmName){
   lad+=ladRow('warm',st.chokeTemp+'°','โช๊ค '+p.choke.join('·')+' เดินตลอด'+(step2?' + เปิด '+step2.fans.join('·'):''));
   for(const s of later)lad+=ladRow('warm',s.temp+'°','เปิดเพิ่ม '+s.fans.join('·'));
   lad+=ladRow('hot',st.pumpTemp+'°','เปิดปั๊มน้ำ/แพด ลดความร้อน '+I.drop);
-  lad+='</div><div class="fplad-note">ร้อนขึ้นทีละ 1° ตู้เติมพัดลมเอง · เย็นลงถอยกลับเอง</div>';
+  lad+='</div><div class="fplad-note">ร้อนขึ้นทีละ '+st.diff+'° ตู้เติมพัดลมเอง · เย็นลงถอยกลับเอง (ไก่ยิ่งโต ช่วงยิ่งแคบ)</div>';
   // 4) ตารางเต็ม
   let grows='';for(let d=1;d<=42;d++){const m=manualUpTo(p,d);grows+='<tr class="'+(d===a?'now':'')+'"><td>'+d+'</td><td>'+(m.length||0)+'</td><td style="text-align:left">'+(m.length?m.join(' · '):'—')+'</td></tr>';}
   const tbl='<details><summary>ดูตารางเปิดมือทั้ง 1–42 วัน</summary><div class="inset"><div class="scroll"><table class="tt"><thead><tr><th>วัน</th><th>เปิดมือ</th><th>ตัวที่ (สะสม)</th></tr></thead><tbody>'+grows+'</tbody></table></div></div></details>';
@@ -1647,7 +1647,7 @@ function calc(h){
   let cumStd=0;for(let d=1;d<=h.age;d++)cumStd+=FEED[d];
   const fcrT=(h.age>=1)?FCR_STD[D(h.age)]:0;
   return{fanCFM,reqAir,reqFt,ventMin,ventMax,velMax,planMaxRaw,needFans,comfort,windTarget:targetWind(h.age),padNeeded,ck,wt:bw(h.age),tt:targetT(h.age),pump:pumpT(h.age),
-    used,ratio,openH,openA,blocks,padVel,alive,fd,fpct,fhouse,cumStd,fcrT,choke:choke(h.age),lx:lux(h.age),lhr:lightHr(h.age)};
+    used,ratio,openH,openA,blocks,padVel,alive,fd,fpct,fhouse,cumStd,fcrT,choke:choke(h.age,h),lx:lux(h.age),lhr:lightHr(h.age)};
 }
 function fI(l,k,v,s){return `<div class="f"><label>${l}</label><input type="number" data-k="${k}" value="${v}" step="${s}"></div>`;}
 function tile(cls,ic,lab,val,sub){return `<div class="tile ${cls}"><div class="tl">${I[ic]}${lab}</div><div class="tv">${val}</div><div class="ts">${sub}</div></div>`;}
@@ -2982,7 +2982,8 @@ function openFanModal(p,age,name){
   const strip='<div class="hstrip"><div class="hs-cell hs-air">'+I.wind+'<br>ลมเข้า</div><div class="hs-cell hs-pad">แพด/<br>ผ้าม่าน</div><div class="hs-cell hs-mid"><div style="font-size:15px">'+I.bird+I.bird+I.bird+'</div><div class="hs-arrows">→ → →</div><div>ลมผ่านตัวไก่</div></div><div class="hs-cell hs-fw">ผนัง<br>พัดลม</div><div class="hs-cell hs-air">'+I.wind+'<br>ดูดออก</div></div>';
   const leg='<div class="hwleg"><span><i style="background:var(--green)"></i>เปิดมือ (หมุน)</span><span><i style="background:#ec6ca0"></i>โช๊ค (หมุนจังหวะ)</span><span><i style="background:#f59e0b"></i>ออโต้ (รอตู้สั่ง)</span><span><i style="background:#b9c2bd"></i>ยังไม่เปิด</span></div>';
   let rows='<div class="bstep"><div class="bsl">Step 1 · โช๊ค<small>เดิน cycle ขั้นต่ำ (≤ เป้า)</small></div><div class="bsd">'+fmDots(p.choke,'ck')+'</div></div>';
-  p.steps.forEach(s=>{const c=s.fans.length?fmDots(s.fans,'s'+s.n):'<span style="font-size:12.5px;color:var(--muted)">โช๊คเดินต่อเนื่อง — ไม่เพิ่มพัดลมใหม่</span>';rows+='<div class="bstep"><div class="bsl">Step '+s.n+'<small>เป้า +'+(s.n-1)+'°C</small></div><div class="bsd">'+c+'</div></div>';});
+  const sdif=stepDiff(age);
+  p.steps.forEach(s=>{const c=s.fans.length?fmDots(s.fans,'s'+s.n):'<span style="font-size:12.5px;color:var(--muted)">โช๊คเดินต่อเนื่อง — ไม่เพิ่มพัดลมใหม่</span>';rows+='<div class="bstep"><div class="bsl">Step '+s.n+'<small>เป้า +'+(+((s.n-1)*sdif).toFixed(2))+'°C</small></div><div class="bsd">'+c+'</div></div>';});
   if(p.steps.length)rows+='<div class="bstep"><div class="bsl">เปิดปั๊ม/แพด<small>เป้า +3°C</small></div><div class="bsd">'+I.drop+' เปิดน้ำเข้า Cooling pad</div></div>';
   p.manual.forEach(mm=>{rows+='<div class="bstep"><div class="bsl">เปิดมือ<small>วัน '+mm.age+'</small></div><div class="bsd">'+fmDots(mm.fans,'man')+'</div></div>';});
   document.getElementById('fanmodalTitle').textContent='ผังพัดลม · '+name+' · '+p.nf+' ตัว';

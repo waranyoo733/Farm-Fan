@@ -224,7 +224,7 @@ function render(){
       <div class="oh">📋 วัน ${day} — เปิดพัดลมตามนี้</div>
       <div>🟢 เปิดมือ ${man.length} ตัว: ${bubbles(man,'man')}</div>
       ${choke.length?'<div style="margin-top:6px">🩷 โช้ค (ตู้คุมเดินเอง): '+bubbles(choke,'ck')+'</div>':''}
-      ${v.pm.p.steps.length?'<div style="margin-top:6px">⬛ ออโต้ตามอุณหภูมิ: '+v.pm.p.steps.filter(s=>s.fans.length).map(s=>'Step'+s.n+' ('+(targetT(day)+(s.n-1)).toFixed(1)+'°C) '+bubbles(s.fans,'au')).join('<span style="color:var(--muted)"> · </span>')+'</div>':''}
+      ${v.pm.p.steps.length?'<div style="margin-top:6px">⬛ ออโต้ตามอุณหภูมิ: '+v.pm.p.steps.filter(s=>s.fans.length).map(s=>'Step'+s.n+' ('+stepTemp(day,s.n).toFixed(1)+'°C) '+bubbles(s.fans,'au')).join('<span style="color:var(--muted)"> · </span>')+'</div>':''}
       <div class="legend"><span><i style="background:var(--man)"></i>เขียว = เปิดมือ</span><span><i style="background:var(--ck)"></i>ชมพู = โช้ค</span><span><i style="background:var(--au)"></i>ดำ = ออโต้ตู้คุม</span><span><i style="background:rgba(255,255,255,.09);border:1px solid var(--line)"></i>เทา = ยังไม่เปิด</span></div>
       <div class="fanwall">${wall}</div>
     </div>
