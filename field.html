@@ -190,6 +190,7 @@ try{ farms=JSON.parse(localStorage.getItem('ppf_farms_v3')||'[]'); }catch(_){}
 if(!Array.isArray(farms))farms=[];
 function hasAuth(){ return !!(cfg&&(cfg.sid||cfg.code)); }
 function isStaff(){ return !!(cfg&&cfg.sid&&cfg.role==='STAFF'); }
+function isExec(){ return !!(cfg&&cfg.sid&&cfg.role==='EXEC'); }   // ผู้บริหาร: เห็นกระดานทุกฟาร์ม แต่กดเขียนอะไรไม่ได้ (v3.4)
 function authQ(){ return cfg.sid?('ses='+encodeURIComponent(cfg.sid)):('code='+encodeURIComponent(cfg.code)); }
 function postAuth(b){ if(cfg.sid)b.sid=cfg.sid; else{ b.code=cfg.wcode||cfg.code; if(cfg.who)b.who=cfg.who; } return b; }
 var API=(cfg&&cfg.url)||'';
@@ -424,7 +425,7 @@ function paintBoard(j){
   tl.innerHTML=j.tasks.map(function(t,i){
     return '<div class="task'+(t.status==='OPEN'?'':' closed')+'">'
      +'<div class="rowline"><div><b>'+esc(fname[t.farm]||t.farm)+' · '+esc(t.house)+'</b> — '+esc(t.detail)+'</div>'
-     +(t.status==='OPEN'?'<button class="btn2" data-close="'+i+'">ปิดงาน</button>':'<span class="ok">✓ ปิดแล้ว</span>')+'</div>'
+     +(t.status==='OPEN'?(isExec()?'':'<button class="btn2" data-close="'+i+'">ปิดงาน</button>'):'<span class="ok">✓ ปิดแล้ว</span>')+'</div>'
      +'<div class="meta">'+esc(t.id)+' · เปิดโดย '+esc(t.by)+' ('+esc(t.source)+') '+esc(String(t.ts).slice(0,16).replace('T',' '))
      +(t.status!=='OPEN'?(' · ปิดโดย '+esc(t.closed_by)+(t.close_note?' — '+esc(t.close_note):'')):'')+'</div></div>';
   }).join('');
@@ -521,6 +522,7 @@ function showTl(on){
   var rb=document.getElementById('roleBadge');
   if(!hasAuth()||!API){ rb.textContent='ไม่ได้เข้าระบบ'; document.getElementById('noAccess').classList.remove('hide'); setStat('—'); return; }
   if(isStaff()){ rb.textContent='พนักงาน · '+(cfg.who||''); rb.className='badge staff'; }
+  else if(isExec()){ rb.textContent='ผู้บริหาร · '+(cfg.who||''); }
   else rb.textContent='ผู้ดูแล';
   probeServer(function(){
     if(serverReady===false)document.getElementById('notReady').classList.remove('hide');

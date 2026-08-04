@@ -127,13 +127,14 @@ var cfg=null, farms=[];
 try{ cfg=JSON.parse(localStorage.getItem('ppf_sync')||'null'); }catch(_){}
 try{ farms=JSON.parse(localStorage.getItem('ppf_farms_v3')||'[]'); }catch(_){}
 if(!Array.isArray(farms))farms=[];
-var isAdmin=!(cfg&&cfg.sid&&cfg.role==='STAFF');   // staff session = จำกัด · อื่น ๆ (รหัสรวม/admin) = เต็ม
+var uRole=(cfg&&cfg.sid&&cfg.role)||'ADMIN';       // ไม่มี session = เข้าด้วยรหัสแอดมินแบบเดิม · v3.4: ADMIN / EXEC / STAFF
+var isAdmin=uRole!=='STAFF';                       // ข้อมูลใน localStorage ถูกกรองจากเซิร์ฟเวอร์ตาม role แล้ว
 function nf(n){ return (Math.round(n)||0).toLocaleString('th-TH'); }
 function fmtDate(d){ return d.getDate()+' '+TH_MON[d.getMonth()]+' '+(d.getFullYear()+543); }
 function parseD(s){ var p=String(s||'').split('-'); return p.length===3?new Date(+p[0],+p[1]-1,+p[2]):null; }
 function dayKey(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
 
-document.getElementById('role').textContent=isAdmin?'ผู้ดูแล':'พนักงาน';
+document.getElementById('role').textContent=uRole==='ADMIN'?'ผู้ดูแล':uRole==='EXEC'?'ผู้บริหาร':'พนักงาน';
 document.getElementById('today').textContent=fmtDate(new Date())+' · อัปเดต '+new Date().toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'});
 
 /* ── ตัวกรองฟาร์ม ── */

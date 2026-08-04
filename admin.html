@@ -6,10 +6,11 @@
 <meta name="robots" content="noindex,nofollow">
 <title>จัดการบัญชี — PPF Smart Farm</title>
 <!--
-  หน้าจัดการบัญชีสำหรับหมอ (ADMIN) — หมอเพิ่มพนักงาน/เปลี่ยนรหัสรวม/รีเซ็ต PIN เองได้ ไม่ต้องผ่านนักพัฒนา
-  ใช้ API users:* (list/create/resetpin/setname/disable/enable/logout) + setstaffcode ผ่าน sid(ADMIN) หรือรหัสแอดมิน
+  หน้าจัดการบัญชีสำหรับหมอ (ADMIN) — หมอเพิ่มพนักงาน/ผู้บริหาร/รีเซ็ต PIN เองได้ ไม่ต้องผ่านนักพัฒนา
+  ใช้ API users:* (list/create/resetpin/setname/disable/enable/logout) ผ่าน sid(ADMIN) หรือรหัสแอดมิน
+  v3.4 (4 ส.ค. 2569): ตัดส่วน "รหัสรวม" ออก (ทางเข้า farmlogin ถูกลบ — ดู docs/adr/0001) · เพิ่ม role EXEC (ผู้บริหาร)
   ⚠️ ห้ามใส่สตริงไทยใน onclick — ใช้ data-attr + event delegation (กฎข้อ 4 ใน handoff)
-  สิทธิ์บังคับที่เซิร์ฟเวอร์: STAFF เรียก users:* ไม่ผ่าน (เซิร์ฟเวอร์ปฏิเสธ) — หน้านี้แค่ซ่อน UI ให้เรียบร้อย
+  สิทธิ์บังคับที่เซิร์ฟเวอร์: STAFF/EXEC เรียก users:* ไม่ผ่าน (เซิร์ฟเวอร์ปฏิเสธ) — หน้านี้แค่ซ่อน UI ให้เรียบร้อย
 -->
 <style>
 :root{
@@ -48,6 +49,7 @@ tr:last-child td{border-bottom:0}
 .tag{font-size:10.5px;font-weight:800;border-radius:6px;padding:2px 8px;white-space:nowrap}
 .tag.admin{background:rgba(144,133,233,.18);color:var(--violet)}
 .tag.staff{background:rgba(25,158,112,.18);color:var(--aqua)}
+.tag.exec{background:rgba(250,178,25,.16);color:var(--warn)}
 .tag.off{background:rgba(208,59,59,.16);color:var(--crit)}
 .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .tblwrap{overflow-x:auto}
@@ -70,28 +72,17 @@ tr:last-child td{border-bottom:0}
   </div>
 
   <div id="adminView" style="display:none">
-    <!-- รหัสรวมพนักงาน -->
-    <div class="sec-t">🔑 รหัสเข้าใช้แบบพนักงาน (รหัสรวม)</div>
+    <!-- เพิ่มบัญชีส่วนตัว (รหัสรวมถูกยกเลิก 4 ส.ค. 2569 — ทุกคนใช้บัญชี PIN รายคน ดู docs/adr/0001) -->
+    <div class="sec-t">➕ เพิ่มบัญชี (PIN เฉพาะคน)</div>
     <div class="card">
-      <div class="info" style="margin-bottom:12px">พนักงานเข้าระบบด้วย <b>ชื่อตัวเอง + รหัสนี้ + ชื่อฟาร์ม</b> → เห็นเฉพาะฟาร์มตัวเอง ดูอย่างเดียว · เปลี่ยนรหัสเมื่อไหร่ พนักงานทุกคนต้องใช้รหัสใหม่</div>
-      <div class="row">
-        <div><label>รหัสรวม (ตัวเลข 4–8 หลัก)</label><input id="scInput" type="text" inputmode="numeric" placeholder="เช่น 1234"></div>
-        <div style="display:flex;align-items:flex-end"><button class="btn g" id="scBtn" style="width:100%">บันทึกรหัสพนักงาน</button></div>
-      </div>
-      <div class="stat" id="scStat"></div>
-    </div>
-
-    <!-- เพิ่มบัญชีส่วนตัว -->
-    <div class="sec-t">➕ เพิ่มบัญชีส่วนตัว (PIN เฉพาะคน)</div>
-    <div class="card">
-      <div class="info" style="margin-bottom:12px">ใช้เมื่ออยากให้ <b>บางคนมี PIN ส่วนตัว</b> (ปลอดภัยกว่ารหัสรวม) หรือเพิ่ม <b>ผู้ดูแล</b> คนที่สอง · ชื่อผู้ใช้เป็นภาษาอังกฤษ/ตัวเลข พิมพ์ง่ายบนมือถือ</div>
+      <div class="info" style="margin-bottom:12px">ทุกคนเข้าระบบด้วย <b>บัญชีส่วนตัว</b> — ชื่อในบันทึกงานจึงเป็นหลักฐานจริง ปลอมไม่ได้ · ชื่อผู้ใช้เป็นภาษาอังกฤษ/ตัวเลข พิมพ์ง่ายบนมือถือ</div>
       <div class="row">
         <div><label>ชื่อผู้ใช้ (a-z 0-9)</label><input id="nUser" type="text" autocapitalize="none" placeholder="เช่น somchai"></div>
         <div><label>ชื่อ-สกุล (แสดงในประวัติ)</label><input id="nName" type="text" placeholder="เช่น สมชาย ใจดี"></div>
       </div>
       <div class="row">
         <div><label>PIN (ตัวเลข 6 หลัก)</label><input id="nPin" type="text" inputmode="numeric" maxlength="6" placeholder="เช่น 482619"></div>
-        <div><label>บทบาท</label><select id="nRole"><option value="STAFF">พนักงาน — ดูฟาร์มเดียว</option><option value="ADMIN">ผู้ดูแล — ทุกฟาร์ม แก้ได้</option></select></div>
+        <div><label>บทบาท</label><select id="nRole"><option value="STAFF">พนักงาน — ดูฟาร์มเดียว</option><option value="EXEC">ผู้บริหาร — ทุกฟาร์ม ดูอย่างเดียว</option><option value="ADMIN">ผู้ดูแล — ทุกฟาร์ม แก้ได้</option></select></div>
       </div>
       <div class="row" id="farmRow">
         <div><label>ฟาร์มที่ดูแล</label><select id="nFarm"></select></div>
@@ -106,7 +97,7 @@ tr:last-child td{border-bottom:0}
       <table><thead><tr><th>ชื่อผู้ใช้</th><th>ชื่อ-สกุล</th><th>บทบาท</th><th>ฟาร์ม</th><th>เข้าล่าสุด</th><th></th></tr></thead>
       <tbody id="uBody"><tr><td colspan="6" style="text-align:center;color:var(--mut);padding:22px">กำลังโหลด…</td></tr></tbody></table>
     </div>
-    <div class="hint">💡 บัญชี "รหัสรวม" (พนักงานที่เข้าด้วยรหัส 1234) เป็นการเข้าชั่วคราว จะไม่แสดงในตารางนี้ · ตารางนี้แสดงเฉพาะบัญชีส่วนตัวที่มี PIN</div>
+    <div class="hint">💡 ทุกคนต้องมีบัญชีส่วนตัวในตารางนี้ — ทางเข้าแบบรหัสรวมถูกยกเลิกแล้ว (4 ส.ค. 2569) เพื่อให้ชื่อในบันทึกงานเป็นหลักฐานจริง</div>
   </div>
 </div>
 
@@ -117,9 +108,9 @@ try{ cfg=JSON.parse(localStorage.getItem('ppf_sync')||'null'); }catch(_){}
 try{ farms=JSON.parse(localStorage.getItem('ppf_farms_v3')||'[]'); }catch(_){}
 if(!Array.isArray(farms))farms=[];
 var API=(cfg&&cfg.url)||'';
-var isAdmin=!!(cfg&&(cfg.code||cfg.sid))&&!(cfg.sid&&cfg.role==='STAFF');   // staff session = ไม่ใช่แอดมิน
+var isAdmin=!!(cfg&&(cfg.code||cfg.sid))&&!(cfg.sid&&cfg.role!=='ADMIN');   // session ต้องเป็น ADMIN เท่านั้น — STAFF/EXEC เข้าหน้านี้ไม่ได้ (เคาะ 4 ส.ค.)
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-function authFields(o){ o=o||{}; if(cfg.sid&&cfg.role!=='STAFF')o.sid=cfg.sid; else o.code=cfg.wcode||cfg.code; if(cfg.who)o.who=cfg.who; return o; }
+function authFields(o){ o=o||{}; if(cfg.sid&&cfg.role==='ADMIN')o.sid=cfg.sid; else o.code=cfg.wcode||cfg.code; if(cfg.who)o.who=cfg.who; return o; }
 function post(body,cb){
   var ctl=new AbortController(), to=setTimeout(function(){try{ctl.abort();}catch(_){}} ,20000);
   fetch(API,{method:'POST',body:JSON.stringify(authFields(body)),signal:ctl.signal})
@@ -138,24 +129,11 @@ function init(){
   // farm dropdown
   var fs=document.getElementById('nFarm');
   farms.forEach(function(f){ var o=document.createElement('option'); o.value=f.fid; o.textContent=f.name+' ('+f.fid+')'; fs.appendChild(o); });
-  // role toggles farm row
-  document.getElementById('nRole').onchange=function(){ document.getElementById('farmRow').style.opacity=this.value==='ADMIN'?'.5':'1'; document.getElementById('nFarm').disabled=this.value==='ADMIN'; };
-  document.getElementById('scBtn').onclick=saveStaffCode;
+  // role toggles farm row — เลือกฟาร์มเฉพาะ STAFF (EXEC/ADMIN เห็นทุกฟาร์มโดยนิยาม)
+  document.getElementById('nRole').onchange=function(){ var noFarm=this.value!=='STAFF'; document.getElementById('farmRow').style.opacity=noFarm?'.5':'1'; document.getElementById('nFarm').disabled=noFarm; };
   document.getElementById('addBtn').onclick=addUser;
   document.getElementById('uBody').addEventListener('click',onTableClick);
   loadUsers();
-  // show current staff code hint (ไม่ดึงรหัสจริงมาโชว์ — เซิร์ฟเวอร์ไม่ส่งกลับ เพื่อความปลอดภัย)
-}
-
-function saveStaffCode(){
-  var v=(document.getElementById('scInput').value||'').trim();
-  if(!/^\d{4,8}$/.test(v)){ setStat('scStat','รหัสต้องเป็นตัวเลข 4–8 หลัก','err'); return; }
-  var b=document.getElementById('scBtn'); b.disabled=true; setStat('scStat','กำลังบันทึก…');
-  post({users:'setstaffcode',staffcode:v},function(j){
-    b.disabled=false;
-    if(j&&j.ok){ setStat('scStat','✅ บันทึกแล้ว — แจ้งพนักงานใช้รหัสใหม่: '+v,'ok'); document.getElementById('scInput').value=''; }
-    else setStat('scStat','ไม่สำเร็จ: '+((j&&j.error)||'?'),'err');
-  });
 }
 
 function addUser(){
@@ -167,7 +145,7 @@ function addUser(){
   if(!/^[A-Za-z0-9_.-]{3,20}$/.test(u)){ setStat('addStat','ชื่อผู้ใช้ต้องเป็น a-z 0-9 . _ - ยาว 3–20 ตัว','err'); return; }
   if(!/^\d{6}$/.test(pin)){ setStat('addStat','PIN ต้องเป็นตัวเลข 6 หลัก','err'); return; }
   var body={users:'create',user:u,name:name||u,pin:pin,role:role};
-  if(role!=='ADMIN'){ if(!farm){ setStat('addStat','เลือกฟาร์มก่อน','err'); return; } body.farm_ids=farm; }
+  if(role==='STAFF'){ if(!farm){ setStat('addStat','เลือกฟาร์มก่อน','err'); return; } body.farm_ids=farm; }
   var b=document.getElementById('addBtn'); b.disabled=true; setStat('addStat','กำลังสร้าง…');
   post(body,function(j){
     b.disabled=false;
@@ -190,11 +168,11 @@ function loadUsers(){
     var fname={}; farms.forEach(function(f){fname[f.fid]=f.name;});
     tb.innerHTML=USERS.map(function(u,i){
       var off=u.status!=='ACTIVE';
-      var roleTag=u.role==='ADMIN'?'<span class="tag admin">ผู้ดูแล</span>':'<span class="tag staff">พนักงาน</span>';
+      var roleTag=u.role==='ADMIN'?'<span class="tag admin">ผู้ดูแล</span>':u.role==='EXEC'?'<span class="tag exec">ผู้บริหาร</span>':'<span class="tag staff">พนักงาน</span>';
       var ll=u.last_login?String(u.last_login).slice(0,10):'—';
       return '<tr style="'+(off?'opacity:.55':'')+'"><td style="font-weight:700">'+esc(u.user)+(off?' <span class="tag off">ปิด</span>':'')+'</td>'
         +'<td>'+esc(u.name||'—')+'</td><td>'+roleTag+'</td>'
-        +'<td>'+(u.role==='ADMIN'?'ทุกฟาร์ม':esc(fname[u.farms]||u.farms||'—'))+'</td>'
+        +'<td>'+(u.role==='STAFF'?esc(fname[u.farms]||u.farms||'—'):(u.role==='EXEC'?'ทุกฟาร์ม (ดูอย่างเดียว)':'ทุกฟาร์ม'))+'</td>'
         +'<td class="sec">'+esc(ll)+'</td>'
         +'<td><div class="acts">'
           +'<button class="btn sm ghost" data-a="pin" data-i="'+i+'">รีเซ็ต PIN</button>'
