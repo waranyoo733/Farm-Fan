@@ -176,6 +176,7 @@ function loadUsers(){
         +'<td class="sec">'+esc(ll)+'</td>'
         +'<td><div class="acts">'
           +'<button class="btn sm ghost" data-a="pin" data-i="'+i+'">รีเซ็ต PIN</button>'
+          +(u.role==='STAFF'?'<button class="btn sm ghost" data-a="farm" data-i="'+i+'">ย้ายฟาร์ม</button>':'')
           +(off?'<button class="btn sm g" data-a="enable" data-i="'+i+'">เปิด</button>'
                :'<button class="btn sm warn" data-a="disable" data-i="'+i+'">ปิด</button>')
           +'<button class="btn sm danger" data-a="logout" data-i="'+i+'">ออกทุกเครื่อง</button>'
@@ -192,6 +193,12 @@ function onTableClick(e){
     if(np===null)return; np=np.trim();
     if(!/^\d{6}$/.test(np)){ alert('PIN ต้องเป็นตัวเลข 6 หลัก'); return; }
     post({users:'resetpin',user:u.user,pin:np},function(j){ alert(j&&j.ok?('รีเซ็ต PIN ให้ '+u.user+' แล้ว · PIN ใหม่: '+np+'\n(ทุกเครื่องเดิมต้องล็อกอินใหม่)'):('ไม่สำเร็จ: '+((j&&j.error)||'?'))); loadUsers(); });
+  } else if(a==='farm'){
+    var list=farms.map(function(f){return f.fid+' = '+f.name;}).join('\n');
+    var nf=prompt('ย้าย '+u.user+' ไปฟาร์มไหน? พิมพ์รหัสฟาร์ม เช่น F08\n(หลายฟาร์มคั่นด้วย , )\n\n'+list, u.farms||'');
+    if(nf===null)return; nf=nf.trim().toUpperCase();
+    if(!/^F\d{2,}(,F\d{2,})*$/.test(nf)){ alert('รูปแบบไม่ถูกต้อง — ต้องเป็นรหัสฟาร์ม เช่น F08'); return; }
+    post({users:'setfarms',user:u.user,farm_ids:nf},function(j){ alert(j&&j.ok?('ย้าย '+u.user+' → '+j.farms+' แล้ว\n(ทุกเครื่องของเขาต้องล็อกอินใหม่)'):('ไม่สำเร็จ: '+((j&&j.error)||'?'))); loadUsers(); });
   } else if(a==='disable'){
     if(!confirm('ปิดบัญชี '+u.user+' ? เข้าระบบไม่ได้จนกว่าจะเปิดใหม่'))return;
     post({users:'disable',user:u.user},function(j){ if(!(j&&j.ok))alert('ไม่สำเร็จ: '+((j&&j.error)||'?')); loadUsers(); });
